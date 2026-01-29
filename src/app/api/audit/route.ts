@@ -106,10 +106,10 @@ export async function POST(request: NextRequest) {
       FROM \`gfg-fot.lpg_fraud_detection.fraud_with_explanations\`
       WHERE beneficiary_id = @beneficiary_id
     `;
-    
-    const [statusJob] = await bigquery.createQueryJob({ 
-      query: statusQuery, 
-      params: { beneficiary_id } 
+
+    const [statusJob] = await bigquery.createQueryJob({
+      query: statusQuery,
+      params: { beneficiary_id }
     });
     const [statusRows] = await statusJob.getQueryResults();
     const previousStatus = statusRows[0]?.risk_level || 'UNKNOWN';
@@ -153,7 +153,7 @@ export async function POST(request: NextRequest) {
       });
     } catch {
       // Table might not exist - log locally for demo
-      console.log('📝 AUDIT ENTRY (Table not created):', auditEntry);
+      console.log('AUDIT ENTRY (Table not created):', auditEntry);
     }
 
     return NextResponse.json({

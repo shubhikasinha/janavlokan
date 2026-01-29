@@ -1,6 +1,22 @@
 import Link from 'next/link';
 
-const footerLinks = {
+/* ---------------- Types ---------------- */
+
+type FooterLink = {
+    path: string;
+    label: string;
+    external?: boolean;
+};
+
+type FooterLinks = {
+    platform: FooterLink[];
+    resources: FooterLink[];
+    government: FooterLink[];
+};
+
+/* ---------------- Data ---------------- */
+
+const footerLinks: FooterLinks = {
     platform: [
         { path: '/about', label: 'About JanAvlokan' },
         { path: '/features', label: 'Key Features' },
@@ -8,7 +24,7 @@ const footerLinks = {
         { path: '/dashboard', label: 'Risk Dashboard' },
     ],
     resources: [
-        { path: '/contact', label: 'Help & Support' },
+        { path: '/contact', label: 'Contact Us' },
         { path: '#', label: 'Documentation' },
         { path: '#', label: 'API Reference' },
         { path: '#', label: 'FAQs' },
@@ -20,37 +36,49 @@ const footerLinks = {
     ],
 };
 
-export default function Footer() {
+/* ---------------- Component ---------------- */
+
+const Footer = () => {
     return (
         <footer className="bg-primary text-white">
             {/* Main Footer */}
             <div className="max-w-7xl mx-auto px-4 py-12">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                     {/* Brand Section */}
-                    <div className="lg:col-span-1">
+                    <div>
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                                <span className="text-white font-bold text-lg">ज</span>
-                            </div>
+                            <img
+                                src="/logojan.jpeg"
+                                alt="JanAvlokan Logo"
+                                className="h-12 w-auto bg-white rounded p-1"
+                            />
                             <div className="flex flex-col">
-                                <span className="text-xl font-heading font-bold">JanAvlokan</span>
-                                <span className="text-xs text-white/70">जनावलोकन</span>
+                                <span className="text-xl font-heading font-bold">
+                                    JanAvlokan
+                                </span>
+                                <span className="text-xs text-white/70">
+                                    जनावलोकन
+                                </span>
                             </div>
                         </div>
+
                         <p className="text-sm text-white/80 mb-4 leading-relaxed">
-                            AI-Powered Subsidy Leakage Detection & Monitoring Platform.
-                            Enabling transparent welfare delivery across India.
+                            AI-Powered Subsidy Intelligence Platform for Transparent Welfare Delivery.
+                            Ministry of Electronics & Information Technology.
                         </p>
+
                         <div className="flex items-center gap-2">
-                            <span className="w-4 h-4 rounded-full bg-govt-saffron"></span>
-                            <span className="w-4 h-4 rounded-full bg-white"></span>
-                            <span className="w-4 h-4 rounded-full bg-govt-green"></span>
+                            <span className="w-4 h-4 rounded-full bg-govt-saffron" />
+                            <span className="w-4 h-4 rounded-full bg-white" />
+                            <span className="w-4 h-4 rounded-full bg-govt-green" />
                         </div>
                     </div>
 
                     {/* Platform Links */}
                     <div>
-                        <h3 className="font-heading font-semibold text-lg mb-4">Platform</h3>
+                        <h3 className="font-heading font-semibold text-lg mb-4">
+                            Platform
+                        </h3>
                         <ul className="space-y-2">
                             {footerLinks.platform.map((link) => (
                                 <li key={link.path}>
@@ -67,7 +95,9 @@ export default function Footer() {
 
                     {/* Resources Links */}
                     <div>
-                        <h3 className="font-heading font-semibold text-lg mb-4">Resources</h3>
+                        <h3 className="font-heading font-semibold text-lg mb-4">
+                            Resources
+                        </h3>
                         <ul className="space-y-2">
                             {footerLinks.resources.map((link) => (
                                 <li key={link.label}>
@@ -84,7 +114,9 @@ export default function Footer() {
 
                     {/* Government Links */}
                     <div>
-                        <h3 className="font-heading font-semibold text-lg mb-4">Government</h3>
+                        <h3 className="font-heading font-semibold text-lg mb-4">
+                            Government
+                        </h3>
                         <ul className="space-y-2">
                             {footerLinks.government.map((link) => (
                                 <li key={link.label}>
@@ -95,8 +127,18 @@ export default function Footer() {
                                         className="text-sm text-white/80 hover:text-white transition-colors flex items-center gap-1"
                                     >
                                         {link.label}
-                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                        <svg
+                                            className="w-3 h-3"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                            />
                                         </svg>
                                     </a>
                                 </li>
@@ -111,17 +153,33 @@ export default function Footer() {
                 <div className="max-w-7xl mx-auto px-4 py-4">
                     <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm">
                         <div className="flex items-center gap-2 text-amber-200">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            <svg
+                                className="w-5 h-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                                />
                             </svg>
-                            <span>This system is advisory-only. It does not approve, deny, or block subsidies.</span>
+                            <span>
+                                This system is advisory-only. It does not approve,
+                                deny, or block subsidies.
+                            </span>
                         </div>
+
                         <div className="text-white/60">
-                            © 2026 JanAvlokan | Hack-4Viksit Bharat
+                            © {new Date().getFullYear()} JanAvlokan | Ministry of Electronics & IT
                         </div>
                     </div>
                 </div>
             </div>
         </footer>
     );
-}
+};
+
+export default Footer;

@@ -57,11 +57,10 @@ export default function BatchRefreshButton({ onRefreshComplete }: BatchRefreshBu
       <button
         onClick={handleRefresh}
         disabled={loading}
-        className={`flex items-center gap-2 px-4 py-2 rounded font-medium text-sm transition-all ${
-          loading
+        className={`flex items-center gap-2 px-4 py-2 rounded font-medium text-sm transition-all ${loading
             ? "bg-gray-100 text-gray-500 cursor-not-allowed"
             : "bg-primary text-white hover:bg-primary/90"
-        }`}
+          }`}
       >
         {loading ? (
           <>
@@ -91,17 +90,15 @@ export default function BatchRefreshButton({ onRefreshComplete }: BatchRefreshBu
       {/* Result Popup */}
       {result && (
         <div
-          className={`absolute top-full right-0 mt-2 w-72 p-4 rounded-lg shadow-lg z-50 ${
-            result.success ? "bg-green-50 border border-green-200" : "bg-red-50 border border-red-200"
-          }`}
+          className={`absolute top-full right-0 mt-2 w-72 p-4 rounded-lg shadow-lg z-50 ${result.success ? "bg-green-50 border border-green-200" : "bg-red-50 border border-red-200"
+            }`}
         >
           <div className="flex items-start justify-between mb-2">
             <span
-              className={`text-sm font-medium ${
-                result.success ? "text-green-800" : "text-red-800"
-              }`}
+              className={`text-sm font-medium ${result.success ? "text-green-800" : "text-red-800"
+                }`}
             >
-              {result.success ? "✅ Refresh Complete" : "❌ Refresh Failed"}
+              {result.success ? "Refresh Complete" : "Refresh Failed"}
             </span>
             <button
               onClick={() => setResult(null)}

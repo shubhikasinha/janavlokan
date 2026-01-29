@@ -99,7 +99,7 @@ export default function TimeSeriesChart({ days = 30, showSpikes = true }: TimeSe
       <div className="bg-white border border-gray-200 rounded-lg p-6">
         <div className="h-80 flex items-center justify-center">
           <div className="text-center">
-            <p className="text-red-600 mb-2">⚠️ {error}</p>
+            <p className="text-red-600 mb-2">{error}</p>
             <button
               onClick={() => window.location.reload()}
               className="px-4 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200"
@@ -119,7 +119,7 @@ export default function TimeSeriesChart({ days = 30, showSpikes = true }: TimeSe
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="font-heading font-semibold text-gray-900">
-              📈 Risk Trends Over Time
+              Risk Trends Over Time
             </h3>
             <p className="text-sm text-gray-500">Daily anomaly distribution</p>
           </div>
@@ -190,7 +190,7 @@ export default function TimeSeriesChart({ days = 30, showSpikes = true }: TimeSe
       {showSpikes && spikesData.length > 0 && (
         <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
           <h3 className="font-heading font-semibold text-gray-900 mb-4">
-            ⚡ Detected Temporal Spikes
+            Detected Temporal Spikes
           </h3>
           <p className="text-sm text-gray-500 mb-4">
             Days with anomaly counts significantly above baseline (1.5σ+)
@@ -252,7 +252,7 @@ export default function TimeSeriesChart({ days = 30, showSpikes = true }: TimeSe
       {/* Trend Line Chart */}
       <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
         <h3 className="font-heading font-semibold text-gray-900 mb-4">
-          📊 Total Anomalies Trend
+          Total Anomalies Trend
         </h3>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">

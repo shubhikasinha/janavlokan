@@ -9,7 +9,7 @@ import BatchRefreshButton from "@/components/BatchRefreshButton";
 // Dynamic import for map (no SSR)
 const DistrictHeatmap = dynamic(
   () => import("@/components/DistrictHeatmap"),
-  { 
+  {
     ssr: false,
     loading: () => (
       <div className="h-[500px] bg-gray-100 rounded-lg flex items-center justify-center">
@@ -47,7 +47,7 @@ export default function AnalyticsPage() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <h1 className="text-2xl md:text-3xl font-heading font-bold text-gray-900 mb-1">
-                📊 Analytics & Insights
+                Analytics & Insights
               </h1>
               <p className="text-gray-600 text-sm">
                 Geographic risk heatmaps • Temporal spike detection • Trend analysis
@@ -70,7 +70,7 @@ export default function AnalyticsPage() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="text-xl font-heading font-semibold text-gray-900">
-                  🗺️ Geographic Risk Heatmap
+                  Geographic Risk Heatmap
                 </h2>
                 <p className="text-sm text-gray-500">
                   District-wise anomaly concentration • Click markers for details
@@ -87,34 +87,34 @@ export default function AnalyticsPage() {
                 </div>
               )}
             </div>
-            
+
             <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-              <DistrictHeatmap 
+              <DistrictHeatmap
                 key={refreshKey}
-                onDistrictClick={handleDistrictClick} 
+                onDistrictClick={handleDistrictClick}
               />
             </div>
 
             {/* Map Legend & Info */}
             <div className="mt-4 grid md:grid-cols-3 gap-4">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="font-medium text-blue-800 mb-1">🔍 How to Use</p>
+                <p className="font-medium text-blue-800 mb-1">How to Use</p>
                 <p className="text-sm text-blue-700">
                   Hover over circles to see district names. Click for detailed popup.
                   Larger circles = more anomalies.
                 </p>
               </div>
               <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                <p className="font-medium text-amber-800 mb-1">📍 Coverage</p>
+                <p className="font-medium text-amber-800 mb-1">Coverage</p>
                 <p className="text-sm text-amber-700">
-                  Map shows districts with detected anomalies. 
+                  Map shows districts with detected anomalies.
                   Colors indicate relative risk concentration.
                 </p>
               </div>
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <p className="font-medium text-green-800 mb-1">💡 Insight</p>
+                <p className="font-medium text-green-800 mb-1">Insight</p>
                 <p className="text-sm text-green-700">
-                  Use geographic clustering to identify regional patterns 
+                  Use geographic clustering to identify regional patterns
                   and allocate audit resources efficiently.
                 </p>
               </div>
@@ -125,24 +125,24 @@ export default function AnalyticsPage() {
           <div className="mb-8">
             <div className="mb-4">
               <h2 className="text-xl font-heading font-semibold text-gray-900">
-                📈 Temporal Analysis
+                Temporal Analysis
               </h2>
               <p className="text-sm text-gray-500">
                 Risk trends over time • Spike detection • Seasonal patterns
               </p>
             </div>
-            
+
             <TimeSeriesChart key={refreshKey} days={30} showSpikes={true} />
           </div>
 
           {/* Synopsis Alignment Box */}
           <div className="bg-primary/5 border border-primary/20 rounded-lg p-6">
             <h3 className="font-heading font-semibold text-gray-900 mb-3">
-              📋 Synopsis Alignment: Analytics Features
+              Synopsis Alignment: Analytics Features
             </h3>
             <div className="grid md:grid-cols-2 gap-4 text-sm">
               <div>
-                <p className="font-medium text-gray-800 mb-2">✅ Implemented</p>
+                <p className="font-medium text-gray-800 mb-2">Implemented</p>
                 <ul className="space-y-1 text-gray-600">
                   <li>• Geographic Risk Heatmaps (District-level)</li>
                   <li>• Temporal Spike Detection (1.5σ threshold)</li>
@@ -152,7 +152,7 @@ export default function AnalyticsPage() {
                 </ul>
               </div>
               <div>
-                <p className="font-medium text-gray-800 mb-2">🎯 Synopsis Claims Covered</p>
+                <p className="font-medium text-gray-800 mb-2">Synopsis Claims Covered</p>
                 <ul className="space-y-1 text-gray-600">
                   <li>• &quot;Aggregated risk scores visualized at district levels&quot;</li>
                   <li>• &quot;Regional concentrations of anomalous behavior&quot;</li>
@@ -164,10 +164,10 @@ export default function AnalyticsPage() {
             </div>
           </div>
         </div>
-      </section>
+      </section >
 
       {/* CTA */}
-      <section className="py-6 bg-white border-t border-gray-200">
+      < section className="py-6 bg-white border-t border-gray-200" >
         <div className="max-w-4xl mx-auto px-4 text-center">
           <div className="flex flex-wrap justify-center gap-4">
             <Button href="/dashboard">View Risk Dashboard</Button>
@@ -176,7 +176,7 @@ export default function AnalyticsPage() {
             </Button>
           </div>
         </div>
-      </section>
-    </div>
+      </section >
+    </div >
   );
 }

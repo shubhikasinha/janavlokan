@@ -58,7 +58,7 @@ function getDistrictCoordinates(districtName: string): [number, number] {
   if (DISTRICT_COORDINATES[districtName]) {
     return DISTRICT_COORDINATES[districtName];
   }
-  
+
   // Fuzzy match (case-insensitive, partial)
   const normalizedName = districtName.toLowerCase().trim();
   for (const [key, coords] of Object.entries(DISTRICT_COORDINATES)) {
@@ -66,7 +66,7 @@ function getDistrictCoordinates(districtName: string): [number, number] {
       return coords;
     }
   }
-  
+
   // Return random offset from center of India for unknown districts
   const baseCoords = DISTRICT_COORDINATES["Unknown"];
   const latOffset = (Math.random() - 0.5) * 10;
@@ -188,7 +188,7 @@ export default function DistrictHeatmap({ data = [], onDistrictClick }: District
     return (
       <div className="h-[500px] bg-red-50 rounded-lg flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600 mb-2">⚠️ {error}</p>
+          <p className="text-red-600 mb-2">{error}</p>
           <button
             onClick={() => window.location.reload()}
             className="px-4 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200"
@@ -235,7 +235,7 @@ export default function DistrictHeatmap({ data = [], onDistrictClick }: District
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        
+
         {mapData.map((district) => {
           const coords = getDistrictCoordinates(district.residence_district);
           const color = getHeatColor(district.anomaly_count, maxAnomalyCount);

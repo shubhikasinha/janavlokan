@@ -51,7 +51,7 @@ export default function AuditPanel({
         throw new Error(data.error || "Failed to record audit action");
       }
 
-      setSuccess(`✅ Action "${action}" recorded successfully!`);
+      setSuccess(`Action "${action}" recorded successfully!`);
       setNotes("");
       onAuditComplete?.();
 
@@ -79,7 +79,7 @@ export default function AuditPanel({
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
       <h4 className="font-heading font-semibold text-gray-900 mb-3 flex items-center gap-2">
-        📋 Audit Actions
+        Audit Actions
         <span className="text-xs font-normal text-gray-500">
           (Human-in-the-loop)
         </span>
@@ -120,28 +120,28 @@ export default function AuditPanel({
           disabled={loading}
           className="px-3 py-2 bg-blue-100 text-blue-800 rounded text-sm font-medium hover:bg-blue-200 disabled:opacity-50 transition-colors"
         >
-          ✓ Mark Reviewed
+          Mark Reviewed
         </button>
         <button
           onClick={() => handleAuditAction("FLAGGED")}
           disabled={loading}
           className="px-3 py-2 bg-red-100 text-red-800 rounded text-sm font-medium hover:bg-red-200 disabled:opacity-50 transition-colors"
         >
-          🚩 Flag for Action
+          Flag for Action
         </button>
         <button
           onClick={() => handleAuditAction("CLEARED")}
           disabled={loading}
           className="px-3 py-2 bg-green-100 text-green-800 rounded text-sm font-medium hover:bg-green-200 disabled:opacity-50 transition-colors"
         >
-          ✓ Clear / False Positive
+          Clear / False Positive
         </button>
         <button
           onClick={() => handleAuditAction("NOTE_ADDED")}
           disabled={loading || !notes.trim()}
           className="px-3 py-2 bg-gray-100 text-gray-800 rounded text-sm font-medium hover:bg-gray-200 disabled:opacity-50 transition-colors"
         >
-          📝 Add Note Only
+          Add Note Only
         </button>
       </div>
 
@@ -150,7 +150,7 @@ export default function AuditPanel({
         onClick={handleExport}
         className="w-full px-3 py-2 bg-primary text-white rounded text-sm font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
       >
-        📥 Export Report (CSV)
+        Export Report (CSV)
       </button>
 
       {/* Status Messages */}
@@ -169,13 +169,13 @@ export default function AuditPanel({
 
       {error && (
         <div className="mt-3 p-2 bg-red-50 text-red-700 rounded text-sm">
-          ⚠️ {error}
+          {error}
         </div>
       )}
 
       {/* Info Box */}
       <div className="mt-3 p-2 bg-gray-50 rounded text-xs text-gray-600">
-        <p className="font-medium mb-1">📌 Audit Trail</p>
+        <p className="font-medium mb-1">Audit Trail</p>
         <p>All actions are logged with timestamp, officer ID, and notes for compliance and accountability.</p>
       </div>
     </div>

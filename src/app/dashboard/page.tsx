@@ -131,13 +131,13 @@ export default function DashboardPage() {
         const url = riskFilter === "ALL"
           ? "/api/beneficiaries/high-risk?limit=50"
           : `/api/beneficiaries/high-risk?limit=50&risk_level=${riskFilter}`;
-        
+
         const res = await fetch(url);
-        
+
         if (!res.ok) {
           throw new Error(`HTTP ${res.status}: Failed to fetch filtered data`);
         }
-        
+
         const data = await res.json();
         setBeneficiaries(data);
       } catch (err) {
@@ -228,7 +228,7 @@ export default function DashboardPage() {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center max-w-md">
-          <div className="text-red-500 text-5xl mb-4">⚠️</div>
+          <div className="text-red-500 text-5xl mb-4">!</div>
           <h2 className="text-xl font-bold text-gray-900 mb-2">
             Error Loading Data
           </h2>
@@ -257,12 +257,10 @@ export default function DashboardPage() {
             <div className="flex items-center gap-3">
               <BatchRefreshButton onRefreshComplete={handleRefreshComplete} />
               <Button href="/analytics" variant="secondary">
-                📊 Analytics
+                Analytics
               </Button>
               <div className="bg-green-100 border border-green-300 rounded px-4 py-2">
-                <span className="text-green-800 text-sm font-medium">
-                  🟢 Live BigQuery
-                </span>
+                Live BigQuery
               </div>
             </div>
           </div>
@@ -287,19 +285,19 @@ export default function DashboardPage() {
               <div className="text-3xl font-heading font-bold text-red-700">
                 {summary?.high_risk?.toLocaleString() || 0}
               </div>
-              <div className="text-sm text-red-600 mt-1">🔴 High Risk</div>
+              <div className="text-sm text-red-600 mt-1">High Risk</div>
             </div>
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-5 text-center shadow-sm">
               <div className="text-3xl font-heading font-bold text-amber-700">
                 {summary?.medium_risk?.toLocaleString() || 0}
               </div>
-              <div className="text-sm text-amber-600 mt-1">🟡 Medium Risk</div>
+              <div className="text-sm text-amber-600 mt-1">Medium Risk</div>
             </div>
             <div className="bg-green-50 border border-green-200 rounded-lg p-5 text-center shadow-sm">
               <div className="text-3xl font-heading font-bold text-green-700">
                 {summary?.low_risk?.toLocaleString() || 0}
               </div>
-              <div className="text-sm text-green-600 mt-1">🟢 Low Risk</div>
+              <div className="text-sm text-green-600 mt-1">Low Risk</div>
             </div>
           </div>
 
@@ -367,7 +365,7 @@ export default function DashboardPage() {
                 </ResponsiveContainer>
               </div>
               <p className="text-xs text-gray-500 mt-2 text-center">
-                ✓ System is balanced — not flagging everyone as HIGH risk
+                System is balanced — not flagging everyone as HIGH risk
               </p>
             </div>
           </div>
@@ -389,9 +387,9 @@ export default function DashboardPage() {
                       className="px-3 py-1.5 rounded border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
                     >
                       <option value="ALL">All Risks</option>
-                      <option value="HIGH">🔴 High Only</option>
-                      <option value="MEDIUM">🟡 Medium Only</option>
-                      <option value="LOW">🟢 Low Only</option>
+                      <option value="HIGH">High Only</option>
+                      <option value="MEDIUM">Medium Only</option>
+                      <option value="LOW">Low Only</option>
                     </select>
                   </div>
                 </div>
@@ -418,12 +416,11 @@ export default function DashboardPage() {
                           onClick={() =>
                             handleBeneficiaryClick(b.beneficiary_id)
                           }
-                          className={`cursor-pointer transition-colors ${
-                            selectedBeneficiary?.beneficiary_id ===
+                          className={`cursor-pointer transition-colors ${selectedBeneficiary?.beneficiary_id ===
                             b.beneficiary_id
-                              ? "bg-primary/5"
-                              : "hover:bg-gray-50"
-                          }`}
+                            ? "bg-primary/5"
+                            : "hover:bg-gray-50"
+                            }`}
                         >
                           <td className="px-4 py-3 text-sm font-medium text-gray-900">
                             {b.beneficiary_id}
@@ -466,7 +463,7 @@ export default function DashboardPage() {
                 <div className="bg-gray-50 px-4 py-3 border-b border-gray-200 flex items-center justify-between">
                   <h3 className="font-heading font-semibold text-gray-900">
                     {selectedBeneficiary
-                      ? "🔍 Case Detail"
+                      ? "Case Detail"
                       : "Select a Beneficiary"}
                   </h3>
                   {/* Language Selector */}
@@ -497,11 +494,7 @@ export default function DashboardPage() {
                         <span
                           className={`px-2 py-1 rounded text-xs font-medium border ${getRiskBadgeStyle(selectedBeneficiary.risk_level)}`}
                         >
-                          {selectedBeneficiary.risk_level === "HIGH"
-                            ? "🔴"
-                            : selectedBeneficiary.risk_level === "MEDIUM"
-                              ? "🟡"
-                              : "🟢"}{" "}
+                          {" "}
                           {selectedBeneficiary.risk_level}
                         </span>
                       </div>
@@ -529,7 +522,7 @@ export default function DashboardPage() {
                       {/* Flag Indicators (Visual) */}
                       <div className="mb-4">
                         <h4 className="text-sm font-medium text-gray-700 mb-2">
-                          📋 Detected Flags
+                          Detected Flags
                         </h4>
                         <div className="grid grid-cols-2 gap-2 text-xs">
                           <div
@@ -602,7 +595,7 @@ export default function DashboardPage() {
                       {/* Reason Bullets (Deterministic) */}
                       <div className="mb-4">
                         <h4 className="text-sm font-medium text-gray-700 mb-2">
-                          ⚠️ Observations
+                          Observations
                         </h4>
                         <ul className="space-y-1">
                           {selectedBeneficiary.reasons.map((reason, idx) => (
@@ -621,7 +614,7 @@ export default function DashboardPage() {
                       {selectedBeneficiary.gemini_explanation && (
                         <div className="p-3 bg-blue-50 border border-blue-200 rounded mb-4">
                           <h4 className="text-sm font-medium text-blue-800 mb-2 flex items-center gap-1">
-                            <span>💬</span>
+                            <span></span>
                             <span>
                               Explanation (
                               {language === "hi"
@@ -662,7 +655,7 @@ export default function DashboardPage() {
           {/* How It Works - Technical Explanation */}
           {/* ============================================ */}
           <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <p className="font-medium text-blue-800 mb-2">🔬 How It Works</p>
+            <p className="font-medium text-blue-800 mb-2">How It Works</p>
             <p className="text-sm text-blue-700">
               <strong>Autoencoder reconstructs normal behavior.</strong> High
               reconstruction error (Mean Squared Error) indicates deviation from
@@ -670,7 +663,7 @@ export default function DashboardPage() {
               (&gt;95th percentile), MEDIUM (75-95th), LOW (&lt;75th).
             </p>
             <p className="text-xs text-blue-600 mt-2">
-              💡 The frontend consumes pre-computed risk tables from BigQuery.
+              The frontend consumes pre-computed risk tables from BigQuery.
               ML inference runs offline; the UI only visualizes risk signals and
               explanations.
             </p>
@@ -682,7 +675,7 @@ export default function DashboardPage() {
       <section className="py-6 bg-white border-t border-gray-200">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <div className="flex flex-wrap justify-center gap-4">
-            <Button href="/analytics">📊 View Analytics</Button>
+            <Button href="/analytics">View Analytics</Button>
             <Button href="/technology" variant="secondary">Explore Technology</Button>
           </div>
         </div>

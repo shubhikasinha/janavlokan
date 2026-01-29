@@ -1,244 +1,191 @@
-import { Button } from '@/components/Button';
+import React from 'react';
+import { Button } from '../components';
+import { Link } from 'react-router-dom';
 
-const features = [
-    {
-        title: 'Anomaly Detection',
-        description: 'Unsupervised learning to identify deviations without pre-labeled fraud data',
-    },
-    {
-        title: 'Privacy-Safe Detection',
-        description: 'Detect coordinated misuse using hashed identifiers while preserving privacy',
-    },
-    {
-        title: 'Policy-Aware Calibration',
-        description: 'Dynamic thresholds that adapt to scheme type, region, and seasonal variations',
-    },
-    {
-        title: 'Explainable Insights',
-        description: 'Human-readable explanations for every flagged case for audit defensibility',
-    },
+/* ---------------- Types ---------------- */
+
+type QuickStat = {
+    value: string;
+    label: string;
+};
+
+type RiskLevel = 'low' | 'medium' | 'high';
+
+type StateMarker = {
+    name: string;
+    x: number;
+    y: number;
+    flagged: string;
+    risk: RiskLevel;
+};
+
+/* ---------------- Data ---------------- */
+
+// Key stats for quick display
+const quickStats: QuickStat[] = [
+    { value: '4.2 Cr', label: 'Beneficiaries Monitored' },
+    { value: '12', label: 'Welfare Schemes' },
+    { value: '28', label: 'States Covered' },
+    { value: '₹18,450 Cr', label: 'Transactions This Month' },
 ];
 
-const stats = [
-    { value: '12.4M', label: 'Transactions analyzed this month' },
-    { value: '2,847', label: 'High-risk cases flagged' },
-    { value: '₹18.2Cr', label: 'Potential leakage identified' },
-    { value: '0', label: 'Subsidies blocked or denied' },
+// State data for India map
+const stateMarkers: StateMarker[] = [
+    { name: 'J&K', x: 175, y: 65, flagged: '1,234', risk: 'medium' },
+    { name: 'Punjab', x: 175, y: 110, flagged: '2,456', risk: 'low' },
+    { name: 'Rajasthan', x: 160, y: 175, flagged: '4,567', risk: 'low' },
+    { name: 'Gujarat', x: 120, y: 230, flagged: '3,890', risk: 'low' },
+    { name: 'Maharashtra', x: 175, y: 285, flagged: '6,789', risk: 'medium' },
+    { name: 'Karnataka', x: 180, y: 350, flagged: '2,345', risk: 'low' },
+    { name: 'Tamil Nadu', x: 210, y: 400, flagged: '3,456', risk: 'low' },
+    { name: 'Kerala', x: 185, y: 420, flagged: '1,890', risk: 'low' },
+    { name: 'UP', x: 265, y: 165, flagged: '12,847', risk: 'high' },
+    { name: 'Bihar', x: 330, y: 185, flagged: '8,234', risk: 'high' },
+    { name: 'MP', x: 225, y: 225, flagged: '5,123', risk: 'medium' },
+    { name: 'West Bengal', x: 365, y: 230, flagged: '4,567', risk: 'medium' },
+    { name: 'Odisha', x: 325, y: 275, flagged: '3,234', risk: 'medium' },
+    { name: 'Assam', x: 420, y: 175, flagged: '1,567', risk: 'low' },
 ];
 
-const problems = [
-    'Multiple overlapping welfare schemes across departments',
-    'Valid identities exhibiting abnormal behavioral patterns',
-    'Seasonal and regional variations making detection complex',
-    'No labeled fraud data available for supervised learning',
-    'Manual audits are reactive, identifying issues post-disbursement',
-];
+/* ---------------- Component ---------------- */
 
-export default function HomePage() {
+const HomePage: React.FC = () => {
     return (
-        <div className="min-h-screen">
-            {/* Hero Section - White with brown accent */}
-            <section className="bg-white py-12 md:py-16 border-b border-gray-200">
-                <div className="max-w-7xl mx-auto px-4">
-                    <div className="text-center">
-                        <div className="inline-block bg-green-100 px-4 py-2 rounded-full mb-6">
-                            <span className="text-green-700 text-sm font-medium">● System Online</span>
-                        </div>
+        <div className="min-h-screen bg-white">
+            {/* Hero Section */}
+            <section className="py-12 md:py-16 border-b border-gray-200">
+                <div className="max-w-6xl mx-auto px-4 text-center">
+                    <img
+                        src="/logojan.jpeg"
+                        alt="JanAvlokan Logo"
+                        className="h-32 md:h-40 w-auto mx-auto mb-6"
+                    />
 
-                        <h1 className="text-3xl md:text-4xl lg:text-5xl font-heading font-bold text-gray-900 mb-4">
-                            JanAvlokan
-                        </h1>
-                        <p className="text-xl text-primary mb-2">जनावलोकन</p>
+                    <h1 className="text-2xl md:text-3xl font-heading font-bold text-gray-900 mb-3">
+                        Welfare Intelligence Platform
+                    </h1>
 
-                        <p className="text-lg md:text-xl text-gray-700 mb-6 max-w-3xl mx-auto">
-                            AI-Powered Subsidy Leakage Detection & Monitoring Platform
-                        </p>
-
-                        <p className="text-base text-gray-600 mb-8 max-w-2xl mx-auto">
-                            A cloud-native, privacy-first decision-support platform using unsupervised
-                            machine learning to detect potential subsidy leakage while ensuring welfare
-                            delivery remains uninterrupted.
-                        </p>
-
-                        <div className="flex flex-wrap justify-center gap-4">
-                            <Button href="/dashboard">
-                                View Risk Dashboard
-                            </Button>
-                            <Button variant="secondary" href="/features">
-                                How It Works
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Problem Statement Section */}
-            <section className="py-12 md:py-16 bg-white">
-                <div className="max-w-7xl mx-auto px-4">
-                    <div className="border-l-4 border-primary pl-6 mb-8">
-                        <h2 className="text-2xl md:text-3xl font-heading font-bold text-gray-900 mb-2">
-                            Why Subsidy Leakage Still Occurs
-                        </h2>
-                        <p className="text-gray-600">
-                            Despite Aadhaar verification and PFMS transaction logging, leakage emerges
-                            over time due to behavioral patterns and siloed audit mechanisms.
-                        </p>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-8">
-                        <div>
-                            <h3 className="font-heading font-semibold text-gray-900 mb-4 text-lg">Ground Reality</h3>
-                            <ul className="space-y-3">
-                                {problems.map((problem, index) => (
-                                    <li key={index} className="flex items-start gap-3 text-gray-700">
-                                        <span className="w-6 h-6 bg-primary text-white rounded text-sm flex items-center justify-center flex-shrink-0 mt-0.5">
-                                            {index + 1}
-                                        </span>
-                                        <span>{problem}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-
-                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
-                            <h3 className="font-heading font-semibold text-gray-900 mb-4 text-lg">CAG Reports Estimate</h3>
-                            <div className="text-center py-6">
-                                <p className="text-5xl font-heading font-bold text-primary mb-2">20-40%</p>
-                                <p className="text-gray-600">of subsidy value lost to inefficiencies or leakage across large-scale schemes</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Solution Overview */}
-            <section className="py-12 md:py-16 bg-gray-50 border-y border-gray-200">
-                <div className="max-w-7xl mx-auto px-4">
-                    <div className="grid lg:grid-cols-2 gap-12 items-start">
-                        <div>
-                            <div className="border-l-4 border-secondary pl-6 mb-6">
-                                <h2 className="text-2xl md:text-3xl font-heading font-bold text-gray-900 mb-2">
-                                    Advisory Intelligence Layer
-                                </h2>
-                                <p className="text-gray-600">Our Solution Approach</p>
-                            </div>
-
-                            <p className="text-gray-700 mb-6">
-                                JanAvlokan acts as a decision-support platform—analyzing behavioral and
-                                transactional patterns to assign risk scores while <strong>never blocking
-                                    or delaying payments</strong>.
-                            </p>
-
-                            <ul className="space-y-3 mb-8">
-                                {[
-                                    'Advisory layer over DBT / PFMS systems',
-                                    'Human-in-the-loop governance model',
-                                    'Early-warning signals for administrators',
-                                    'Explainable insights for audit defensibility',
-                                    'Privacy-first, cloud-native architecture',
-                                ].map((item, index) => (
-                                    <li key={index} className="flex items-center gap-3 text-gray-700">
-                                        <span className="w-2 h-2 bg-primary rounded-full flex-shrink-0"></span>
-                                        <span>{item}</span>
-                                    </li>
-                                ))}
-                            </ul>
-
-                            <Button href="/about">
-                                Learn More
-                            </Button>
-                        </div>
-
-                        <div className="bg-white border border-gray-200 rounded-lg p-6">
-                            <h3 className="font-heading font-semibold text-gray-900 mb-4 text-lg border-b border-gray-200 pb-3">
-                                Key Principle
-                            </h3>
-                            <div className="bg-amber-50 border border-amber-300 rounded p-4">
-                                <p className="text-amber-900 font-medium text-center">
-                                    &quot;JanAvlokan empowers administrators with intelligence.
-                                    It never interferes with welfare delivery.&quot;
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Key Capabilities */}
-            <section className="py-12 md:py-16 bg-white">
-                <div className="max-w-7xl mx-auto px-4">
-                    <div className="border-l-4 border-primary pl-6 mb-8">
-                        <h2 className="text-2xl md:text-3xl font-heading font-bold text-gray-900 mb-2">
-                            Key Capabilities
-                        </h2>
-                        <p className="text-gray-600">
-                            Powered by unsupervised machine learning and privacy-preserving technology
-                        </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {features.map((feature, index) => (
-                            <div key={index} className="bg-white border border-gray-200 rounded-lg p-5">
-                                <div className="w-8 h-8 bg-primary text-white rounded flex items-center justify-center font-bold mb-3">
-                                    {index + 1}
-                                </div>
-                                <h3 className="font-heading font-semibold text-gray-900 mb-2">{feature.title}</h3>
-                                <p className="text-sm text-gray-600">{feature.description}</p>
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className="text-center mt-8">
-                        <Button variant="secondary" href="/features">
-                            Explore All Features
-                        </Button>
-                    </div>
-                </div>
-            </section>
-
-            {/* Impact Stats */}
-            <section className="py-12 md:py-16 bg-gray-50 border-y border-gray-200">
-                <div className="max-w-7xl mx-auto px-4">
-                    <div className="text-center mb-8">
-                        <h2 className="text-2xl md:text-3xl font-heading font-bold text-gray-900 mb-2">
-                            System Performance
-                        </h2>
-                        <p className="text-gray-600">
-                            Real-time operational metrics from the current monitoring period
-                        </p>
-                    </div>
-
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                        {stats.map((stat, index) => (
-                            <div key={index} className="bg-white border border-gray-200 rounded-lg p-5 text-center">
-                                <div className="text-2xl md:text-3xl font-heading font-bold text-primary mb-1">{stat.value}</div>
-                                <div className="text-sm text-gray-600">{stat.label}</div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* CTA Section - White background */}
-            <section className="py-12 md:py-16 bg-white border-b border-gray-200">
-                <div className="max-w-4xl mx-auto px-4 text-center">
-                    <h2 className="text-2xl md:text-3xl font-heading font-bold text-gray-900 mb-4">
-                        Start Monitoring Your Welfare Schemes
-                    </h2>
-                    <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
-                        Access the risk dashboard to view flagged cases, explore regional heatmaps,
-                        and generate audit reports for your jurisdiction.
+                    <p className="text-gray-600 max-w-2xl mx-auto mb-8 leading-relaxed">
+                        AI-powered decision support system for transparent subsidy delivery.
+                        JanAvlokan analyzes welfare transaction patterns to flag potential
+                        leakage while ensuring genuine beneficiaries receive uninterrupted support.
                     </p>
+
                     <div className="flex flex-wrap justify-center gap-4">
-                        <Button href="/dashboard">
-                            Open Dashboard
+                        <Button to="/analytics">View Analytics</Button>
+                        <Button variant="secondary" to="/dashboard">
+                            Risk Dashboard
                         </Button>
-                        <Button variant="secondary" href="/technology">
-                            View System Architecture
-                        </Button>
+                    </div>
+                </div>
+            </section>
+
+            {/* Quick Stats */}
+            <section className="py-6 bg-gray-50 border-b border-gray-200">
+                <div className="max-w-6xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {quickStats.map((stat, index) => (
+                        <div
+                            key={index}
+                            className="text-center p-4 bg-white rounded-lg border border-gray-200"
+                        >
+                            <div className="text-xl md:text-2xl font-heading font-bold text-primary">
+                                {stat.value}
+                            </div>
+                            <div className="text-xs text-gray-600 mt-1">
+                                {stat.label}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </section>
+
+            {/* Map Section */}
+            <section className="py-10 md:py-14">
+                <div className="max-w-6xl mx-auto px-4">
+                    <h2 className="text-xl md:text-2xl font-heading font-bold text-gray-900 text-center mb-6">
+                        State-wise Risk Monitoring
+                    </h2>
+
+                    <div className="relative max-w-lg mx-auto">
+                        <svg viewBox="0 0 500 500" className="w-full h-auto">
+                            <path
+                                d="M150,50 L175,40 L200,35 L230,30 L260,32 L290,40 L320,55 L350,75 L380,100 L395,130 L400,160 L395,195 L385,230 L375,265 L360,300 L340,340 L310,380 L275,420 L235,450 L195,455 L165,440 L145,400 L130,355 L115,310 L105,265 L100,220 L100,175 L105,135 L115,100 L130,70 Z"
+                                fill="#FEF3C7"
+                                stroke="#D97706"
+                                strokeWidth={2}
+                            />
+
+                            {stateMarkers.map((state, index) => {
+                                const isHigh = state.risk === 'high';
+                                const isMedium = state.risk === 'medium';
+
+                                return (
+                                    <g key={index}>
+                                        <circle
+                                            cx={state.x}
+                                            cy={state.y}
+                                            r={isHigh ? 20 : isMedium ? 16 : 12}
+                                            fill="none"
+                                            stroke={
+                                                isHigh
+                                                    ? '#B91C1C'
+                                                    : isMedium
+                                                    ? '#D97706'
+                                                    : '#059669'
+                                            }
+                                            strokeWidth={2}
+                                            opacity={0.3}
+                                        />
+                                        <circle
+                                            cx={state.x}
+                                            cy={state.y}
+                                            r={isHigh ? 14 : isMedium ? 10 : 7}
+                                            fill={
+                                                isHigh
+                                                    ? '#B91C1C'
+                                                    : isMedium
+                                                    ? '#D97706'
+                                                    : '#059669'
+                                            }
+                                        />
+
+                                        {isHigh && (
+                                            <>
+                                                <line
+                                                    x1={state.x + 15}
+                                                    y1={state.y}
+                                                    x2={state.x + 35}
+                                                    y2={state.y - 15}
+                                                    stroke="#374151"
+                                                    strokeWidth={1}
+                                                />
+                                                <text
+                                                    x={state.x + 38}
+                                                    y={state.y - 18}
+                                                    fontSize={11}
+                                                    fontWeight="bold"
+                                                >
+                                                    {state.name}
+                                                </text>
+                                                <text
+                                                    x={state.x + 38}
+                                                    y={state.y - 6}
+                                                    fontSize={10}
+                                                    fill="#B91C1C"
+                                                >
+                                                    {state.flagged} cases
+                                                </text>
+                                            </>
+                                        )}
+                                    </g>
+                                );
+                            })}
+                        </svg>
                     </div>
                 </div>
             </section>
         </div>
     );
-}
+};
+
+export default HomePage;
