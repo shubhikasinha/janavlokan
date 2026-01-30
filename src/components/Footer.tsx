@@ -53,10 +53,10 @@ const Footer = () => {
                                 className="h-12 w-auto bg-white rounded p-1"
                             />
                             <div className="flex flex-col">
-                                <span className="text-xl font-heading font-bold">
+                                <span className="notranslate text-xl font-heading font-bold">
                                     JanAvlokan
                                 </span>
-                                <span className="text-xs text-white/70">
+                                <span className="notranslate text-xs text-white/70">
                                     जनावलोकन
                                 </span>
                             </div>
@@ -173,7 +173,7 @@ const Footer = () => {
                         </div>
 
                         <div className="text-white/60">
-                            © {new Date().getFullYear()} JanAvlokan | Ministry of Electronics & IT
+                            © {new Date().getFullYear()} <span className="notranslate">JanAvlokan</span> | Ministry of Electronics &amp; IT
                         </div>
                     </div>
                 </div>

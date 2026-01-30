@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import LanguageSwitcher from './LanguageSwitcher';
 
 /* ---------------- Types ---------------- */
 
@@ -41,7 +42,7 @@ const Header: React.FC = () => {
 
                     <div className="flex items-center gap-4 text-xs">
                         <span className="hidden md:inline">
-                            JanAvlokan | Subsidy Intelligence Platform
+                            <span className="notranslate">JanAvlokan</span> | Subsidy Intelligence Platform
                         </span>
                         <div className="flex items-center gap-1">
                             <span className="w-3 h-3 rounded-full bg-govt-saffron" />
@@ -64,10 +65,10 @@ const Header: React.FC = () => {
                                 className="h-10 w-auto"
                             />
                             <div className="flex flex-col">
-                                <span className="text-xl font-heading font-bold text-gray-800">
+                                <span className="notranslate text-xl font-heading font-bold text-gray-800">
                                     JanAvlokan
                                 </span>
-                                <span className="text-xs text-gray-500 -mt-1 hidden sm:block">
+                                <span className="notranslate text-xs text-gray-500 -mt-1 hidden sm:block">
                                     जनावलोकन
                                 </span>
                             </div>
@@ -82,11 +83,10 @@ const Header: React.FC = () => {
                                     <Link
                                         key={link.path}
                                         href={link.path}
-                                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                                            isActive
-                                                ? 'bg-primary text-white shadow-sm'
-                                                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200'
-                                        }`}
+                                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${isActive
+                                            ? 'bg-primary text-white shadow-sm'
+                                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200'
+                                            }`}
                                     >
                                         {link.label}
                                     </Link>
@@ -94,35 +94,41 @@ const Header: React.FC = () => {
                             })}
                         </div>
 
-                        {/* Mobile Menu Button */}
-                        <button
-                            onClick={() => setIsMenuOpen((prev) => !prev)}
-                            className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                            aria-label="Toggle menu"
-                        >
-                            <svg
-                                className="w-6 h-6 text-gray-700"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
+                        {/* Language Switcher & Mobile Menu */}
+                        <div className="flex items-center gap-3">
+                            {/* Language Switcher */}
+                            <LanguageSwitcher />
+
+                            {/* Mobile Menu Button */}
+                            <button
+                                onClick={() => setIsMenuOpen((prev) => !prev)}
+                                className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                                aria-label="Toggle menu"
                             >
-                                {isMenuOpen ? (
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M6 18L18 6M6 6l12 12"
-                                    />
-                                ) : (
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M4 6h16M4 12h16M4 18h16"
-                                    />
-                                )}
-                            </svg>
-                        </button>
+                                <svg
+                                    className="w-6 h-6 text-gray-700"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    {isMenuOpen ? (
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M6 18L18 6M6 6l12 12"
+                                        />
+                                    ) : (
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M4 6h16M4 12h16M4 18h16"
+                                        />
+                                    )}
+                                </svg>
+                            </button>
+                        </div>
                     </div>
 
                     {/* Mobile Navigation */}
@@ -136,11 +142,10 @@ const Header: React.FC = () => {
                                         key={link.path}
                                         href={link.path}
                                         onClick={() => setIsMenuOpen(false)}
-                                        className={`block px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
-                                            isActive
-                                                ? 'bg-primary text-white'
-                                                : 'text-gray-700 hover:bg-gray-100'
-                                        }`}
+                                        className={`block px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${isActive
+                                            ? 'bg-primary text-white'
+                                            : 'text-gray-700 hover:bg-gray-100'
+                                            }`}
                                     >
                                         {link.label}
                                     </Link>
