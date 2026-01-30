@@ -1,6 +1,7 @@
 ﻿import type { Metadata } from "next";
 import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
+import Script from "next/script";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
@@ -34,6 +35,12 @@ export default function RootLayout({
           </main>
           <Footer />
         </div>
+         <Script
+          src="https://cdn.userway.org/widget.js"
+          data-account="YkkfhZBzXo"
+          data-color="#2c1100"
+          strategy="afterInteractive"
+        ></Script>
       </body>
     </html>
   );
