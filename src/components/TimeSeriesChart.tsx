@@ -137,8 +137,8 @@ export default function TimeSeriesChart({ days = 30, showSpikes = true }: TimeSe
           </select>
         </div>
 
-        <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
+        <div className="h-80 min-h-[320px]">
+          <ResponsiveContainer width="100%" height="100%" minWidth={300} minHeight={280}>
             <AreaChart data={timeSeriesData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
               <XAxis
@@ -254,8 +254,8 @@ export default function TimeSeriesChart({ days = 30, showSpikes = true }: TimeSe
         <h3 className="font-heading font-semibold text-gray-900 mb-4">
           Total Anomalies Trend
         </h3>
-        <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
+        <div className="h-64 min-h-[256px]">
+          <ResponsiveContainer width="100%" height="100%" minWidth={300} minHeight={240}>
             <LineChart data={timeSeriesData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
               <XAxis

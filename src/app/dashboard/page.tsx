@@ -89,7 +89,7 @@ export default function DashboardPage() {
   const [refreshKey, setRefreshKey] = useState(0);
   
   // NEW: Dynamic Threshold Slider State
-  const [threshold, setThreshold] = useState<number>(0.05);  // Default MSE threshold
+  const [threshold, setThreshold] = useState<number>(15);  // Default MSE threshold (actual range: 11-25)
   const [useStaticRisk, setUseStaticRisk] = useState<boolean>(true);  // Toggle between static/dynamic
   const [sliderLoading, setSliderLoading] = useState<boolean>(false);  // Loading state for slider updates
 
@@ -167,7 +167,9 @@ export default function DashboardPage() {
         }
 
         const data = await res.json();
-        console.log('Received data count:', data.length);  // Debug log
+        console.log('Received data count:', data.length, 'MSE range:', 
+          data.length > 0 ? `${Math.min(...data.map((d: Beneficiary) => d.mean_squared_error)).toFixed(4)} - ${Math.max(...data.map((d: Beneficiary) => d.mean_squared_error)).toFixed(4)}` : 'N/A'
+        );  // Debug log with MSE range
         setBeneficiaries(data);
       } catch (err) {
         console.error('Error fetching filtered beneficiaries:', err);
@@ -409,16 +411,16 @@ export default function DashboardPage() {
                     {sliderLoading && (
                       <div className="w-4 h-4 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin"></div>
                     )}
-                    <span className="text-purple-400 font-mono font-bold text-lg">{threshold.toFixed(3)}</span>
+                    <span className="text-purple-400 font-mono font-bold text-lg">{threshold.toFixed(1)}</span>
                   </div>
                 </div>
                 
                 <div className="relative">
                   <input
                     type="range"
-                    min="0.01"
-                    max="0.5"
-                    step="0.01"
+                    min="5"
+                    max="30"
+                    step="0.5"
                     value={threshold}
                     onChange={(e) => setThreshold(Number(e.target.value))}
                     aria-label="MSE Threshold Slider"
@@ -431,23 +433,23 @@ export default function DashboardPage() {
                       [&::-webkit-slider-thumb]:hover:scale-110"
                   />
                   <div className="flex justify-between text-[10px] text-white/30 mt-1">
-                    <span>More Sensitive (0.01)</span>
-                    <span>Less Sensitive (0.50)</span>
+                    <span>More Sensitive (5)</span>
+                    <span>Less Sensitive (30)</span>
                   </div>
                 </div>
                 
                 <div className="grid grid-cols-3 gap-2 text-center">
                   <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-2">
                     <div className="text-red-400 text-xs font-medium">HIGH</div>
-                    <div className="text-white/50 text-[10px]">MSE &gt; {(threshold * 2).toFixed(3)}</div>
+                    <div className="text-white/50 text-[10px]">MSE &gt; {(threshold * 2).toFixed(1)}</div>
                   </div>
                   <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-2">
                     <div className="text-amber-400 text-xs font-medium">MEDIUM</div>
-                    <div className="text-white/50 text-[10px]">MSE &gt; {threshold.toFixed(3)}</div>
+                    <div className="text-white/50 text-[10px]">MSE &gt; {threshold.toFixed(1)}</div>
                   </div>
                   <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-2">
                     <div className="text-green-400 text-xs font-medium">LOW</div>
-                    <div className="text-white/50 text-[10px]">MSE &lt; {threshold.toFixed(3)}</div>
+                    <div className="text-white/50 text-[10px]">MSE &lt; {threshold.toFixed(1)}</div>
                   </div>
                 </div>
                 
@@ -480,8 +482,8 @@ export default function DashboardPage() {
                 <div className="w-2 h-2 rounded-full bg-purple-500"></div>
                 Risk Distribution
               </h2>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
+              <div className="h-64 min-h-[256px]">
+                <ResponsiveContainer width="100%" height="100%" minWidth={250} minHeight={240}>
                   <PieChart>
                     <Pie
                       data={distribution}
@@ -526,8 +528,8 @@ export default function DashboardPage() {
                 <div className="w-2 h-2 rounded-full bg-cyan-500"></div>
                 Risk Breakdown
               </h2>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
+              <div className="h-64 min-h-[256px]">
+                <ResponsiveContainer width="100%" height="100%" minWidth={250} minHeight={240}>
                   <BarChart data={distribution}>
                     <XAxis 
                       dataKey="risk_level" 

@@ -74,6 +74,17 @@ export async function GET(request: NextRequest) {
       flag_high_lifetime_usage: Boolean(row.flag_high_lifetime_usage),
     }));
 
+    // Calculate MSE stats for debugging/slider calibration
+    const mseValues = results.map(r => r.mean_squared_error);
+    const mseStats = {
+      min: Math.min(...mseValues),
+      max: Math.max(...mseValues),
+      avg: mseValues.reduce((a, b) => a + b, 0) / mseValues.length,
+    };
+    
+    // Log MSE range for debugging
+    console.log(`MSE Range: min=${mseStats.min.toFixed(6)}, max=${mseStats.max.toFixed(6)}, avg=${mseStats.avg.toFixed(6)}, threshold=${threshold}`);
+
     return NextResponse.json(results);
   } catch (error) {
     console.error('High-Risk Beneficiaries Error:', error);

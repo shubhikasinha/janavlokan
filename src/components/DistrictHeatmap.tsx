@@ -67,10 +67,11 @@ function getDistrictCoordinates(districtName: string): [number, number] {
     }
   }
 
-  // Return random offset from center of India for unknown districts
+  // FIXED: Use deterministic hash instead of random to prevent flickering
   const baseCoords = DISTRICT_COORDINATES["Unknown"];
-  const latOffset = (Math.random() - 0.5) * 10;
-  const lngOffset = (Math.random() - 0.5) * 10;
+  const hash = districtName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const latOffset = ((hash % 100) - 50) / 10;  // -5 to +5 range, deterministic
+  const lngOffset = (((hash * 7) % 100) - 50) / 10;
   return [baseCoords[0] + latOffset, baseCoords[1] + lngOffset];
 }
 
