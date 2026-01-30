@@ -42,7 +42,7 @@ const Header: React.FC = () => {
 
                     <div className="flex items-center gap-4 text-xs">
                         <span className="hidden md:inline">
-                            JanAvlokan | Subsidy Intelligence Platform
+                            <span className="notranslate">JanAvlokan</span> | Subsidy Intelligence Platform
                         </span>
                         <div className="flex items-center gap-1">
                             <span className="w-3 h-3 rounded-full bg-govt-saffron" />
@@ -65,10 +65,10 @@ const Header: React.FC = () => {
                                 className="h-10 w-auto"
                             />
                             <div className="flex flex-col">
-                                <span className="text-xl font-heading font-bold text-gray-800">
+                                <span className="notranslate text-xl font-heading font-bold text-gray-800">
                                     JanAvlokan
                                 </span>
-                                <span className="text-xs text-gray-500 -mt-1 hidden sm:block">
+                                <span className="notranslate text-xs text-gray-500 -mt-1 hidden sm:block">
                                     जनावलोकन
                                 </span>
                             </div>
