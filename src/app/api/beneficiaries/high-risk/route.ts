@@ -6,34 +6,59 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const limit = Math.min(Number(searchParams.get('limit')) || 50, 100);
     const riskLevel = searchParams.get('risk_level'); // Optional filter
+    const threshold = Number(searchParams.get('threshold')) || 0;  // Dynamic threshold from slider
+    const useDynamic = searchParams.get('dynamic') === 'true';  // Use dynamic risk calculation?
 
     const bigquery = getBigQueryClient();
 
-    // Main Table with flag columns for explainability
-    // SOURCE: fraud_with_explanations
-    let query = `
-      SELECT
-        beneficiary_id,
-        risk_level,
-        mean_squared_error,
-        flag_high_recent_activity,
-        flag_multiple_dealers,
-        flag_cross_district,
-        flag_high_lifetime_usage
-      FROM \`gfg-fot.lpg_fraud_detection.fraud_with_explanations\`
-    `;
-    
-    // Add filter if risk_level specified (for drill-down)
-    if (riskLevel && ['HIGH', 'MEDIUM', 'LOW'].includes(riskLevel.toUpperCase())) {
-      query += `WHERE risk_level = @riskLevel\n`;
-    }
-    
-    query += `ORDER BY mean_squared_error DESC
-      LIMIT @limit`;
-
+    let query: string;
     const params: Record<string, unknown> = { limit };
-    if (riskLevel) {
-      params.riskLevel = riskLevel.toUpperCase();
+
+    if (useDynamic && threshold > 0) {
+      // DYNAMIC MODE: Calculate risk level on-the-fly based on slider threshold
+      // This ignores the pre-computed risk_level and uses MSE threshold
+      query = `
+        SELECT
+          beneficiary_id,
+          -- Dynamic risk level based on threshold
+          CASE 
+            WHEN mean_squared_error > @threshold * 2 THEN 'HIGH'
+            WHEN mean_squared_error > @threshold THEN 'MEDIUM'
+            ELSE 'LOW'
+          END AS risk_level,
+          mean_squared_error,
+          flag_high_recent_activity,
+          flag_multiple_dealers,
+          flag_cross_district,
+          flag_high_lifetime_usage
+        FROM \`gfg-fot.lpg_fraud_detection.fraud_with_explanations\`
+        WHERE mean_squared_error >= @threshold
+        ORDER BY mean_squared_error DESC
+        LIMIT @limit
+      `;
+      params.threshold = threshold;
+    } else {
+      // STATIC MODE: Use pre-computed risk_level from table
+      query = `
+        SELECT
+          beneficiary_id,
+          risk_level,
+          mean_squared_error,
+          flag_high_recent_activity,
+          flag_multiple_dealers,
+          flag_cross_district,
+          flag_high_lifetime_usage
+        FROM \`gfg-fot.lpg_fraud_detection.fraud_with_explanations\`
+      `;
+      
+      // Add filter if risk_level specified (for drill-down)
+      if (riskLevel && ['HIGH', 'MEDIUM', 'LOW'].includes(riskLevel.toUpperCase())) {
+        query += `WHERE risk_level = @riskLevel\n`;
+        params.riskLevel = riskLevel.toUpperCase();
+      }
+      
+      query += `ORDER BY mean_squared_error DESC
+        LIMIT @limit`;
     }
 
     const [job] = await bigquery.createQueryJob({ query, params });

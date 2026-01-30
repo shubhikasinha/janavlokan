@@ -2,22 +2,22 @@ import { getBigQueryClient } from '@/lib/bigquery';
 import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 
-// Audit trail types
+// Audit trail types - matches BigQuery table schema
 export interface AuditEntry {
   audit_id: string;
   beneficiary_id: string;
-  action: 'REVIEWED' | 'FLAGGED' | 'CLEARED' | 'NOTE_ADDED' | 'EXPORTED';
+  action: 'REVIEWED' | 'FLAGGED' | 'CLEARED' | 'NOTE_ADDED' | 'EXPORTED' | 'VERIFIED';
   officer_id: string;
   officer_name: string;
   notes: string;
-  previous_status: string;
-  new_status: string;
+  previous_risk_level: string;  // Model ka original prediction
+  new_status: string;           // Human ka final decision
   created_at: string;
 }
 
 export interface AuditRequest {
   beneficiary_id: string;
-  action: 'REVIEWED' | 'FLAGGED' | 'CLEARED' | 'NOTE_ADDED';
+  action: 'REVIEWED' | 'FLAGGED' | 'CLEARED' | 'NOTE_ADDED' | 'VERIFIED';
   officer_id?: string;
   officer_name?: string;
   notes?: string;
@@ -67,8 +67,8 @@ export async function GET(request: NextRequest) {
         officer_id: row.officer_id,
         officer_name: row.officer_name,
         notes: row.notes || '',
-        previous_status: row.previous_status,
-        new_status: row.new_status,
+        previous_risk_level: row.previous_risk_level,  // Model's original prediction
+        new_status: row.new_status,                    // Human's decision
         created_at: row.created_at?.value || row.created_at,
       }));
 
@@ -112,9 +112,9 @@ export async function POST(request: NextRequest) {
       params: { beneficiary_id }
     });
     const [statusRows] = await statusJob.getQueryResults();
-    const previousStatus = statusRows[0]?.risk_level || 'UNKNOWN';
+    const previousRiskLevel = statusRows[0]?.risk_level || 'UNKNOWN';
 
-    // Create audit entry
+    // Create audit entry - matches BigQuery table schema
     const auditEntry: AuditEntry = {
       audit_id: uuidv4(),
       beneficiary_id,
@@ -122,8 +122,8 @@ export async function POST(request: NextRequest) {
       officer_id: officer_id || 'SYSTEM',
       officer_name: officer_name || 'System User',
       notes: notes || '',
-      previous_status: previousStatus,
-      new_status: new_status || previousStatus,
+      previous_risk_level: previousRiskLevel,                              // Model ka original risk level
+      new_status: new_status || (action === 'CLEARED' ? 'GENUINE' : action === 'FLAGGED' ? 'CONFIRMED_FRAUD' : previousRiskLevel),  // Human decision
       created_at: new Date().toISOString(),
     };
 
@@ -132,9 +132,9 @@ export async function POST(request: NextRequest) {
     try {
       const insertQuery = `
         INSERT INTO \`gfg-fot.lpg_fraud_detection.audit_trail\`
-        (audit_id, beneficiary_id, action, officer_id, officer_name, notes, previous_status, new_status, created_at)
+        (audit_id, beneficiary_id, officer_id, officer_name, action, previous_risk_level, new_status, notes, created_at)
         VALUES
-        (@audit_id, @beneficiary_id, @action, @officer_id, @officer_name, @notes, @previous_status, @new_status, @created_at)
+        (@audit_id, @beneficiary_id, @officer_id, @officer_name, @action, @previous_risk_level, @new_status, @notes, @created_at)
       `;
 
       await bigquery.createQueryJob({
@@ -142,12 +142,12 @@ export async function POST(request: NextRequest) {
         params: {
           audit_id: auditEntry.audit_id,
           beneficiary_id: auditEntry.beneficiary_id,
-          action: auditEntry.action,
           officer_id: auditEntry.officer_id,
           officer_name: auditEntry.officer_name,
-          notes: auditEntry.notes,
-          previous_status: auditEntry.previous_status,
+          action: auditEntry.action,
+          previous_risk_level: auditEntry.previous_risk_level,
           new_status: auditEntry.new_status,
+          notes: auditEntry.notes,
           created_at: auditEntry.created_at,
         },
       });

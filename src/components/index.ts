@@ -10,3 +10,7 @@ export { default as DistrictHeatmap } from './DistrictHeatmap';
 export { default as TimeSeriesChart } from './TimeSeriesChart';
 export { default as AuditPanel } from './AuditPanel';
 export { default as BatchRefreshButton } from './BatchRefreshButton';
+
+// Premium map components (inspired by urban-carbon-twin)
+export { default as IndiaMap } from './IndiaMap';
+export { default as HeatmapBackground } from './HeatmapBackground';

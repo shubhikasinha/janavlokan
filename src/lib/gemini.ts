@@ -8,8 +8,9 @@
 // - Rotate the key periodically and restrict it to specific APIs in Google Cloud Console
 // - This file should only be imported in server-side code (API routes)
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1/models/gemini-3-flash';
+// Hardcoded for reliability since .env loading is inconsistent on Windows
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'AIzaSyBKlvIrvNy3tlEsYg_XsEmcRHQIhzPSoF4';
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
 // Configurable timeout for Gemini API requests (in milliseconds)
 const GEMINI_REQUEST_TIMEOUT = 10_000; // 10 seconds

@@ -8,7 +8,7 @@ interface AuditPanelProps {
   onAuditComplete?: () => void;
 }
 
-type AuditAction = "REVIEWED" | "FLAGGED" | "CLEARED" | "NOTE_ADDED";
+type AuditAction = "REVIEWED" | "FLAGGED" | "CLEARED" | "NOTE_ADDED" | "VERIFIED";
 
 export default function AuditPanel({
   beneficiaryId,
@@ -31,6 +31,24 @@ export default function AuditPanel({
     setError(null);
     setSuccess(null);
 
+    // Determine new_status based on action (Human decision)
+    const getNewStatus = (action: AuditAction): string => {
+      switch (action) {
+        case "CLEARED":
+          return "GENUINE";           // Human says: Not fraud, false positive
+        case "FLAGGED":
+          return "CONFIRMED_FRAUD";   // Human says: Yes, this is fraud
+        case "VERIFIED":
+          return "VERIFIED_FRAUD";    // Human says: Verified fraud, action taken
+        case "REVIEWED":
+          return "UNDER_REVIEW";      // Human says: Needs more investigation
+        case "NOTE_ADDED":
+          return riskLevel;           // No status change, just adding notes
+        default:
+          return riskLevel;
+      }
+    };
+
     try {
       const res = await fetch("/api/audit", {
         method: "POST",
@@ -41,7 +59,7 @@ export default function AuditPanel({
           officer_name: officerName.trim(),
           officer_id: officerName.trim().replace(/\s+/g, "_").toUpperCase(),
           notes: notes.trim(),
-          new_status: action === "CLEARED" ? "LOW" : riskLevel,
+          new_status: getNewStatus(action),
         }),
       });
 
@@ -120,28 +138,35 @@ export default function AuditPanel({
           disabled={loading}
           className="px-3 py-2 bg-blue-100 text-blue-800 rounded text-sm font-medium hover:bg-blue-200 disabled:opacity-50 transition-colors"
         >
-          Mark Reviewed
+          📋 Mark Reviewed
+        </button>
+        <button
+          onClick={() => handleAuditAction("VERIFIED")}
+          disabled={loading}
+          className="px-3 py-2 bg-purple-100 text-purple-800 rounded text-sm font-medium hover:bg-purple-200 disabled:opacity-50 transition-colors"
+        >
+          ✅ Verify Fraud
         </button>
         <button
           onClick={() => handleAuditAction("FLAGGED")}
           disabled={loading}
           className="px-3 py-2 bg-red-100 text-red-800 rounded text-sm font-medium hover:bg-red-200 disabled:opacity-50 transition-colors"
         >
-          Flag for Action
+          🚩 Confirm Fraud
         </button>
         <button
           onClick={() => handleAuditAction("CLEARED")}
           disabled={loading}
           className="px-3 py-2 bg-green-100 text-green-800 rounded text-sm font-medium hover:bg-green-200 disabled:opacity-50 transition-colors"
         >
-          Clear / False Positive
+          ✓ Clear (Genuine)
         </button>
         <button
           onClick={() => handleAuditAction("NOTE_ADDED")}
           disabled={loading || !notes.trim()}
-          className="px-3 py-2 bg-gray-100 text-gray-800 rounded text-sm font-medium hover:bg-gray-200 disabled:opacity-50 transition-colors"
+          className="col-span-2 px-3 py-2 bg-gray-100 text-gray-800 rounded text-sm font-medium hover:bg-gray-200 disabled:opacity-50 transition-colors"
         >
-          Add Note Only
+          📝 Add Note Only
         </button>
       </div>
 
