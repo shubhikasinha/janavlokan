@@ -71,11 +71,37 @@ const HomePage: React.FC = () => {
                         leakage while ensuring genuine beneficiaries receive uninterrupted support.
                     </p>
 
-                    <div className="flex flex-wrap justify-center gap-4">
-                        <Button to="/analytics">View Analytics</Button>
-                        <Button variant="secondary" to="/dashboard">
-                            Risk Dashboard
-                        </Button>
+                    {/* Clear CTAs with descriptions */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+                        <div className="bg-white border-2 border-primary rounded-xl p-6 hover:shadow-lg transition-shadow">
+                            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4 mx-auto">
+                                <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                                </svg>
+                            </div>
+                            <h3 className="font-heading font-bold text-gray-900 text-lg mb-2">Investigation Dashboard</h3>
+                            <p className="text-sm text-gray-600 mb-4">
+                                Review flagged beneficiaries, investigate individual cases, and take audit actions
+                            </p>
+                            <Button to="/dashboard" className="w-full">
+                                🔍 Investigate Cases
+                            </Button>
+                        </div>
+                        
+                        <div className="bg-white border-2 border-amber-500 rounded-xl p-6 hover:shadow-lg transition-shadow">
+                            <div className="w-12 h-12 bg-amber-500/10 rounded-lg flex items-center justify-center mb-4 mx-auto">
+                                <svg className="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                </svg>
+                            </div>
+                            <h3 className="font-heading font-bold text-gray-900 text-lg mb-2">Analytics & Insights</h3>
+                            <p className="text-sm text-gray-600 mb-4">
+                                Explore patterns, geographic trends, and predictive risk analysis
+                            </p>
+                            <Button variant="secondary" to="/analytics" className="w-full border-amber-500 text-amber-700 hover:bg-amber-50">
+                                📊 View Analytics
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </section>
