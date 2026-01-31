@@ -6,6 +6,7 @@ import { Button } from "@/components/Button";
 import TimeSeriesChart from "@/components/TimeSeriesChart";
 import BatchRefreshButton from "@/components/BatchRefreshButton";
 import { useScheme } from "@/context/SchemeContext";
+import SchemeSwitcher from "@/components/SchemeSwitcher";
 import {
   PieChart,
   Pie,
@@ -48,12 +49,12 @@ const IndiaMap = dynamic(() => import("@/components/IndiaMap"), {
   ),
 });
 
-// Chart colors
+// Minimal Chart colors
 const RISK_COLORS: Record<string, string> = {
-  HIGH: "#ef4444",
-  MEDIUM: "#f59e0b",
-  LOW: "#22c55e",
-  UNKNOWN: "#6b7280",
+  HIGH: "#dc2626",   // Red-600 (Critical)
+  MEDIUM: "#94a3b8", // Slate-400 (Neutral/Warning)
+  LOW: "#e2e8f0",    // Slate-200 (Safe/Background)
+  UNKNOWN: "#f8fafc", // Slate-50
 };
 
 interface DistrictRisk {
@@ -83,7 +84,7 @@ export default function AnalyticsPage() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [distribution, setDistribution] = useState<RiskDistribution[]>([]);
   const [activeTab, setActiveTab] = useState<"geographic" | "temporal" | "distribution">("geographic");
-  
+
   // Dynamic Threshold Slider State
   const [threshold, setThreshold] = useState<number>(15);
   const [sliderLoading, setSliderLoading] = useState<boolean>(false);
@@ -117,10 +118,10 @@ export default function AnalyticsPage() {
       setSliderLoading(true);
       try {
         const apiBase = getApiBase();
-        const endpoint = currentScheme === 'MDM' 
+        const endpoint = currentScheme === 'MDM'
           ? `${apiBase}/schools/high-risk?limit=50&dynamic=true&threshold=${threshold}`
           : `${apiBase}/beneficiaries/high-risk?limit=50&dynamic=true&threshold=${threshold}`;
-        
+
         const res = await fetch(endpoint);
         if (res.ok) {
           const data = await res.json();
@@ -180,10 +181,11 @@ export default function AnalyticsPage() {
                 Geographic risk heatmaps • Risk distribution • Temporal spike detection • {schemeConfig.fullName}
               </p>
             </div>
-            <div className="flex items-center gap-3">
-              <BatchRefreshButton onRefreshComplete={handleRefreshComplete} />
-              <Button href="/dashboard" variant="secondary">
-                ← Back to Dashboard
+            <div className="grid grid-cols-3 gap-3 w-full md:w-auto min-w-[400px]">
+              <div className="w-full"><SchemeSwitcher /></div>
+              <div className="w-full [&>button]:w-full"><BatchRefreshButton onRefreshComplete={handleRefreshComplete} /></div>
+              <Button href="/dashboard" variant="secondary" className="w-full justify-center">
+                Back to Dashboard
               </Button>
             </div>
           </div>
@@ -196,33 +198,30 @@ export default function AnalyticsPage() {
           <div className="flex gap-1 py-2">
             <button
               onClick={() => setActiveTab("geographic")}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === "geographic"
-                  ? "bg-white text-primary shadow-sm border border-gray-200"
-                  : "text-gray-600 hover:text-gray-900 hover:bg-white/50"
-              }`}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === "geographic"
+                ? "bg-white text-primary shadow-sm border border-gray-200"
+                : "text-gray-600 hover:text-gray-900 hover:bg-white/50"
+                }`}
             >
-              🗺️ Geographic Analysis
+              Geographic Analysis
             </button>
             <button
               onClick={() => setActiveTab("distribution")}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === "distribution"
-                  ? "bg-white text-primary shadow-sm border border-gray-200"
-                  : "text-gray-600 hover:text-gray-900 hover:bg-white/50"
-              }`}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === "distribution"
+                ? "bg-white text-primary shadow-sm border border-gray-200"
+                : "text-gray-600 hover:text-gray-900 hover:bg-white/50"
+                }`}
             >
-              📊 Risk Distribution
+              Risk Distribution
             </button>
             <button
               onClick={() => setActiveTab("temporal")}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === "temporal"
-                  ? "bg-white text-primary shadow-sm border border-gray-200"
-                  : "text-gray-600 hover:text-gray-900 hover:bg-white/50"
-              }`}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === "temporal"
+                ? "bg-white text-primary shadow-sm border border-gray-200"
+                : "text-gray-600 hover:text-gray-900 hover:bg-white/50"
+                }`}
             >
-              📈 Temporal Trends
+              Temporal Trends
             </button>
           </div>
         </div>
@@ -230,7 +229,7 @@ export default function AnalyticsPage() {
 
       <section className="py-6">
         <div className="max-w-7xl mx-auto px-4">
-          
+
           {/* Geographic Analysis Tab */}
           {activeTab === "geographic" && (
             <>
@@ -445,7 +444,7 @@ export default function AnalyticsPage() {
                   </div>
 
                   <p className="text-xs text-gray-600 text-center">
-                    Move the slider to adjust {currentScheme === 'MDM' ? 'school fraud' : 'fraud'} detection sensitivity in real-time. 
+                    Move the slider to adjust {currentScheme === 'MDM' ? 'school fraud' : 'fraud'} detection sensitivity in real-time.
                     Lower threshold = more sensitive (catches more potential issues, but may have false positives)
                   </p>
                 </div>
@@ -465,9 +464,9 @@ export default function AnalyticsPage() {
                 </p>
               </div>
 
-              <TimeSeriesChart 
-                key={`${refreshKey}-${currentScheme}`} 
-                days={30} 
+              <TimeSeriesChart
+                key={`${refreshKey}-${currentScheme}`}
+                days={30}
                 showSpikes={true}
               />
             </div>

@@ -65,7 +65,6 @@ const DISTRICT_COORDINATES: Record<string, [number, number]> = {
 };
 
 // Get coordinates for a district
-// Using deterministic hash for unknown districts to prevent random position changes
 function getDistrictCoordinates(districtName: string): [number, number] {
   if (DISTRICT_COORDINATES[districtName]) {
     return DISTRICT_COORDINATES[districtName];
@@ -76,18 +75,18 @@ function getDistrictCoordinates(districtName: string): [number, number] {
       return coords;
     }
   }
-  // FIXED: Use deterministic hash instead of random to prevent position flickering
+  // Use deterministic hash instead of random to prevent position flickering
   const baseCoords = DISTRICT_COORDINATES["Unknown"];
   const hash = districtName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  const latOffset = ((hash % 100) - 50) / 10;  // -5 to +5 range, deterministic
-  const lngOffset = (((hash * 7) % 100) - 50) / 10;  // Different but still deterministic
+  const latOffset = ((hash % 100) - 50) / 10;
+  const lngOffset = (((hash * 7) % 100) - 50) / 10;
   return [baseCoords[0] + latOffset, baseCoords[1] + lngOffset];
 }
 
-// Risk color mapping - Premium gradient colors
+// Risk color mapping
 function getRiskColor(count: number, maxCount: number): string {
   const ratio = count / maxCount;
-  if (ratio > 0.7) return "#ef4444"; // Severe Red
+  if (ratio > 0.7) return "#ef4444"; // Red
   if (ratio > 0.5) return "#f97316"; // Orange
   if (ratio > 0.3) return "#eab308"; // Yellow
   if (ratio > 0.15) return "#22c55e"; // Green
@@ -116,10 +115,10 @@ const ZoomControl = dynamic(
   { ssr: false }
 );
 
-export default function IndiaMap({ 
-  data = [], 
-  onDistrictClick, 
-  title = "Risk Concentration Map",
+export default function IndiaMap({
+  data = [],
+  onDistrictClick,
+  title = "National Risk Overview",
   height = "500px"
 }: IndiaMapProps) {
   const [isClient, setIsClient] = useState(false);
@@ -153,65 +152,48 @@ export default function IndiaMap({
     fetchDistrictData();
   }, [data]);
 
-  const maxAnomalyCount = useMemo(() => 
-    Math.max(...mapData.map((d) => d.anomaly_count), 1), 
+  const maxAnomalyCount = useMemo(() =>
+    Math.max(...mapData.map((d) => d.anomaly_count), 1),
     [mapData]
   );
 
-  // Loading state - premium style
+  // Loading state
   if (!isClient || loading) {
     return (
-      <div 
-        className="relative rounded-xl overflow-hidden border border-white/10 bg-black"
+      <div
+        className="relative rounded-xl overflow-hidden border border-gray-200 bg-gray-50"
         style={{ height }}
       >
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
-            <div className="relative">
-              <div className="w-16 h-16 border-4 border-emerald-500/20 rounded-full animate-spin border-t-emerald-500"></div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-8 h-8 bg-emerald-500/20 rounded-full animate-pulse"></div>
-              </div>
-            </div>
-            <p className="mt-4 text-xs font-mono uppercase tracking-[0.3em] text-white/40 animate-pulse">
-              Initializing Map Engine...
-            </p>
+            <div className="w-12 h-12 border-4 border-primary/20 rounded-full animate-spin border-t-primary mx-auto"></div>
+            <p className="mt-4 text-sm text-gray-500">Loading map...</p>
           </div>
-        </div>
-        {/* Animated background grid */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="w-full h-full" style={{
-            backgroundImage: `
-              linear-gradient(rgba(16, 185, 129, 0.1) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(16, 185, 129, 0.1) 1px, transparent 1px)
-            `,
-            backgroundSize: '50px 50px'
-          }}></div>
         </div>
       </div>
     );
   }
 
-  // Error state - premium style
+  // Error state
   if (error) {
     return (
-      <div 
-        className="relative rounded-xl overflow-hidden border border-red-500/20 bg-black"
+      <div
+        className="relative rounded-xl overflow-hidden border border-red-200 bg-red-50"
         style={{ height }}
       >
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center p-6">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/10 flex items-center justify-center">
-              <svg className="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+              <svg className="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
             </div>
-            <p className="text-red-400 text-sm mb-4">{error}</p>
+            <p className="text-red-600 text-sm mb-4">{error}</p>
             <button
               onClick={() => window.location.reload()}
-              className="px-6 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-all text-sm font-medium border border-red-500/20"
+              className="px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-all text-sm font-medium"
             >
-              Retry Connection
+              Retry
             </button>
           </div>
         </div>
@@ -220,64 +202,31 @@ export default function IndiaMap({
   }
 
   return (
-    <div className="relative group rounded-xl overflow-hidden shadow-2xl border border-white/5 bg-black" style={{ height }}>
-      {/* Custom CSS for dark theme popups */}
-      <style jsx global>{`
-        .leaflet-popup-content-wrapper, .leaflet-popup-tip {
-          background: rgba(0, 0, 0, 0.9) !important;
-          backdrop-filter: blur(12px) !important;
-          border: 1px solid rgba(255, 255, 255, 0.1) !important;
-          box-shadow: 0 20px 50px rgba(0,0,0,0.5) !important;
-          color: white !important;
-        }
-        .leaflet-popup-content {
-          margin: 0 !important;
-        }
-        .leaflet-popup-close-button {
-          color: white !important;
-        }
-        .leaflet-container {
-          background: #0a0a0a !important;
-        }
-        .leaflet-control-zoom {
-          border: 1px solid rgba(255,255,255,0.1) !important;
-          background: rgba(0,0,0,0.8) !important;
-          backdrop-filter: blur(10px) !important;
-        }
-        .leaflet-control-zoom a {
-          background: transparent !important;
-          color: white !important;
-          border-bottom: 1px solid rgba(255,255,255,0.1) !important;
-        }
-        .leaflet-control-zoom a:hover {
-          background: rgba(16, 185, 129, 0.2) !important;
-        }
-      `}</style>
-
+    <div className="relative group rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white" style={{ height }}>
       {/* Header overlay */}
       <div className="absolute top-4 left-4 z-[1000] flex items-center gap-3 pointer-events-none">
-        <div className="bg-black/80 backdrop-blur-xl border border-white/10 px-4 py-2 rounded-lg shadow-2xl">
+        <div className="bg-white/95 backdrop-blur-sm border border-gray-200 px-4 py-2 rounded-lg shadow-sm">
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/80">{title}</span>
+            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+            <span className="text-xs font-semibold uppercase tracking-wide text-gray-700">{title}</span>
           </div>
         </div>
       </div>
 
       {/* Stats overlay */}
       <div className="absolute top-4 right-16 z-[1000] pointer-events-none">
-        <div className="bg-black/80 backdrop-blur-xl border border-white/10 px-4 py-2 rounded-lg shadow-2xl">
+        <div className="bg-white/95 backdrop-blur-sm border border-gray-200 px-4 py-2 rounded-lg shadow-sm">
           <div className="flex items-center gap-4">
             <div className="text-center">
-              <p className="text-lg font-bold text-white tabular-nums">{mapData.length}</p>
-              <p className="text-[8px] uppercase tracking-wider text-white/40">Districts</p>
+              <p className="text-lg font-bold text-gray-900 tabular-nums">{mapData.length}</p>
+              <p className="text-[10px] uppercase tracking-wider text-gray-500">Districts</p>
             </div>
-            <div className="w-px h-8 bg-white/10"></div>
+            <div className="w-px h-8 bg-gray-200"></div>
             <div className="text-center">
-              <p className="text-lg font-bold text-emerald-400 tabular-nums">
+              <p className="text-lg font-bold text-primary tabular-nums">
                 {mapData.reduce((a, b) => a + b.anomaly_count, 0).toLocaleString()}
               </p>
-              <p className="text-[8px] uppercase tracking-wider text-white/40">Anomalies</p>
+              <p className="text-[10px] uppercase tracking-wider text-gray-500">Anomalies</p>
             </div>
           </div>
         </div>
@@ -287,15 +236,15 @@ export default function IndiaMap({
       <MapContainer
         center={[22.5937, 78.9629]}
         zoom={5}
-        style={{ height: "100%", width: "100%", background: "#0a0a0a" }}
+        style={{ height: "100%", width: "100%", background: "#f9fafb" }}
         zoomControl={false}
         attributionControl={false}
       >
         <ZoomControl position="topright" />
-        
-        {/* Dark Matter Basemap - Premium dark theme */}
+
+        {/* Light Theme Basemap - CartoDB Positron */}
         <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
         />
 
@@ -323,41 +272,41 @@ export default function IndiaMap({
               }}
             >
               <Popup>
-                <div className="p-4 min-w-[180px]">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div 
-                      className="w-3 h-3 rounded-full animate-pulse" 
+                <div className="p-3 min-w-[160px]">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div
+                      className="w-3 h-3 rounded-full"
                       style={{ backgroundColor: color }}
                     ></div>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                       Zone Analysis
                     </span>
                   </div>
-                  <h3 className="text-lg font-black text-white mb-2">
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">
                     {district.residence_district}
                   </h3>
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <div className="flex justify-between items-center">
-                      <span className="text-xs text-white/60">Anomalies</span>
-                      <span className="text-xl font-bold tabular-nums" style={{ color }}>
+                      <span className="text-xs text-gray-500">Anomalies</span>
+                      <span className="text-lg font-bold tabular-nums" style={{ color }}>
                         {district.anomaly_count.toLocaleString()}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-xs text-white/60">Risk Level</span>
+                      <span className="text-xs text-gray-500">Risk Level</span>
                       <span className="text-sm font-semibold" style={{ color }}>
                         {ratio > 0.7 ? 'CRITICAL' : ratio > 0.4 ? 'HIGH' : ratio > 0.2 ? 'MEDIUM' : 'LOW'}
                       </span>
                     </div>
                     {/* Progress bar */}
-                    <div className="mt-3">
-                      <div className="h-1 bg-white/10 rounded-full overflow-hidden">
-                        <div 
+                    <div className="mt-2">
+                      <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
+                        <div
                           className="h-full rounded-full transition-all duration-500"
                           style={{ width: `${ratio * 100}%`, backgroundColor: color }}
                         ></div>
                       </div>
-                      <p className="text-[10px] text-white/40 mt-1 text-right">
+                      <p className="text-[10px] text-gray-400 mt-1 text-right">
                         {(ratio * 100).toFixed(1)}% of peak
                       </p>
                     </div>
@@ -370,8 +319,8 @@ export default function IndiaMap({
       </MapContainer>
 
       {/* Legend overlay - Bottom left */}
-      <div className="absolute bottom-6 left-6 z-[1000] bg-black/80 backdrop-blur-xl border border-white/10 p-4 rounded-xl shadow-2xl">
-        <h4 className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-3">
+      <div className="absolute bottom-6 left-6 z-[1000] bg-white/95 backdrop-blur-sm border border-gray-200 p-4 rounded-xl shadow-sm">
+        <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3">
           Risk Zones
         </h4>
         <div className="space-y-2">
@@ -383,11 +332,11 @@ export default function IndiaMap({
             { label: 'Minimal (<15%)', color: '#10b981' },
           ].map((item) => (
             <div key={item.label} className="flex items-center gap-3">
-              <div 
-                className="w-3 h-3 rounded-full shadow-lg" 
-                style={{ backgroundColor: item.color, boxShadow: `0 0 10px ${item.color}40` }}
+              <div
+                className="w-3 h-3 rounded-full"
+                style={{ backgroundColor: item.color }}
               ></div>
-              <span className="text-[10px] font-bold text-white/70 uppercase tracking-tight">
+              <span className="text-xs text-gray-600">
                 {item.label}
               </span>
             </div>
@@ -396,15 +345,9 @@ export default function IndiaMap({
       </div>
 
       {/* Custom attribution */}
-      <div className="absolute bottom-1 right-1 bg-black/60 backdrop-blur-sm px-2 py-0.5 text-[9px] text-white/40 z-[400] rounded-tl-md">
-        Leaflet | © CARTO | JanaVlokan
+      <div className="absolute bottom-1 right-1 bg-white/80 backdrop-blur-sm px-2 py-0.5 text-[9px] text-gray-400 z-[400] rounded-tl-md">
+        Leaflet | CARTO | JanaVlokan
       </div>
-
-      {/* Decorative corner accents */}
-      <div className="absolute top-0 left-0 w-16 h-16 border-l-2 border-t-2 border-emerald-500/20 pointer-events-none"></div>
-      <div className="absolute top-0 right-0 w-16 h-16 border-r-2 border-t-2 border-emerald-500/20 pointer-events-none"></div>
-      <div className="absolute bottom-0 left-0 w-16 h-16 border-l-2 border-b-2 border-emerald-500/20 pointer-events-none"></div>
-      <div className="absolute bottom-0 right-0 w-16 h-16 border-r-2 border-b-2 border-emerald-500/20 pointer-events-none"></div>
     </div>
   );
 }

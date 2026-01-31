@@ -64,6 +64,81 @@ const privacyMeasures = [
     },
 ];
 
+// Features content (combined from features page)
+const features = [
+    {
+        title: 'Anomaly Detection Without Labeled Fraud Data',
+        description: 'JanAvlokan uses unsupervised learning to identify deviations from normal behavior, eliminating the dependency on pre-labeled fraud datasets which are rare and delayed in public finance systems.',
+        highlights: [
+            'Isolation Forest as primary detector',
+            'Autoencoders for pattern reconstruction',
+            'DBSCAN for density-based clustering',
+            'No dependency on labeled training data',
+        ],
+    },
+    {
+        title: 'Privacy-Safe Collusion Detection',
+        description: 'The platform detects patterns such as shared bank accounts or devices using irreversibly hashed identifiers, enabling detection of coordinated misuse while fully preserving beneficiary privacy.',
+        highlights: [
+            'All identifiers are irreversibly hashed',
+            'No PII enters the cloud',
+            'Location data generalized to regions',
+            'Compliant with data protection principles',
+        ],
+    },
+    {
+        title: 'Policy-Aware Risk Calibration',
+        description: 'Risk thresholds dynamically adapt based on scheme type, region, and time period. Seasonal surges and policy-driven variations are accounted for to reduce false positives.',
+        highlights: [
+            'Scheme-specific thresholds',
+            'Regional baseline adjustments',
+            'Seasonal variation handling',
+            'Continuous model recalibration',
+        ],
+    },
+    {
+        title: 'Explainable Audit Narratives',
+        description: 'Each flagged case is accompanied by a human-readable explanation outlining contributing behavioral signals designed for administrative review, audits, and legal defensibility.',
+        highlights: [
+            'Feature importance breakdowns',
+            'Behavioral signal explanations',
+            'Audit-ready documentation',
+            'Legal defensibility focus',
+        ],
+    },
+    {
+        title: 'Geographic Risk Heatmaps',
+        description: 'Aggregated risk scores are visualized at district or block levels, allowing administrators to identify regional concentrations of anomalous behavior and allocate audit resources efficiently.',
+        highlights: [
+            'District-level visualization',
+            'Block-level drill-down',
+            'Resource allocation insights',
+            'Regional trend analysis',
+        ],
+    },
+    {
+        title: 'Real-Time Processing',
+        description: 'Built on Google Cloud Platform for scalability and reliability, JanAvlokan can process 100M+ transactions using distributed computing and optimized data pipelines.',
+        highlights: [
+            '100M+ transaction capacity',
+            'Distributed ETL pipelines',
+            'Real-time risk scoring',
+            'Batch prediction support',
+        ],
+    },
+];
+
+const mlFeatures = [
+    'Rolling claim frequency patterns',
+    'Deviation from personal baselines',
+    'Deviation from scheme-level baselines',
+    'Cross-scheme overlap detection',
+    'Hashed shared identifier analysis',
+    'Temporal spike indicators',
+    'Geographic clustering signals',
+    'Behavioral sequence modeling',
+];
+
 export default function TechnologyPage() {
     return (
         <div className="min-h-screen">
@@ -71,17 +146,53 @@ export default function TechnologyPage() {
             <section className="bg-white py-12 md:py-16 border-b border-gray-200">
                 <div className="max-w-7xl mx-auto px-4">
                     <h1 className="text-3xl md:text-4xl font-heading font-bold text-gray-900 mb-4">
-                        Technology Stack
+                        Technology and Features
                     </h1>
                     <p className="text-lg text-gray-700 max-w-3xl">
-                        Built entirely on Google Cloud Platform, ensuring scalability,
-                        reliability, and audit readiness.
+                        Built entirely on Google Cloud Platform with unsupervised machine learning,
+                        privacy-preserving technology, and explainable AI for transparent governance.
                     </p>
                 </div>
             </section>
 
-            {/* Architecture Overview */}
+            {/* Key Capabilities Section */}
             <section className="py-12 md:py-16 bg-white">
+                <div className="max-w-7xl mx-auto px-4">
+                    <div className="border-l-4 border-primary pl-6 mb-8">
+                        <h2 className="text-2xl md:text-3xl font-heading font-bold text-gray-900 mb-2">
+                            Key Capabilities
+                        </h2>
+                        <p className="text-gray-600">Powerful features for intelligent welfare monitoring</p>
+                    </div>
+
+                    <div className="space-y-6">
+                        {features.map((feature, index) => (
+                            <div key={index} className="border border-gray-200 rounded-lg overflow-hidden">
+                                <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 flex items-center gap-4">
+                                    <span className="w-8 h-8 bg-primary text-white rounded flex items-center justify-center font-bold text-sm">
+                                        {index + 1}
+                                    </span>
+                                    <h3 className="text-lg font-heading font-semibold text-gray-900">{feature.title}</h3>
+                                </div>
+                                <div className="p-6">
+                                    <p className="text-gray-700 mb-4">{feature.description}</p>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                        {feature.highlights.map((item, i) => (
+                                            <div key={i} className="flex items-center gap-2 text-sm text-gray-600">
+                                                <span className="w-1.5 h-1.5 bg-primary rounded-full flex-shrink-0"></span>
+                                                <span>{item}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Architecture Overview */}
+            <section className="py-12 md:py-16 bg-gray-50 border-y border-gray-200">
                 <div className="max-w-7xl mx-auto px-4">
                     <div className="border-l-4 border-primary pl-6 mb-8">
                         <h2 className="text-2xl md:text-3xl font-heading font-bold text-gray-900 mb-2">
@@ -91,7 +202,7 @@ export default function TechnologyPage() {
                     </div>
 
                     <div className="overflow-x-auto">
-                        <table className="w-full border-collapse border border-gray-200">
+                        <table className="w-full border-collapse border border-gray-200 bg-white">
                             <thead>
                                 <tr className="bg-gray-50">
                                     <th className="border border-gray-200 px-4 py-3 text-left font-heading font-semibold text-gray-900">S.No.</th>
@@ -114,7 +225,7 @@ export default function TechnologyPage() {
             </section>
 
             {/* ML Approach */}
-            <section className="py-12 md:py-16 bg-gray-50 border-y border-gray-200">
+            <section className="py-12 md:py-16 bg-white">
                 <div className="max-w-7xl mx-auto px-4">
                     <div className="border-l-4 border-primary pl-6 mb-8">
                         <h2 className="text-2xl md:text-3xl font-heading font-bold text-gray-900 mb-2">
@@ -137,33 +248,51 @@ export default function TechnologyPage() {
                         ))}
                     </div>
 
-                    <div className="bg-white border border-gray-200 rounded-lg p-6">
-                        <h3 className="font-heading font-semibold text-gray-900 mb-4 border-b border-gray-200 pb-3">
-                            Ensemble Output
-                        </h3>
-                        <p className="text-gray-600 mb-4">
-                            The hybrid ensemble combines outputs from all three models to produce:
-                        </p>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="bg-gray-50 border border-gray-200 rounded p-3 text-center">
-                                <span className="font-semibold text-gray-900">Risk Score</span>
-                                <p className="text-sm text-gray-600">(0-1 normalized)</p>
+                    <div className="grid lg:grid-cols-2 gap-8 items-start">
+                        <div className="bg-white border border-gray-200 rounded-lg p-6">
+                            <h3 className="font-heading font-semibold text-gray-900 mb-4 border-b border-gray-200 pb-3">
+                                Ensemble Output
+                            </h3>
+                            <p className="text-gray-600 mb-4">
+                                The hybrid ensemble combines outputs from all three models to produce:
+                            </p>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="bg-gray-50 border border-gray-200 rounded p-3 text-center">
+                                    <span className="font-semibold text-gray-900">Risk Score</span>
+                                    <p className="text-sm text-gray-600">(0-1 normalized)</p>
+                                </div>
+                                <div className="bg-gray-50 border border-gray-200 rounded p-3 text-center">
+                                    <span className="font-semibold text-gray-900">Risk Category</span>
+                                    <p className="text-sm text-gray-600">(Low/Medium/High)</p>
+                                </div>
+                                <div className="bg-gray-50 border border-gray-200 rounded p-3 text-center">
+                                    <span className="font-semibold text-gray-900">Feature Signals</span>
+                                    <p className="text-sm text-gray-600">(Explainable)</p>
+                                </div>
                             </div>
-                            <div className="bg-gray-50 border border-gray-200 rounded p-3 text-center">
-                                <span className="font-semibold text-gray-900">Risk Category</span>
-                                <p className="text-sm text-gray-600">(Low/Medium/High)</p>
-                            </div>
-                            <div className="bg-gray-50 border border-gray-200 rounded p-3 text-center">
-                                <span className="font-semibold text-gray-900">Feature Signals</span>
-                                <p className="text-sm text-gray-600">(Explainable)</p>
-                            </div>
+                        </div>
+
+                        <div className="bg-white border border-gray-200 rounded-lg p-6">
+                            <h3 className="font-heading font-semibold text-gray-900 mb-4 border-b border-gray-200 pb-3">
+                                Feature Signals Analyzed
+                            </h3>
+                            <ul className="space-y-2">
+                                {mlFeatures.map((feature, index) => (
+                                    <li key={index} className="flex items-center gap-3 text-sm text-gray-700">
+                                        <span className="w-5 h-5 bg-gray-100 border border-gray-300 rounded text-xs flex items-center justify-center">
+                                            {index + 1}
+                                        </span>
+                                        <span>{feature}</span>
+                                    </li>
+                                ))}
+                            </ul>
                         </div>
                     </div>
                 </div>
             </section>
 
             {/* Data Privacy */}
-            <section className="py-12 md:py-16 bg-white">
+            <section className="py-12 md:py-16 bg-gray-50 border-y border-gray-200">
                 <div className="max-w-7xl mx-auto px-4">
                     <div className="grid lg:grid-cols-2 gap-8 items-start">
                         <div>
@@ -183,7 +312,7 @@ export default function TechnologyPage() {
                             </p>
                         </div>
 
-                        <div className="bg-gray-50 border border-gray-200 rounded-lg overflow-hidden">
+                        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
                             <div className="bg-primary px-4 py-3">
                                 <span className="text-white font-medium">Privacy Measures</span>
                             </div>
@@ -208,11 +337,11 @@ export default function TechnologyPage() {
             </section>
 
             {/* Scalability */}
-            <section className="py-12 md:py-16 bg-gray-50 border-y border-gray-200">
+            <section className="py-12 md:py-16 bg-white">
                 <div className="max-w-7xl mx-auto px-4">
                     <div className="text-center mb-8">
                         <h2 className="text-2xl md:text-3xl font-heading font-bold text-gray-900 mb-2">
-                            Scalability &amp; Performance
+                            Scalability and Performance
                         </h2>
                         <p className="text-gray-600">Designed for national-scale deployment</p>
                     </div>
@@ -234,7 +363,7 @@ export default function TechnologyPage() {
             </section>
 
             {/* CTA Section - White */}
-            <section className="py-12 md:py-16 bg-white">
+            <section className="py-12 md:py-16 bg-gray-50 border-t border-gray-200">
                 <div className="max-w-4xl mx-auto px-4 text-center">
                     <h2 className="text-2xl md:text-3xl font-heading font-bold text-gray-900 mb-4">
                         Access System Dashboard
@@ -246,7 +375,7 @@ export default function TechnologyPage() {
                         <Button href="/dashboard">
                             Open Dashboard
                         </Button>
-                        <Button variant="secondary" href="/contact">
+                        <Button variant="secondary" href="/about">
                             Contact Support
                         </Button>
                     </div>

@@ -29,7 +29,7 @@ export default function AuditPanel({
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  
+
   // NEW: Feedback stats state
   const [feedbackStats, setFeedbackStats] = useState<FeedbackStats | null>(null);
   const [feedbackLoading, setFeedbackLoading] = useState(true);
@@ -113,7 +113,7 @@ export default function AuditPanel({
       } else {
         setSuccess(`Action "${action}" recorded successfully!`);
       }
-      
+
       setNotes("");
       onAuditComplete?.();
 
@@ -183,7 +183,7 @@ export default function AuditPanel({
             <span className="text-[10px] text-red-400/70">(False Positive)</span>
           </button>
         </div>
-        
+
         {/* Feedback Stats Mini Display */}
         {feedbackStats && !feedbackLoading && feedbackStats.total_feedback > 0 && (
           <div className="mt-3 pt-3 border-t border-white/10 grid grid-cols-3 gap-2 text-center">
@@ -236,35 +236,35 @@ export default function AuditPanel({
         <button
           onClick={() => handleAuditAction("REVIEWED")}
           disabled={loading || !officerName.trim()}
-          className="px-3 py-2 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded text-sm font-medium hover:bg-blue-500/30 disabled:opacity-50 transition-colors"
+          className="px-3 py-2 min-h-[42px] h-full bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded text-sm font-medium hover:bg-blue-500/30 disabled:opacity-50 transition-colors flex items-center justify-center text-center"
         >
           Mark Reviewed
         </button>
         <button
           onClick={() => handleAuditAction("VERIFIED")}
           disabled={loading || !officerName.trim()}
-          className="px-3 py-2 bg-purple-500/20 text-purple-400 border border-purple-500/30 rounded text-sm font-medium hover:bg-purple-500/30 disabled:opacity-50 transition-colors"
+          className="px-3 py-2 min-h-[42px] h-full bg-purple-500/20 text-purple-400 border border-purple-500/30 rounded text-sm font-medium hover:bg-purple-500/30 disabled:opacity-50 transition-colors flex items-center justify-center text-center"
         >
           Verify Fraud
         </button>
         <button
           onClick={() => handleAuditAction("FLAGGED")}
           disabled={loading || !officerName.trim()}
-          className="px-3 py-2 bg-red-500/20 text-red-400 border border-red-500/30 rounded text-sm font-medium hover:bg-red-500/30 disabled:opacity-50 transition-colors"
+          className="px-3 py-2 min-h-[42px] h-full bg-red-500/20 text-red-400 border border-red-500/30 rounded text-sm font-medium hover:bg-red-500/30 disabled:opacity-50 transition-colors flex items-center justify-center text-center"
         >
           Confirm Fraud
         </button>
         <button
           onClick={() => handleAuditAction("CLEARED")}
           disabled={loading || !officerName.trim()}
-          className="px-3 py-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded text-sm font-medium hover:bg-emerald-500/30 disabled:opacity-50 transition-colors"
+          className="px-3 py-2 min-h-[42px] h-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded text-sm font-medium hover:bg-emerald-500/30 disabled:opacity-50 transition-colors flex items-center justify-center text-center"
         >
           Clear (Genuine)
         </button>
         <button
           onClick={() => handleAuditAction("NOTE_ADDED")}
           disabled={loading || !notes.trim() || !officerName.trim()}
-          className="col-span-2 px-3 py-2 bg-white/5 text-white/70 border border-white/10 rounded text-sm font-medium hover:bg-white/10 disabled:opacity-50 transition-colors"
+          className="col-span-2 px-3 py-2 min-h-[42px] bg-white/5 text-white/70 border border-white/10 rounded text-sm font-medium hover:bg-white/10 disabled:opacity-50 transition-colors flex items-center justify-center text-center"
         >
           Add Note Only
         </button>

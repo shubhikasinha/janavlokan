@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import LanguageSwitcher from './LanguageSwitcher';
-import { useScheme, SchemeType } from '@/context/SchemeContext';
 
 /* ---------------- Types ---------------- */
 
@@ -15,104 +14,23 @@ type NavLink = {
 
 /* ---------------- Data ---------------- */
 
+// Updated navigation: Combined Technology+Features, About+Contact
 const navLinks: NavLink[] = [
     { path: '/', label: 'Home' },
     { path: '/analytics', label: 'Analytics' },
     { path: '/dashboard', label: 'Dashboard' },
-    { path: '/features', label: 'Features' },
-    { path: '/about', label: 'About' },
     { path: '/technology', label: 'Technology' },
-    { path: '/contact', label: 'Contact' },
+    { path: '/about', label: 'About' },
 ];
-
-/* ---------------- Scheme Switcher Component ---------------- */
-
-const SchemeSwitcher: React.FC = () => {
-    const { currentScheme, setScheme, schemeConfig } = useScheme();
-    const [isOpen, setIsOpen] = useState(false);
-
-    const schemes: { type: SchemeType; label: string; icon: string; description: string }[] = [
-        { type: 'LPG', label: 'LPG Subsidy', icon: 'LPG', description: 'LPG Beneficiary Analysis' },
-        { type: 'MDM', label: 'Mid Day Meal', icon: 'MDM', description: 'School Meal Analysis' },
-    ];
-
-    return (
-        <div className="relative">
-            <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors border border-primary/20"
-            >
-                <span className="text-lg">{schemeConfig.icon}</span>
-                <span className="text-sm font-medium text-primary hidden sm:inline">
-                    {schemeConfig.name}
-                </span>
-                <svg
-                    className={`w-4 h-4 text-primary transition-transform ${isOpen ? 'rotate-180' : ''}`}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-            </button>
-
-            {isOpen && (
-                <>
-                    {/* Backdrop */}
-                    <div
-                        className="fixed inset-0 z-40"
-                        onClick={() => setIsOpen(false)}
-                    />
-                    {/* Dropdown */}
-                    <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-gray-200 z-50 overflow-hidden">
-                        <div className="px-4 py-2 bg-gray-50 border-b border-gray-200">
-                            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                                Select Scheme
-                            </p>
-                        </div>
-                        {schemes.map((scheme) => (
-                            <button
-                                key={scheme.type}
-                                onClick={() => {
-                                    setScheme(scheme.type);
-                                    setIsOpen(false);
-                                }}
-                                className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors ${
-                                    currentScheme === scheme.type ? 'bg-primary/5 border-l-4 border-l-primary' : ''
-                                }`}
-                            >
-                                <span className="text-2xl">{scheme.icon}</span>
-                                <div>
-                                    <p className={`text-sm font-medium ${
-                                        currentScheme === scheme.type ? 'text-primary' : 'text-gray-900'
-                                    }`}>
-                                        {scheme.label}
-                                    </p>
-                                    <p className="text-xs text-gray-500">{scheme.description}</p>
-                                </div>
-                                {currentScheme === scheme.type && (
-                                    <svg className="w-5 h-5 text-primary ml-auto" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                    </svg>
-                                )}
-                            </button>
-                        ))}
-                    </div>
-                </>
-            )}
-        </div>
-    );
-};
 
 /* ---------------- Component ---------------- */
 
 const Header: React.FC = () => {
     const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
     const pathname = usePathname();
-    const { schemeConfig } = useScheme();
 
     return (
-        <header className="sticky top-0 z-50">
+        <header className="sticky top-0 z-[9999]">
             {/* Government Top Bar */}
             <div className="bg-primary text-white text-xs py-2 px-4">
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -123,10 +41,7 @@ const Header: React.FC = () => {
 
                     <div className="flex items-center gap-4 text-xs">
                         <span className="hidden md:inline">
-                            <span className="notranslate">JanAvlokan</span> | {schemeConfig.fullName}
-                        </span>
-                        <span className="md:hidden">
-                            {schemeConfig.icon} {schemeConfig.name}
+                            <span className="notranslate">JanAvlokan</span> | Welfare Intelligence Platform
                         </span>
                         <div className="flex items-center gap-1">
                             <span className="w-3 h-3 rounded-full bg-govt-saffron" />
@@ -178,11 +93,8 @@ const Header: React.FC = () => {
                             })}
                         </div>
 
-                        {/* Scheme Switcher, Language Switcher & Mobile Menu */}
+                        {/* Language Switcher & Mobile Menu */}
                         <div className="flex items-center gap-3">
-                            {/* Scheme Switcher */}
-                            <SchemeSwitcher />
-
                             {/* Language Switcher */}
                             <LanguageSwitcher />
 

@@ -5,9 +5,7 @@ import dynamic from "next/dynamic";
 import { useScheme } from "@/context/SchemeContext";
 
 // District coordinates for Indian states (approximate centroids)
-// In production, use proper GeoJSON boundaries
 const DISTRICT_COORDINATES: Record<string, [number, number]> = {
-  // Major districts - add more as needed
   "Mumbai": [19.076, 72.8777],
   "Delhi": [28.6139, 77.209],
   "Bangalore": [12.9716, 77.5946],
@@ -49,18 +47,15 @@ const DISTRICT_COORDINATES: Record<string, [number, number]> = {
   "Udaipur": [24.5854, 73.7125],
   "Gwalior": [26.2183, 78.1828],
   "Jabalpur": [23.1815, 79.9864],
-  // Default fallback for unknown districts
-  "Unknown": [20.5937, 78.9629], // Center of India
+  "Unknown": [20.5937, 78.9629],
 };
 
 // Get coordinates for a district (with fuzzy matching)
 function getDistrictCoordinates(districtName: string): [number, number] {
-  // Direct match
   if (DISTRICT_COORDINATES[districtName]) {
     return DISTRICT_COORDINATES[districtName];
   }
 
-  // Fuzzy match (case-insensitive, partial)
   const normalizedName = districtName.toLowerCase().trim();
   for (const [key, coords] of Object.entries(DISTRICT_COORDINATES)) {
     if (key.toLowerCase().includes(normalizedName) || normalizedName.includes(key.toLowerCase())) {
@@ -68,10 +63,10 @@ function getDistrictCoordinates(districtName: string): [number, number] {
     }
   }
 
-  // FIXED: Use deterministic hash instead of random to prevent flickering
+  // Use deterministic hash instead of random to prevent flickering
   const baseCoords = DISTRICT_COORDINATES["Unknown"];
   const hash = districtName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  const latOffset = ((hash % 100) - 50) / 10;  // -5 to +5 range, deterministic
+  const latOffset = ((hash % 100) - 50) / 10;
   const lngOffset = (((hash * 7) % 100) - 50) / 10;
   return [baseCoords[0] + latOffset, baseCoords[1] + lngOffset];
 }
@@ -79,10 +74,10 @@ function getDistrictCoordinates(districtName: string): [number, number] {
 // Get color based on anomaly count
 function getHeatColor(count: number, maxCount: number): string {
   const ratio = count / maxCount;
-  if (ratio > 0.7) return "#dc2626"; // Red - High
-  if (ratio > 0.4) return "#f59e0b"; // Amber - Medium
-  if (ratio > 0.2) return "#eab308"; // Yellow - Low-Medium
-  return "#22c55e"; // Green - Low
+  if (ratio > 0.7) return "#b91c1c"; // Red-700
+  if (ratio > 0.4) return "#ef4444"; // Red-500
+  if (ratio > 0.2) return "#f87171"; // Red-400
+  return "#fca5a5"; // Red-300
 }
 
 // Get radius based on anomaly count
@@ -175,7 +170,7 @@ export default function DistrictHeatmap({ data = [], onDistrictClick }: District
 
   if (!isClient) {
     return (
-      <div className="h-[500px] bg-gray-100 rounded-lg flex items-center justify-center">
+      <div className="h-[500px] bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
         <p className="text-gray-500">Loading map...</p>
       </div>
     );
@@ -183,7 +178,7 @@ export default function DistrictHeatmap({ data = [], onDistrictClick }: District
 
   if (loading) {
     return (
-      <div className="h-[500px] bg-gray-100 rounded-lg flex items-center justify-center">
+      <div className="h-[500px] bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
           <p className="text-gray-500">Loading district data...</p>
@@ -194,7 +189,7 @@ export default function DistrictHeatmap({ data = [], onDistrictClick }: District
 
   if (error) {
     return (
-      <div className="h-[500px] bg-red-50 rounded-lg flex items-center justify-center">
+      <div className="h-[500px] bg-red-50 rounded-lg flex items-center justify-center border border-red-200">
         <div className="text-center">
           <p className="text-red-600 mb-2">{error}</p>
           <button
@@ -211,37 +206,38 @@ export default function DistrictHeatmap({ data = [], onDistrictClick }: District
   return (
     <div className="relative">
       {/* Legend */}
-      <div className="absolute top-2 right-2 z-[1000] bg-white/95 p-3 rounded-lg shadow-md text-xs">
-        <p className="font-semibold mb-2">{schemeConfig.name} Anomaly Density</p>
+      <div className="absolute top-2 right-2 z-[1000] bg-white/95 backdrop-blur-sm p-3 rounded-lg shadow-sm border border-gray-200 text-xs">
+        <p className="font-semibold mb-2 text-gray-700">{schemeConfig.name} Anomaly Density</p>
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-red-600"></span>
-            <span>High (&gt;70%)</span>
+            <span className="w-3 h-3 rounded-full bg-red-700"></span>
+            <span className="text-gray-600">High (&gt;70%)</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-amber-500"></span>
-            <span>Medium (40-70%)</span>
+            <span className="w-3 h-3 rounded-full bg-red-500"></span>
+            <span className="text-gray-600">Medium (40-70%)</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-yellow-500"></span>
-            <span>Low-Med (20-40%)</span>
+            <span className="w-3 h-3 rounded-full bg-red-400"></span>
+            <span className="text-gray-600">Low-Med (20-40%)</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-green-500"></span>
-            <span>Low (&lt;20%)</span>
+            <span className="w-3 h-3 rounded-full bg-red-300"></span>
+            <span className="text-gray-600">Low (&lt;20%)</span>
           </div>
         </div>
       </div>
 
       <MapContainer
-        center={[20.5937, 78.9629]} // Center of India
-        zoom={5}
-        style={{ height: "500px", width: "100%", borderRadius: "0.5rem" }}
+        center={[22.5937, 78.9629]} // Center of India
+        zoom={6} // More zoomed in for district-level view
+        style={{ height: "500px", width: "100%", borderRadius: "0.5rem", border: "1px solid #e5e7eb" }}
         scrollWheelZoom={true}
       >
+        {/* Light Theme - CartoDB Positron */}
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
         />
 
         {mapData.map((district) => {

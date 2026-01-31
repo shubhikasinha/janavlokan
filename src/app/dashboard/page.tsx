@@ -5,13 +5,15 @@ import { Button } from "@/components/Button";
 import AuditPanel from "@/components/AuditPanel";
 import BatchRefreshButton from "@/components/BatchRefreshButton";
 import { useScheme } from "@/context/SchemeContext";
+import SchemeSwitcher from "@/components/SchemeSwitcher";
 
 // Chart colors for inline distribution display
+// Minimal Chart colors
 const RISK_COLORS: Record<string, string> = {
-  HIGH: "#ef4444",
-  MEDIUM: "#f59e0b",
-  LOW: "#22c55e",
-  UNKNOWN: "#6b7280",
+  HIGH: "#dc2626",   // Red-600
+  MEDIUM: "#94a3b8", // Slate-400
+  LOW: "#e2e8f0",    // Slate-200
+  UNKNOWN: "#f8fafc", // Slate-50
 };
 
 // ============================================
@@ -128,7 +130,7 @@ type EntityDetail = LPGBeneficiaryDetail | MDMSchoolDetail;
 
 export default function DashboardPage() {
   const { currentScheme, schemeConfig } = useScheme();
-  
+
   // State
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [distribution, setDistribution] = useState<RiskDistribution[]>([]);
@@ -184,14 +186,14 @@ export default function DashboardPage() {
       setLoading(true);
       setError(null);
       setSelectedEntity(null);
-      
+
       const apiBase = getApiBase();
 
       try {
         const [summaryRes, distributionRes, entitiesRes] = await Promise.all([
           fetch(`${apiBase}/dashboard/summary`),
           fetch(`${apiBase}/dashboard/distribution`),
-          fetch(currentScheme === 'MDM' 
+          fetch(currentScheme === 'MDM'
             ? `${apiBase}/schools/high-risk?limit=50`
             : `${apiBase}/beneficiaries/high-risk?limit=50`
           ),
@@ -214,14 +216,14 @@ export default function DashboardPage() {
         } else {
           setSummary(summaryData);
         }
-        
+
         if (Array.isArray(distributionData)) {
           setDistribution(distributionData);
         } else {
           console.error('Distribution API error:', distributionData);
           setDistribution([]);
         }
-        
+
         if (Array.isArray(entitiesData)) {
           setEntities(entitiesData);
         } else {
@@ -243,7 +245,7 @@ export default function DashboardPage() {
     const fetchFilteredData = async () => {
       const apiBase = getApiBase();
       const endpoint = currentScheme === 'MDM' ? 'schools/high-risk' : 'beneficiaries/high-risk';
-      
+
       try {
         const url = riskFilter === "ALL"
           ? `${apiBase}/${endpoint}?limit=50`
@@ -266,7 +268,7 @@ export default function DashboardPage() {
     setDetailLoading(true);
     const apiBase = getApiBase();
     const endpoint = currentScheme === 'MDM' ? 'schools' : 'beneficiaries';
-    
+
     try {
       const res = await fetch(`${apiBase}/${endpoint}/${entityId}?lang=${language}`);
       if (!res.ok) throw new Error("Failed to fetch details");
@@ -282,7 +284,7 @@ export default function DashboardPage() {
   // Refetch when language changes (if entity is selected)
   useEffect(() => {
     if (selectedEntity) {
-      const entityId = currentScheme === 'MDM' 
+      const entityId = currentScheme === 'MDM'
         ? String((selectedEntity as MDMSchoolDetail).school_id)
         : (selectedEntity as LPGBeneficiaryDetail).beneficiary_id;
       handleEntityClick(entityId);
@@ -379,22 +381,22 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 gap-2 text-xs">
           <div className={`p-2 rounded-lg border ${mdmEntity.flags.ghost_meals ? "bg-red-50 border-red-200" : "bg-gray-50 border-gray-200"}`}>
             <span className={mdmEntity.flags.ghost_meals ? "text-red-700" : "text-gray-400"}>
-              {mdmEntity.flags.ghost_meals ? "✓" : "○"} Ghost Meals
+              {mdmEntity.flags.ghost_meals ? "Yes" : "No"} Ghost Meals
             </span>
           </div>
           <div className={`p-2 rounded-lg border ${mdmEntity.flags.ingredient_inflation ? "bg-red-50 border-red-200" : "bg-gray-50 border-gray-200"}`}>
             <span className={mdmEntity.flags.ingredient_inflation ? "text-red-700" : "text-gray-400"}>
-              {mdmEntity.flags.ingredient_inflation ? "✓" : "○"} Ingredient Inflation
+              {mdmEntity.flags.ingredient_inflation ? "Yes" : "No"} Ingredient Inflation
             </span>
           </div>
           <div className={`p-2 rounded-lg border ${mdmEntity.flags.fund_overclaim ? "bg-red-50 border-red-200" : "bg-gray-50 border-gray-200"}`}>
             <span className={mdmEntity.flags.fund_overclaim ? "text-red-700" : "text-gray-400"}>
-              {mdmEntity.flags.fund_overclaim ? "✓" : "○"} Fund Overclaim
+              {mdmEntity.flags.fund_overclaim ? "Yes" : "No"} Fund Overclaim
             </span>
           </div>
           <div className={`p-2 rounded-lg border ${mdmEntity.flags.cook_anomaly ? "bg-red-50 border-red-200" : "bg-gray-50 border-gray-200"}`}>
             <span className={mdmEntity.flags.cook_anomaly ? "text-red-700" : "text-gray-400"}>
-              {mdmEntity.flags.cook_anomaly ? "✓" : "○"} Cook Anomaly
+              {mdmEntity.flags.cook_anomaly ? "Yes" : "No"} Cook Anomaly
             </span>
           </div>
         </div>
@@ -405,22 +407,22 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 gap-2 text-xs">
           <div className={`p-2 rounded-lg border ${lpgEntity.flags.high_recent_activity ? "bg-red-50 border-red-200" : "bg-gray-50 border-gray-200"}`}>
             <span className={lpgEntity.flags.high_recent_activity ? "text-red-700" : "text-gray-400"}>
-              {lpgEntity.flags.high_recent_activity ? "✓" : "○"} High Recent Activity
+              {lpgEntity.flags.high_recent_activity ? "Yes" : "No"} High Recent Activity
             </span>
           </div>
           <div className={`p-2 rounded-lg border ${lpgEntity.flags.multiple_dealers ? "bg-red-50 border-red-200" : "bg-gray-50 border-gray-200"}`}>
             <span className={lpgEntity.flags.multiple_dealers ? "text-red-700" : "text-gray-400"}>
-              {lpgEntity.flags.multiple_dealers ? "✓" : "○"} Multiple Dealers
+              {lpgEntity.flags.multiple_dealers ? "Yes" : "No"} Multiple Dealers
             </span>
           </div>
           <div className={`p-2 rounded-lg border ${lpgEntity.flags.cross_district ? "bg-red-50 border-red-200" : "bg-gray-50 border-gray-200"}`}>
             <span className={lpgEntity.flags.cross_district ? "text-red-700" : "text-gray-400"}>
-              {lpgEntity.flags.cross_district ? "✓" : "○"} Cross District
+              {lpgEntity.flags.cross_district ? "Yes" : "No"} Cross District
             </span>
           </div>
           <div className={`p-2 rounded-lg border ${lpgEntity.flags.high_lifetime_usage ? "bg-red-50 border-red-200" : "bg-gray-50 border-gray-200"}`}>
             <span className={lpgEntity.flags.high_lifetime_usage ? "text-red-700" : "text-gray-400"}>
-              {lpgEntity.flags.high_lifetime_usage ? "✓" : "○"} High Lifetime Usage
+              {lpgEntity.flags.high_lifetime_usage ? "Yes" : "No"} High Lifetime Usage
             </span>
           </div>
         </div>
@@ -440,7 +442,7 @@ export default function DashboardPage() {
   // Get selected entity display info
   const getSelectedEntityInfo = () => {
     if (!selectedEntity) return { id: '', name: '', score: 0 };
-    
+
     if (currentScheme === 'MDM') {
       const mdm = selectedEntity as MDMSchoolDetail;
       return {
@@ -485,10 +487,11 @@ export default function DashboardPage() {
                 Real-time data from BigQuery
               </p>
             </div>
-            <div className="flex items-center gap-3">
-              <BatchRefreshButton onRefreshComplete={handleRefreshComplete} />
-              <Button href="/analytics" variant="secondary">
-                📊 Analytics
+            <div className="grid grid-cols-3 gap-3 w-full md:w-auto min-w-[400px]">
+              <div className="w-full"><SchemeSwitcher /></div>
+              <div className="w-full [&>button]:w-full"><BatchRefreshButton onRefreshComplete={handleRefreshComplete} /></div>
+              <Button href="/analytics" variant="secondary" className="w-full justify-center">
+                Analytics
               </Button>
             </div>
           </div>
@@ -575,7 +578,7 @@ export default function DashboardPage() {
                 </div>
               </div>
               <Button href="/analytics" variant="secondary" className="text-xs py-1 px-3">
-                View Full Analysis →
+                View Full Analysis
               </Button>
             </div>
           </div>
@@ -629,16 +632,15 @@ export default function DashboardPage() {
                         const entityId = getEntityId(entity);
                         const entityScore = getEntityScore(entity);
                         const isSelected = getSelectedEntityId() === entityId;
-                        
+
                         return (
                           <tr
                             key={entityId}
                             onClick={() => handleEntityClick(entityId)}
-                            className={`cursor-pointer transition-colors ${
-                              isSelected
-                                ? "bg-primary/5 border-l-4 border-l-primary"
-                                : "hover:bg-gray-50"
-                            }`}
+                            className={`cursor-pointer transition-colors ${isSelected
+                              ? "bg-primary/5 border-l-4 border-l-primary"
+                              : "hover:bg-gray-50"
+                              }`}
                           >
                             <td className="px-4 py-3 text-sm font-medium text-gray-900">
                               {getEntityDisplayName(entity)}
@@ -661,13 +663,12 @@ export default function DashboardPage() {
                               <div className="flex items-center gap-2">
                                 <div className="w-20 h-2 bg-gray-200 rounded overflow-hidden">
                                   <div
-                                    className={`h-full ${
-                                      entity.risk_level === "HIGH"
-                                        ? "bg-red-500"
-                                        : entity.risk_level === "MEDIUM"
+                                    className={`h-full ${entity.risk_level === "HIGH"
+                                      ? "bg-red-500"
+                                      : entity.risk_level === "MEDIUM"
                                         ? "bg-amber-500"
                                         : "bg-green-500"
-                                    }`}
+                                      }`}
                                     style={{
                                       width: `${(entityScore / maxScore) * 100}%`,
                                     }}
@@ -780,13 +781,12 @@ export default function DashboardPage() {
                         </div>
                         <div className="h-2 bg-gray-200 rounded overflow-hidden">
                           <div
-                            className={`h-full ${
-                              selectedEntity.risk_level === "HIGH"
-                                ? "bg-red-500"
-                                : selectedEntity.risk_level === "MEDIUM"
+                            className={`h-full ${selectedEntity.risk_level === "HIGH"
+                              ? "bg-red-500"
+                              : selectedEntity.risk_level === "MEDIUM"
                                 ? "bg-amber-500"
                                 : "bg-green-500"
-                            }`}
+                              }`}
                             style={{
                               width: `${Math.min(
                                 (selectedInfo.score / maxScore) * 100,
@@ -810,7 +810,7 @@ export default function DashboardPage() {
                         selectedEntity.risk_breakdown.factors.length > 0 && (
                           <div className="mb-4">
                             <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                              📊 Risk Breakdown
+                              Risk Breakdown
                               <span className="text-xs px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full">
                                 Score: {selectedEntity.risk_breakdown.total_risk_score}
                               </span>
@@ -868,14 +868,14 @@ export default function DashboardPage() {
                       {selectedEntity.gemini_explanation && (
                         <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-4">
                           <h4 className="text-sm font-medium text-blue-800 mb-2 flex items-center gap-1">
-                            <span>✨</span>
+                            <span></span>
                             <span>
                               AI Explanation (
                               {language === "hi"
                                 ? "हिंदी"
                                 : language === "hinglish"
-                                ? "Hinglish"
-                                : "English"}
+                                  ? "Hinglish"
+                                  : "English"}
                               )
                             </span>
                           </h4>
@@ -889,7 +889,7 @@ export default function DashboardPage() {
                       <AuditPanel
                         beneficiaryId={selectedInfo.id}
                         riskLevel={selectedEntity.risk_level}
-                        onAuditComplete={() => {}}
+                        onAuditComplete={() => { }}
                       />
                     </div>
                   ) : (
@@ -937,7 +937,7 @@ export default function DashboardPage() {
                 <>
                   <strong>Autoencoder reconstructs normal behavior.</strong> High
                   reconstruction error (Mean Squared Error) indicates deviation from
-                  expected patterns → potential fraud signal. Risk banding: HIGH
+                  expected patterns - potential fraud signal. Risk banding: HIGH
                   (&gt;95th percentile), MEDIUM (75-95th), LOW (&lt;75th).
                 </>
               )}
@@ -953,7 +953,7 @@ export default function DashboardPage() {
             Want to explore patterns, trends, and geographic insights?
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Button href="/analytics">📊 View Analytics & Insights</Button>
+            <Button href="/analytics">View Analytics & Insights</Button>
             <Button href="/technology" variant="secondary">
               Explore Technology
             </Button>
