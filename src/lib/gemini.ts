@@ -8,9 +8,9 @@
 // - Rotate the key periodically and restrict it to specific APIs in Google Cloud Console
 // - This file should only be imported in server-side code (API routes)
 
-// Hardcoded for reliability since .env loading is inconsistent on Windows
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY 
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+// Environment variables for Gemini API
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const GEMINI_API_URL = process.env.GEMINI_API_URL || 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
 // Configurable timeout for Gemini API requests (in milliseconds)
 const GEMINI_REQUEST_TIMEOUT = 10_000; // 10 seconds
@@ -252,4 +252,181 @@ export function getRiskBadgeText(riskLevel: string, language: SupportedLanguage 
   };
   
   return badges[language]?.[riskLevel] || badges.en[riskLevel] || 'Unknown Risk';
+}
+
+// ============================================
+// MDM (Mid Day Meal) Specific Explanations
+// ============================================
+
+// Allowlist of valid MDM reason codes
+const ALLOWED_MDM_REASON_CODES = [
+  'ghost_meals',
+  'ingredient_inflation',
+  'fund_overclaim',
+  'cook_anomaly',
+  'normal',
+] as const;
+
+// MDM Reason code to human-readable mapping
+const MDM_REASON_TEMPLATES: Record<string, Record<string, string>> = {
+  en: {
+    ghost_meals: 'Students reported as served exceed actual attendance records - Ghost Meals detected',
+    ingredient_inflation: 'Ingredient usage (rice, dal, vegetables) exceeds government norms per student',
+    fund_overclaim: 'Funds claimed significantly exceed expected per-student MDM allocation',
+    cook_anomaly: 'Meals marked as served without cook present on duty',
+    normal: 'School meal operations align with MDM scheme guidelines and norms',
+  },
+  hi: {
+    ghost_meals: 'रिपोर्ट किए गए छात्र वास्तविक उपस्थिति से अधिक हैं - घोस्ट मील का पता चला',
+    ingredient_inflation: 'सामग्री का उपयोग (चावल, दाल, सब्जी) प्रति छात्र सरकारी मानकों से अधिक है',
+    fund_overclaim: 'दावा किए गए फंड प्रति छात्र MDM आवंटन से काफी अधिक हैं',
+    cook_anomaly: 'रसोइया की अनुपस्थिति में भोजन परोसे जाने के रूप में चिह्नित',
+    normal: 'स्कूल भोजन संचालन MDM योजना के दिशानिर्देशों के अनुरूप है',
+  },
+  hinglish: {
+    ghost_meals: 'Served students report actual attendance se zyada hai - Ghost Meals detect hui',
+    ingredient_inflation: 'Ingredient usage (chawal, dal, sabzi) per student govt norms se zyada hai',
+    fund_overclaim: 'Claimed funds expected MDM allocation se kaafi zyada hain',
+    cook_anomaly: 'Meal served mark hai but cook present nahi tha',
+    normal: 'School meal operations MDM scheme guidelines ke according hain',
+  },
+};
+
+/**
+ * Sanitize MDM reason codes against allowlist
+ */
+function sanitizeMDMReasonCodes(reasonCodes: string[]): string[] {
+  if (!Array.isArray(reasonCodes)) return ['normal'];
+  
+  const sanitized = reasonCodes
+    .map(code => {
+      const cleaned = code?.toLowerCase()?.trim()?.replace(/[\x00-\x1f\x7f]/g, '') || '';
+      if (ALLOWED_MDM_REASON_CODES.includes(cleaned as typeof ALLOWED_MDM_REASON_CODES[number])) {
+        return cleaned;
+      }
+      return null;
+    })
+    .filter((code): code is string => code !== null);
+  
+  return sanitized.length > 0 ? sanitized : ['normal'];
+}
+
+// Convert MDM flag codes to reason strings
+export function mdmFlagsToReasonCodes(flags: {
+  flag_ghost_meals: boolean;
+  flag_ingredient_inflation: boolean;
+  flag_fund_overclaim: boolean;
+  flag_cook_anomaly: boolean;
+}): string[] {
+  const reasons: string[] = [];
+  
+  if (flags.flag_ghost_meals) reasons.push('ghost_meals');
+  if (flags.flag_ingredient_inflation) reasons.push('ingredient_inflation');
+  if (flags.flag_fund_overclaim) reasons.push('fund_overclaim');
+  if (flags.flag_cook_anomaly) reasons.push('cook_anomaly');
+  
+  if (reasons.length === 0) reasons.push('normal');
+  
+  return reasons;
+}
+
+// Get MDM static explanations (fallback)
+export function getMDMStaticExplanations(
+  reasonCodes: string[],
+  language: SupportedLanguage = DEFAULT_LANGUAGE
+): string[] {
+  const templates = MDM_REASON_TEMPLATES[language] || MDM_REASON_TEMPLATES[DEFAULT_LANGUAGE];
+  return reasonCodes.map(code => templates[code] || templates.normal);
+}
+
+// Generate MDM-specific AI explanation via Gemini
+export async function generateMDMGeminiExplanation(
+  riskLevel: string,
+  reasonCodes: string[],
+  language: SupportedLanguage = DEFAULT_LANGUAGE
+): Promise<string> {
+  const safeRiskLevel = sanitizeRiskLevel(riskLevel);
+  const safeReasonCodes = sanitizeMDMReasonCodes(reasonCodes);
+  
+  if (!GEMINI_API_KEY) {
+    return getMDMStaticExplanations(safeReasonCodes, language).join('\n');
+  }
+
+  const languageMap: Record<string, string> = {
+    en: 'English (formal, administrative)',
+    hi: 'Hindi (formal, government style)',
+    hinglish: 'Hinglish (simple Hindi + English mix)',
+  };
+
+  const prompt = `You are generating explanations for a government Mid Day Meal (MDM) scheme audit dashboard.
+
+Rules:
+- Do NOT add new reasons
+- Do NOT infer intent or fraud
+- Do NOT mention machine learning or prediction
+- Do NOT use words like "suspicious", "fraud", "illegal", "criminal"
+- Use neutral, administrative language
+- Focus on operational observations only
+
+Scheme: Mid Day Meal (MDM) - School Nutrition Program
+Risk Level: ${safeRiskLevel}
+Observations:
+${safeReasonCodes.map(r => `- ${r.replace(/_/g, ' ')}`).join('\n')}
+
+Output Language: ${languageMap[language] || languageMap[DEFAULT_LANGUAGE]}
+Tone: Clear, non-accusatory, human-readable
+
+Generate a brief explanation (2-3 sentences max) suitable for an MDM scheme auditor reviewing this school's records.`;
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), GEMINI_REQUEST_TIMEOUT);
+
+  try {
+    const response = await fetch(GEMINI_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': GEMINI_API_KEY,
+      },
+      body: JSON.stringify({
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.3,
+          maxOutputTokens: 200,
+        },
+      }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      console.error('MDM Gemini API error: HTTP', response.status);
+      return getMDMStaticExplanations(safeReasonCodes, language).join('\n');
+    }
+
+    const data = await response.json();
+    const explanation = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    const blockedWords = ['fraud', 'intent', 'prediction', 'suspicious', 'criminal', 'illegal', 'model thinks'];
+    const hasBlockedWord = blockedWords.some(word => 
+      explanation.toLowerCase().includes(word)
+    );
+
+    if (hasBlockedWord || !explanation.trim()) {
+      console.warn('MDM Gemini output filtered due to policy constraints');
+      return getMDMStaticExplanations(safeReasonCodes, language).join('\n');
+    }
+
+    return explanation.trim();
+  } catch (error) {
+    clearTimeout(timeoutId);
+    
+    if (error instanceof Error && error.name === 'AbortError') {
+      console.error('MDM Gemini API request timed out');
+    } else {
+      console.error('MDM Gemini API call failed:', error instanceof Error ? error.message : 'Unknown error');
+    }
+    return getMDMStaticExplanations(safeReasonCodes, language).join('\n');
+  }
 }

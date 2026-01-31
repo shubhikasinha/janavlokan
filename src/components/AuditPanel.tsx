@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useScheme } from "@/context/SchemeContext";
 
 interface AuditPanelProps {
-  beneficiaryId: string;
+  beneficiaryId: string;  // For MDM this will be school_id
   riskLevel: string;
   onAuditComplete?: () => void;
 }
@@ -22,6 +23,7 @@ export default function AuditPanel({
   riskLevel,
   onAuditComplete,
 }: AuditPanelProps) {
+  const { currentScheme, schemeConfig } = useScheme();
   const [notes, setNotes] = useState("");
   const [officerName, setOfficerName] = useState("");
   const [loading, setLoading] = useState(false);
@@ -35,11 +37,11 @@ export default function AuditPanel({
   // Fetch feedback stats on mount
   useEffect(() => {
     fetchFeedbackStats();
-  }, []);
+  }, [currentScheme]);
 
   const fetchFeedbackStats = async () => {
     try {
-      const res = await fetch("/api/audit/feedback-stats");
+      const res = await fetch(`/api/audit/feedback-stats?scheme_type=${currentScheme}`);
       const data = await res.json();
       if (data.success) {
         setFeedbackStats(data.stats);
@@ -94,6 +96,7 @@ export default function AuditPanel({
           officer_id: officerName.trim().replace(/\s+/g, "_").toUpperCase(),
           notes: notes.trim(),
           new_status: getNewStatus(action),
+          scheme_type: currentScheme,  // Add scheme type
         }),
       });
 
@@ -106,7 +109,7 @@ export default function AuditPanel({
       // Refresh feedback stats after feedback action
       if (action.startsWith("FEEDBACK_")) {
         fetchFeedbackStats();
-        setSuccess(`Feedback recorded: ${action === "FEEDBACK_TRUE_POSITIVE" ? "True Positive ✅" : "False Positive ❌"}`);
+        setSuccess(`Feedback recorded: ${action === "FEEDBACK_TRUE_POSITIVE" ? "True Positive (Correct)" : "False Positive (Wrong)"}`);
       } else {
         setSuccess(`Action "${action}" recorded successfully!`);
       }
@@ -150,7 +153,7 @@ export default function AuditPanel({
       <div className="mb-4 p-3 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/30 rounded-lg">
         <div className="flex items-center justify-between mb-2">
           <h5 className="text-sm font-medium text-purple-400 flex items-center gap-2">
-            🎯 Model Feedback
+            Model Feedback
             <span className="text-[10px] text-purple-400/70">(Train Future Models)</span>
           </h5>
           {feedbackStats && !feedbackLoading && (
@@ -168,7 +171,7 @@ export default function AuditPanel({
             disabled={loading || !officerName.trim()}
             className="px-3 py-2.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-lg text-sm font-medium hover:bg-emerald-500/30 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
           >
-            ✅ Correct
+            Correct
             <span className="text-[10px] text-emerald-400/70">(True Positive)</span>
           </button>
           <button
@@ -176,7 +179,7 @@ export default function AuditPanel({
             disabled={loading || !officerName.trim()}
             className="px-3 py-2.5 bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg text-sm font-medium hover:bg-red-500/30 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
           >
-            ❌ Wrong
+            Wrong
             <span className="text-[10px] text-red-400/70">(False Positive)</span>
           </button>
         </div>
@@ -235,35 +238,35 @@ export default function AuditPanel({
           disabled={loading || !officerName.trim()}
           className="px-3 py-2 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded text-sm font-medium hover:bg-blue-500/30 disabled:opacity-50 transition-colors"
         >
-          📋 Mark Reviewed
+          Mark Reviewed
         </button>
         <button
           onClick={() => handleAuditAction("VERIFIED")}
           disabled={loading || !officerName.trim()}
           className="px-3 py-2 bg-purple-500/20 text-purple-400 border border-purple-500/30 rounded text-sm font-medium hover:bg-purple-500/30 disabled:opacity-50 transition-colors"
         >
-          ✅ Verify Fraud
+          Verify Fraud
         </button>
         <button
           onClick={() => handleAuditAction("FLAGGED")}
           disabled={loading || !officerName.trim()}
           className="px-3 py-2 bg-red-500/20 text-red-400 border border-red-500/30 rounded text-sm font-medium hover:bg-red-500/30 disabled:opacity-50 transition-colors"
         >
-          🚩 Confirm Fraud
+          Confirm Fraud
         </button>
         <button
           onClick={() => handleAuditAction("CLEARED")}
           disabled={loading || !officerName.trim()}
           className="px-3 py-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded text-sm font-medium hover:bg-emerald-500/30 disabled:opacity-50 transition-colors"
         >
-          ✓ Clear (Genuine)
+          Clear (Genuine)
         </button>
         <button
           onClick={() => handleAuditAction("NOTE_ADDED")}
           disabled={loading || !notes.trim() || !officerName.trim()}
           className="col-span-2 px-3 py-2 bg-white/5 text-white/70 border border-white/10 rounded text-sm font-medium hover:bg-white/10 disabled:opacity-50 transition-colors"
         >
-          📝 Add Note Only
+          Add Note Only
         </button>
       </div>
 

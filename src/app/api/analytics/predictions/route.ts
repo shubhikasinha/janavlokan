@@ -89,8 +89,8 @@ export async function GET(request: NextRequest) {
     const [rows] = await job.getQueryResults();
 
     // LPG cylinder cost assumptions
-    const SUBSIDY_PER_CYLINDER = 200;  // Government subsidy per cylinder
-    // Note: Full cylinder cost is ~₹900, but wastage = subsidy loss
+    const SUBSIDY_PER_CYLINDER = Number(process.env.SUBSIDY_PER_CYLINDER) || 200;  // Government subsidy per cylinder
+    // Note: Full cylinder cost is around Rs.900, but wastage = subsidy loss
 
     // Generate predictions
     const predictions: DistrictPrediction[] = rows.map((row) => {
@@ -210,7 +210,7 @@ function generateBudgetInsights(predictions: DistrictPrediction[], totalAmount: 
   const topDistricts = predictions.slice(0, 3);
   if (topDistricts.length > 0) {
     insights.push(
-      `💰 Top 3 districts account for ₹${topDistricts.reduce((sum, p) => sum + p.predicted_wastage_amount, 0).toLocaleString()} predicted monthly wastage`
+      `Top 3 districts account for Rs.${topDistricts.reduce((sum, p) => sum + p.predicted_wastage_amount, 0).toLocaleString()} predicted monthly wastage`
     );
   }
 
@@ -218,7 +218,7 @@ function generateBudgetInsights(predictions: DistrictPrediction[], totalAmount: 
   const increasingDistricts = predictions.filter(p => p.trend === 'INCREASING');
   if (increasingDistricts.length > 0) {
     insights.push(
-      `📈 ${increasingDistricts.length} districts show INCREASING fraud trend - prioritize for intervention`
+      `${increasingDistricts.length} districts show INCREASING fraud trend - prioritize for intervention`
     );
   }
 
@@ -226,21 +226,21 @@ function generateBudgetInsights(predictions: DistrictPrediction[], totalAmount: 
   const highConfidence = predictions.filter(p => p.confidence_score > 80);
   if (highConfidence.length > 0) {
     insights.push(
-      `✅ ${highConfidence.length} districts have >80% prediction confidence (sufficient audit data)`
+      `${highConfidence.length} districts have >80% prediction confidence (sufficient audit data)`
     );
   }
 
   // Budget recommendation
   const quarterlyBudget = totalAmount * 3;
   insights.push(
-    `📊 Recommended quarterly anti-fraud budget: ₹${quarterlyBudget.toLocaleString()} (based on predicted wastage recovery)`
+    `Recommended quarterly anti-fraud budget: Rs.${quarterlyBudget.toLocaleString()} (based on predicted wastage recovery)`
   );
 
   // Resource allocation suggestion
   const criticalDistricts = predictions.filter(p => p.current_high_risk_count > 10);
   if (criticalDistricts.length > 0) {
     insights.push(
-      `👥 Deploy additional field officers to: ${criticalDistricts.map(p => p.district).join(', ')}`
+      `Deploy additional field officers to: ${criticalDistricts.map(p => p.district).join(', ')}`
     );
   }
 

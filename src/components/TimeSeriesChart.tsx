@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   LineChart,
   Line,
@@ -13,6 +13,7 @@ import {
   Area,
   CartesianGrid,
 } from "recharts";
+import { useScheme } from "@/context/SchemeContext";
 
 interface TimeSeriesDataPoint {
   date: string;
@@ -37,11 +38,17 @@ interface TimeSeriesChartProps {
 }
 
 export default function TimeSeriesChart({ days = 30, showSpikes = true }: TimeSeriesChartProps) {
+  const { currentScheme, schemeConfig } = useScheme();
   const [timeSeriesData, setTimeSeriesData] = useState<TimeSeriesDataPoint[]>([]);
   const [spikesData, setSpikesData] = useState<TemporalSpike[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedDays, setSelectedDays] = useState(days);
+
+  // Get API base based on scheme
+  const getApiBase = useCallback(() => {
+    return currentScheme === 'MDM' ? '/api/mdm' : '/api';
+  }, [currentScheme]);
 
   useEffect(() => {
     async function fetchData() {
@@ -49,9 +56,10 @@ export default function TimeSeriesChart({ days = 30, showSpikes = true }: TimeSe
       setError(null);
 
       try {
+        const apiBase = getApiBase();
         const [timeSeriesRes, spikesRes] = await Promise.all([
-          fetch(`/api/analytics/time-series?days=${selectedDays}`),
-          showSpikes ? fetch("/api/analytics/temporal-spikes") : Promise.resolve(null),
+          fetch(`${apiBase}/analytics/time-series?days=${selectedDays}`),
+          showSpikes ? fetch(`${apiBase}/analytics/temporal-spikes`).catch(() => null) : Promise.resolve(null),
         ]);
 
         if (!timeSeriesRes.ok) {
@@ -64,6 +72,8 @@ export default function TimeSeriesChart({ days = 30, showSpikes = true }: TimeSe
         if (spikesRes && spikesRes.ok) {
           const spikesJson = await spikesRes.json();
           setSpikesData(Array.isArray(spikesJson) ? spikesJson : []);
+        } else {
+          setSpikesData([]);
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load data");
@@ -73,7 +83,7 @@ export default function TimeSeriesChart({ days = 30, showSpikes = true }: TimeSe
     }
 
     fetchData();
-  }, [selectedDays, showSpikes]);
+  }, [selectedDays, showSpikes, currentScheme, getApiBase]);
 
   // Format date for display
   const formatDate = (dateStr: string) => {
@@ -119,9 +129,9 @@ export default function TimeSeriesChart({ days = 30, showSpikes = true }: TimeSe
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="font-heading font-semibold text-gray-900">
-              Risk Trends Over Time
+              {schemeConfig.name} Risk Trends Over Time
             </h3>
-            <p className="text-sm text-gray-500">Daily anomaly distribution</p>
+            <p className="text-sm text-gray-500">Daily {schemeConfig.entityName} anomaly distribution</p>
           </div>
           <select
             value={selectedDays}

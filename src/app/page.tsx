@@ -1,6 +1,5 @@
 import React from 'react';
 import { Button } from '../components';
-import { Link } from 'react-router-dom';
 
 /* ---------------- Types ---------------- */
 
@@ -83,8 +82,8 @@ const HomePage: React.FC = () => {
                             <p className="text-sm text-gray-600 mb-4">
                                 Review flagged beneficiaries, investigate individual cases, and take audit actions
                             </p>
-                            <Button to="/dashboard" className="w-full">
-                                🔍 Investigate Cases
+                            <Button href="/dashboard" className="w-full">
+                                Investigate Cases
                             </Button>
                         </div>
                         
@@ -98,8 +97,8 @@ const HomePage: React.FC = () => {
                             <p className="text-sm text-gray-600 mb-4">
                                 Explore patterns, geographic trends, and predictive risk analysis
                             </p>
-                            <Button variant="secondary" to="/analytics" className="w-full border-amber-500 text-amber-700 hover:bg-amber-50">
-                                📊 View Analytics
+                            <Button variant="secondary" href="/analytics" className="w-full border-amber-500 text-amber-700 hover:bg-amber-50">
+                                View Analytics
                             </Button>
                         </div>
                     </div>

@@ -82,7 +82,7 @@ export default function ContactPage() {
                                     {submitted ? (
                                         <div className="text-center py-8">
                                             <div className="w-16 h-16 bg-green-100 border border-green-300 rounded-full flex items-center justify-center mx-auto mb-4">
-                                                <span className="text-green-700 text-2xl font-bold">✓</span>
+                                                <span className="text-green-700 text-2xl font-bold">OK</span>
                                             </div>
                                             <h3 className="text-lg font-heading font-semibold text-gray-900 mb-2">
                                                 Message Sent Successfully

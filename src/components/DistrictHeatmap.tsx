@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import dynamic from "next/dynamic";
+import { useScheme } from "@/context/SchemeContext";
 
 // District coordinates for Indian states (approximate centroids)
 // In production, use proper GeoJSON boundaries
@@ -129,10 +130,16 @@ const Tooltip = dynamic(
 );
 
 export default function DistrictHeatmap({ data = [], onDistrictClick }: DistrictHeatmapProps) {
+  const { currentScheme, schemeConfig } = useScheme();
   const [isClient, setIsClient] = useState(false);
   const [mapData, setMapData] = useState<DistrictRisk[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Get API endpoint based on scheme
+  const getApiEndpoint = useCallback(() => {
+    return currentScheme === 'MDM' ? '/api/mdm/geo/district-risk' : '/api/geo/district-risk';
+  }, [currentScheme]);
 
   // Ensure client-side rendering
   useEffect(() => {
@@ -149,7 +156,7 @@ export default function DistrictHeatmap({ data = [], onDistrictClick }: District
 
     async function fetchDistrictData() {
       try {
-        const res = await fetch("/api/geo/district-risk");
+        const res = await fetch(getApiEndpoint());
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();
         setMapData(json);
@@ -161,7 +168,7 @@ export default function DistrictHeatmap({ data = [], onDistrictClick }: District
     }
 
     fetchDistrictData();
-  }, [data]);
+  }, [data, currentScheme, getApiEndpoint]);
 
   // Calculate max for scaling
   const maxAnomalyCount = Math.max(...mapData.map((d) => d.anomaly_count), 1);
@@ -205,7 +212,7 @@ export default function DistrictHeatmap({ data = [], onDistrictClick }: District
     <div className="relative">
       {/* Legend */}
       <div className="absolute top-2 right-2 z-[1000] bg-white/95 p-3 rounded-lg shadow-md text-xs">
-        <p className="font-semibold mb-2">Anomaly Density</p>
+        <p className="font-semibold mb-2">{schemeConfig.name} Anomaly Density</p>
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-red-600"></span>

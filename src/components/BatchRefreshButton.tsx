@@ -104,7 +104,7 @@ export default function BatchRefreshButton({ onRefreshComplete }: BatchRefreshBu
               onClick={() => setResult(null)}
               className="text-gray-400 hover:text-gray-600"
             >
-              ✕
+              X
             </button>
           </div>
 

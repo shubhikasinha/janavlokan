@@ -5,6 +5,7 @@ import Script from "next/script";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import GoogleTranslateClient from "@/components/GoogleTranslateClient";
+import { SchemeProvider } from "@/context/SchemeContext";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -35,13 +36,15 @@ export default function RootLayout({
         {/* Re-trigger translation on route change */}
         <GoogleTranslateClient />
 
-        <div className="min-h-screen flex flex-col">
-          <Header />
-          <main className="flex-1">
-            {children}
-          </main>
-          <Footer />
-        </div>
+        <SchemeProvider>
+          <div className="min-h-screen flex flex-col">
+            <Header />
+            <main className="flex-1">
+              {children}
+            </main>
+            <Footer />
+          </div>
+        </SchemeProvider>
 
         {/* UserWay Accessibility Widget */}
         <Script

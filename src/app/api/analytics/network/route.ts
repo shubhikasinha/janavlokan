@@ -229,14 +229,14 @@ function generateDealerInsights(profiles: DealerRiskProfile[]): string[] {
   // Top risky dealer
   const topDealer = profiles[0];
   insights.push(
-    `🚨 Dealer ${topDealer.dealer_id} has ${topDealer.high_risk_percentage.toFixed(1)}% high-risk beneficiaries (${topDealer.high_risk_count}/${topDealer.total_beneficiaries})`
+    `ALERT: Dealer ${topDealer.dealer_id} has ${topDealer.high_risk_percentage.toFixed(1)}% high-risk beneficiaries (${topDealer.high_risk_count}/${topDealer.total_beneficiaries})`
   );
 
   // Multi-district dealers
   const multiDistrict = profiles.filter(p => p.districts_served > 1);
   if (multiDistrict.length > 0) {
     insights.push(
-      `🌐 ${multiDistrict.length} dealers serve multiple districts - potential diversion risk`
+      `${multiDistrict.length} dealers serve multiple districts - potential diversion risk`
     );
   }
 
@@ -244,14 +244,14 @@ function generateDealerInsights(profiles: DealerRiskProfile[]): string[] {
   const highConcentration = profiles.filter(p => p.high_risk_percentage > 50);
   if (highConcentration.length > 0) {
     insights.push(
-      `⚠️ ${highConcentration.length} dealers have >50% high-risk beneficiaries - investigation recommended`
+      `WARNING: ${highConcentration.length} dealers have >50% high-risk beneficiaries - investigation recommended`
     );
   }
 
   // Average stats
   const avgHighRisk = profiles.reduce((sum, p) => sum + p.high_risk_count, 0) / profiles.length;
   insights.push(
-    `📊 Average high-risk beneficiaries per suspicious dealer: ${avgHighRisk.toFixed(1)}`
+    `Average high-risk beneficiaries per suspicious dealer: ${avgHighRisk.toFixed(1)}`
   );
 
   return insights;

@@ -6,13 +6,21 @@ let bigqueryClient: BigQuery | null = null;
 
 export function getBigQueryClient(): BigQuery {
   if (!bigqueryClient) {
+    const projectId = process.env.GCP_PROJECT_ID || 'gfg-fot';
+    const keyFilename = process.env.GOOGLE_APPLICATION_CREDENTIALS || 'gcp-key.json';
+    
     bigqueryClient = new BigQuery({
-      projectId: 'gfg-fot',
-      keyFilename: path.join(process.cwd(), 'gcp-key.json'),
+      projectId,
+      keyFilename: path.join(process.cwd(), keyFilename),
     });
   }
   return bigqueryClient;
 }
+
+// ============================================
+// SCHEME TYPES
+// ============================================
+export type SchemeType = 'LPG' | 'MDM';
 
 // ============================================
 // Type definitions for API responses
@@ -59,6 +67,116 @@ export interface BeneficiaryDetail {
 export interface DistrictRisk {
   residence_district: string;
   anomaly_count: number;
+}
+
+// ============================================
+// MDM (Mid Day Meal) Type Definitions
+// ============================================
+
+export interface MDMDashboardSummary {
+  total_schools: number;
+  high_risk: number;
+  medium_risk: number;
+  low_risk: number;
+  total_meals_reported: number;
+}
+
+export interface MDMHighRiskSchool {
+  school_id: number;
+  school_name: string;
+  district: string;
+  risk_level: string;
+  anomaly_score: number;
+  flag_ghost_meals: boolean;
+  flag_ingredient_inflation: boolean;
+  flag_fund_overclaim: boolean;
+  flag_cook_anomaly: boolean;
+  total_meals_reported: number;
+}
+
+export interface MDMSchoolDetail {
+  school_id: number;
+  school_name: string;
+  district: string;
+  block: string;
+  village: string;
+  school_type: string;
+  management: string;
+  total_enrolled_students: number;
+  avg_attendance_rate: number;
+  kitchen_type: string;
+  cook_count: number;
+  last_inspection_score: number;
+  risk_level: string;
+  anomaly_score: number;
+  flags: {
+    ghost_meals: boolean;
+    ingredient_inflation: boolean;
+    fund_overclaim: boolean;
+    cook_anomaly: boolean;
+  };
+  reasons: string[];
+  gemini_explanation?: string;
+}
+
+export interface MDMDistrictRisk {
+  district: string;
+  anomaly_count: number;
+  total_schools: number;
+  high_risk_schools: number;
+}
+
+export interface MDMDailyRecord {
+  record_id: string;
+  school_id: number;
+  date: string;
+  actual_attendance: number;
+  reported_students_served: number;
+  menu_type: string;
+  cook_present: boolean;
+  meal_served_flag: boolean;
+  rice_kg_used: number;
+  dal_kg_used: number;
+  vegetables_kg_used: number;
+  oil_liters_used: number;
+  eggs_count: number;
+  fund_claimed_inr: number;
+  fund_released_inr: number;
+}
+
+// ============================================
+// MDM Fraud Flag Reason Generator
+// DETERMINISTIC - No AI inference here
+// ============================================
+export function generateMDMReasonsFromFlags(flags: {
+  ghost_meals: boolean;
+  ingredient_inflation: boolean;
+  fund_overclaim: boolean;
+  cook_anomaly: boolean;
+}): string[] {
+  const reasons: string[] = [];
+  
+  if (flags.ghost_meals) {
+    reasons.push('Reported students served exceeds actual attendance (Ghost Meals detected)');
+  }
+  
+  if (flags.ingredient_inflation) {
+    reasons.push('Ingredient usage exceeds expected norms per student');
+  }
+  
+  if (flags.fund_overclaim) {
+    reasons.push('Funds claimed significantly higher than expected for student count');
+  }
+  
+  if (flags.cook_anomaly) {
+    reasons.push('Meal served without cook present - operational anomaly');
+  }
+  
+  if (reasons.length === 0) {
+    reasons.push('School operations align with expected norms and standards');
+  }
+  
+  return reasons;
 }
 
 // ============================================

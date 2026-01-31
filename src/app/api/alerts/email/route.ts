@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
 
     // TODO: Integrate with actual email service (SendGrid, AWS SES, etc.)
     // For now, we'll log the alert and return success
-    console.log('🚨 ALERT TRIGGERED:', {
+    console.log('ALERT TRIGGERED:', {
       beneficiary_id,
       risk_score,
       reason,

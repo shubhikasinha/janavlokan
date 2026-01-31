@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/Button";
 import AuditPanel from "@/components/AuditPanel";
 import BatchRefreshButton from "@/components/BatchRefreshButton";
+import { useScheme } from "@/context/SchemeContext";
 
 // Chart colors for inline distribution display
 const RISK_COLORS: Record<string, string> = {
@@ -13,20 +14,17 @@ const RISK_COLORS: Record<string, string> = {
   UNKNOWN: "#6b7280",
 };
 
-// Types
-interface DashboardSummary {
+// ============================================
+// LPG Types
+// ============================================
+interface LPGDashboardSummary {
   total_beneficiaries: number;
   high_risk: number;
   medium_risk: number;
   low_risk: number;
 }
 
-interface RiskDistribution {
-  risk_level: string;
-  count: number;
-}
-
-interface Beneficiary {
+interface LPGBeneficiary {
   beneficiary_id: string;
   risk_level: string;
   mean_squared_error: number;
@@ -36,19 +34,7 @@ interface Beneficiary {
   flag_high_lifetime_usage: boolean;
 }
 
-interface RiskFactor {
-  factor: string;
-  contribution: number;
-  percentage: number;
-  description: string;
-}
-
-interface RiskBreakdown {
-  total_risk_score: number;
-  factors: RiskFactor[];
-}
-
-interface BeneficiaryDetail {
+interface LPGBeneficiaryDetail {
   beneficiary_id: string;
   risk_level: string;
   mean_squared_error: number;
@@ -63,15 +49,91 @@ interface BeneficiaryDetail {
   risk_breakdown?: RiskBreakdown;
 }
 
+// ============================================
+// MDM Types
+// ============================================
+interface MDMDashboardSummary {
+  total_schools: number;
+  high_risk: number;
+  medium_risk: number;
+  low_risk: number;
+  total_meals_reported: number;
+}
+
+interface MDMSchool {
+  school_id: number;
+  school_name: string;
+  district: string;
+  risk_level: string;
+  anomaly_score: number;
+  flag_ghost_meals: boolean;
+  flag_ingredient_inflation: boolean;
+  flag_fund_overclaim: boolean;
+  flag_cook_anomaly: boolean;
+  total_meals_reported: number;
+}
+
+interface MDMSchoolDetail {
+  school_id: number;
+  school_name: string;
+  district: string;
+  block: string;
+  village: string;
+  school_type: string;
+  management: string;
+  total_enrolled_students: number;
+  avg_attendance_rate: number;
+  kitchen_type: string;
+  cook_count: number;
+  last_inspection_score: number;
+  risk_level: string;
+  anomaly_score: number;
+  flags: {
+    ghost_meals: boolean;
+    ingredient_inflation: boolean;
+    fund_overclaim: boolean;
+    cook_anomaly: boolean;
+  };
+  reasons: string[];
+  gemini_explanation?: string;
+  risk_breakdown?: RiskBreakdown;
+}
+
+// ============================================
+// Common Types
+// ============================================
+interface RiskDistribution {
+  risk_level: string;
+  count: number;
+}
+
+interface RiskFactor {
+  factor: string;
+  contribution: number;
+  percentage: number;
+  description: string;
+}
+
+interface RiskBreakdown {
+  total_risk_score: number;
+  factors: RiskFactor[];
+}
+
 type Language = "en" | "hi" | "hinglish";
 
+// Union types for unified handling
+type DashboardSummary = LPGDashboardSummary | MDMDashboardSummary;
+type EntityItem = LPGBeneficiary | MDMSchool;
+type EntityDetail = LPGBeneficiaryDetail | MDMSchoolDetail;
+
 export default function DashboardPage() {
+  const { currentScheme, schemeConfig } = useScheme();
+  
   // State
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [distribution, setDistribution] = useState<RiskDistribution[]>([]);
-  const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([]);
-  const [selectedBeneficiary, setSelectedBeneficiary] =
-    useState<BeneficiaryDetail | null>(null);
+  const [entities, setEntities] = useState<EntityItem[]>([]);
+  const [selectedEntity, setSelectedEntity] = useState<EntityDetail | null>(null);
   const [riskFilter, setRiskFilter] = useState<string>("ALL");
   const [language, setLanguage] = useState<Language>("hinglish");
   const [refreshKey, setRefreshKey] = useState(0);
@@ -86,34 +148,86 @@ export default function DashboardPage() {
     setRefreshKey((prev) => prev + 1);
   };
 
-  // Fetch all dashboard data on mount or refresh
+  // API base URL based on scheme
+  const getApiBase = useCallback(() => {
+    return currentScheme === 'MDM' ? '/api/mdm' : '/api';
+  }, [currentScheme]);
+
+  // Get entity ID
+  const getEntityId = useCallback((entity: EntityItem): string => {
+    if (currentScheme === 'MDM') {
+      return String((entity as MDMSchool).school_id);
+    }
+    return (entity as LPGBeneficiary).beneficiary_id;
+  }, [currentScheme]);
+
+  // Get entity score
+  const getEntityScore = useCallback((entity: EntityItem): number => {
+    if (currentScheme === 'MDM') {
+      return (entity as MDMSchool).anomaly_score;
+    }
+    return (entity as LPGBeneficiary).mean_squared_error;
+  }, [currentScheme]);
+
+  // Get total count from summary
+  const getTotalCount = useCallback((sum: DashboardSummary | null): number => {
+    if (!sum) return 0;
+    if (currentScheme === 'MDM') {
+      return (sum as MDMDashboardSummary).total_schools ?? 0;
+    }
+    return (sum as LPGDashboardSummary).total_beneficiaries ?? 0;
+  }, [currentScheme]);
+
+  // Fetch all dashboard data on mount, refresh, or scheme change
   useEffect(() => {
     async function fetchDashboardData() {
       setLoading(true);
       setError(null);
+      setSelectedEntity(null);
+      
+      const apiBase = getApiBase();
 
       try {
-        const [summaryRes, distributionRes, beneficiariesRes] =
-          await Promise.all([
-            fetch("/api/dashboard/summary"),
-            fetch("/api/dashboard/distribution"),
-            fetch("/api/beneficiaries/high-risk?limit=50"),
-          ]);
+        const [summaryRes, distributionRes, entitiesRes] = await Promise.all([
+          fetch(`${apiBase}/dashboard/summary`),
+          fetch(`${apiBase}/dashboard/distribution`),
+          fetch(currentScheme === 'MDM' 
+            ? `${apiBase}/schools/high-risk?limit=50`
+            : `${apiBase}/beneficiaries/high-risk?limit=50`
+          ),
+        ]);
 
-        if (!summaryRes.ok || !distributionRes.ok || !beneficiariesRes.ok) {
+        if (!summaryRes.ok || !distributionRes.ok || !entitiesRes.ok) {
           throw new Error("Failed to fetch dashboard data");
         }
 
-        const [summaryData, distributionData, beneficiariesData] =
-          await Promise.all([
-            summaryRes.json(),
-            distributionRes.json(),
-            beneficiariesRes.json(),
-          ]);
+        const [summaryData, distributionData, entitiesData] = await Promise.all([
+          summaryRes.json(),
+          distributionRes.json(),
+          entitiesRes.json(),
+        ]);
 
-        setSummary(summaryData);
-        setDistribution(distributionData);
-        setBeneficiaries(beneficiariesData);
+        // Check if API returned an error object
+        if (summaryData?.success === false) {
+          console.error('Summary API error:', summaryData.error);
+          setSummary(null);
+        } else {
+          setSummary(summaryData);
+        }
+        
+        if (Array.isArray(distributionData)) {
+          setDistribution(distributionData);
+        } else {
+          console.error('Distribution API error:', distributionData);
+          setDistribution([]);
+        }
+        
+        if (Array.isArray(entitiesData)) {
+          setEntities(entitiesData);
+        } else {
+          console.error('Entities API error:', entitiesData);
+          setEntities([]);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unknown error occurred");
       } finally {
@@ -122,39 +236,42 @@ export default function DashboardPage() {
     }
 
     fetchDashboardData();
-  }, [refreshKey]);
+  }, [refreshKey, currentScheme, getApiBase]);
 
   // Fetch filtered data when risk filter changes
   useEffect(() => {
     const fetchFilteredData = async () => {
+      const apiBase = getApiBase();
+      const endpoint = currentScheme === 'MDM' ? 'schools/high-risk' : 'beneficiaries/high-risk';
+      
       try {
-        const url =
-          riskFilter === "ALL"
-            ? "/api/beneficiaries/high-risk?limit=50"
-            : `/api/beneficiaries/high-risk?limit=50&risk_level=${riskFilter}`;
+        const url = riskFilter === "ALL"
+          ? `${apiBase}/${endpoint}?limit=50`
+          : `${apiBase}/${endpoint}?limit=50&risk_level=${riskFilter}`;
 
         const res = await fetch(url);
         if (!res.ok) throw new Error("Failed to fetch filtered data");
         const data = await res.json();
-        setBeneficiaries(data);
+        setEntities(data);
       } catch (err) {
-        console.error("Error fetching filtered beneficiaries:", err);
+        console.error("Error fetching filtered entities:", err);
       }
     };
 
     fetchFilteredData();
-  }, [riskFilter]);
+  }, [riskFilter, currentScheme, getApiBase]);
 
-  // Fetch beneficiary detail on click (with language param)
-  const handleBeneficiaryClick = async (beneficiaryId: string) => {
+  // Fetch entity detail on click (with language param)
+  const handleEntityClick = async (entityId: string) => {
     setDetailLoading(true);
+    const apiBase = getApiBase();
+    const endpoint = currentScheme === 'MDM' ? 'schools' : 'beneficiaries';
+    
     try {
-      const res = await fetch(
-        `/api/beneficiaries/${beneficiaryId}?lang=${language}`
-      );
+      const res = await fetch(`${apiBase}/${endpoint}/${entityId}?lang=${language}`);
       if (!res.ok) throw new Error("Failed to fetch details");
       const data = await res.json();
-      setSelectedBeneficiary(data);
+      setSelectedEntity(data);
     } catch (err) {
       console.error("Error fetching details:", err);
     } finally {
@@ -162,13 +279,22 @@ export default function DashboardPage() {
     }
   };
 
-  // Refetch when language changes (if beneficiary is selected)
+  // Refetch when language changes (if entity is selected)
   useEffect(() => {
-    if (selectedBeneficiary) {
-      handleBeneficiaryClick(selectedBeneficiary.beneficiary_id);
+    if (selectedEntity) {
+      const entityId = currentScheme === 'MDM' 
+        ? String((selectedEntity as MDMSchoolDetail).school_id)
+        : (selectedEntity as LPGBeneficiaryDetail).beneficiary_id;
+      handleEntityClick(entityId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [language]);
+
+  // Clear selection when scheme changes
+  useEffect(() => {
+    setSelectedEntity(null);
+    setRiskFilter("ALL");
+  }, [currentScheme]);
 
   // Risk level styling
   const getRiskBadgeStyle = (level: string) => {
@@ -184,27 +310,36 @@ export default function DashboardPage() {
     }
   };
 
-  // Calculate max MSE for bar scaling
-  const maxMSE = Math.max(
-    ...beneficiaries.map((b) => b.mean_squared_error),
+  // Calculate max score for bar scaling
+  const maxScore = Math.max(
+    ...entities.map((e) => getEntityScore(e)),
     0.001
   );
 
-  // Loading state - Light theme
+  // Get selected entity ID for comparison
+  const getSelectedEntityId = (): string | null => {
+    if (!selectedEntity) return null;
+    if (currentScheme === 'MDM') {
+      return String((selectedEntity as MDMSchoolDetail).school_id);
+    }
+    return (selectedEntity as LPGBeneficiaryDetail).beneficiary_id;
+  };
+
+  // Loading state
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-primary/20 rounded-full animate-spin border-t-primary mx-auto"></div>
           <p className="mt-4 text-gray-500 text-sm">
-            Loading Dashboard from BigQuery...
+            Loading {schemeConfig.name} Dashboard from BigQuery...
           </p>
         </div>
       </div>
     );
   }
 
-  // Error state - Light theme
+  // Error state
   if (error) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
@@ -234,9 +369,100 @@ export default function DashboardPage() {
     );
   }
 
+  // Render flags based on scheme
+  const renderFlags = () => {
+    if (!selectedEntity) return null;
+
+    if (currentScheme === 'MDM') {
+      const mdmEntity = selectedEntity as MDMSchoolDetail;
+      return (
+        <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className={`p-2 rounded-lg border ${mdmEntity.flags.ghost_meals ? "bg-red-50 border-red-200" : "bg-gray-50 border-gray-200"}`}>
+            <span className={mdmEntity.flags.ghost_meals ? "text-red-700" : "text-gray-400"}>
+              {mdmEntity.flags.ghost_meals ? "✓" : "○"} Ghost Meals
+            </span>
+          </div>
+          <div className={`p-2 rounded-lg border ${mdmEntity.flags.ingredient_inflation ? "bg-red-50 border-red-200" : "bg-gray-50 border-gray-200"}`}>
+            <span className={mdmEntity.flags.ingredient_inflation ? "text-red-700" : "text-gray-400"}>
+              {mdmEntity.flags.ingredient_inflation ? "✓" : "○"} Ingredient Inflation
+            </span>
+          </div>
+          <div className={`p-2 rounded-lg border ${mdmEntity.flags.fund_overclaim ? "bg-red-50 border-red-200" : "bg-gray-50 border-gray-200"}`}>
+            <span className={mdmEntity.flags.fund_overclaim ? "text-red-700" : "text-gray-400"}>
+              {mdmEntity.flags.fund_overclaim ? "✓" : "○"} Fund Overclaim
+            </span>
+          </div>
+          <div className={`p-2 rounded-lg border ${mdmEntity.flags.cook_anomaly ? "bg-red-50 border-red-200" : "bg-gray-50 border-gray-200"}`}>
+            <span className={mdmEntity.flags.cook_anomaly ? "text-red-700" : "text-gray-400"}>
+              {mdmEntity.flags.cook_anomaly ? "✓" : "○"} Cook Anomaly
+            </span>
+          </div>
+        </div>
+      );
+    } else {
+      const lpgEntity = selectedEntity as LPGBeneficiaryDetail;
+      return (
+        <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className={`p-2 rounded-lg border ${lpgEntity.flags.high_recent_activity ? "bg-red-50 border-red-200" : "bg-gray-50 border-gray-200"}`}>
+            <span className={lpgEntity.flags.high_recent_activity ? "text-red-700" : "text-gray-400"}>
+              {lpgEntity.flags.high_recent_activity ? "✓" : "○"} High Recent Activity
+            </span>
+          </div>
+          <div className={`p-2 rounded-lg border ${lpgEntity.flags.multiple_dealers ? "bg-red-50 border-red-200" : "bg-gray-50 border-gray-200"}`}>
+            <span className={lpgEntity.flags.multiple_dealers ? "text-red-700" : "text-gray-400"}>
+              {lpgEntity.flags.multiple_dealers ? "✓" : "○"} Multiple Dealers
+            </span>
+          </div>
+          <div className={`p-2 rounded-lg border ${lpgEntity.flags.cross_district ? "bg-red-50 border-red-200" : "bg-gray-50 border-gray-200"}`}>
+            <span className={lpgEntity.flags.cross_district ? "text-red-700" : "text-gray-400"}>
+              {lpgEntity.flags.cross_district ? "✓" : "○"} Cross District
+            </span>
+          </div>
+          <div className={`p-2 rounded-lg border ${lpgEntity.flags.high_lifetime_usage ? "bg-red-50 border-red-200" : "bg-gray-50 border-gray-200"}`}>
+            <span className={lpgEntity.flags.high_lifetime_usage ? "text-red-700" : "text-gray-400"}>
+              {lpgEntity.flags.high_lifetime_usage ? "✓" : "○"} High Lifetime Usage
+            </span>
+          </div>
+        </div>
+      );
+    }
+  };
+
+  // Get display name for entity
+  const getEntityDisplayName = (entity: EntityItem): string => {
+    if (currentScheme === 'MDM') {
+      const mdm = entity as MDMSchool;
+      return mdm.school_name || `School ${mdm.school_id}`;
+    }
+    return (entity as LPGBeneficiary).beneficiary_id;
+  };
+
+  // Get selected entity display info
+  const getSelectedEntityInfo = () => {
+    if (!selectedEntity) return { id: '', name: '', score: 0 };
+    
+    if (currentScheme === 'MDM') {
+      const mdm = selectedEntity as MDMSchoolDetail;
+      return {
+        id: String(mdm.school_id),
+        name: mdm.school_name,
+        score: mdm.anomaly_score,
+        extra: mdm.district,
+      };
+    }
+    const lpg = selectedEntity as LPGBeneficiaryDetail;
+    return {
+      id: lpg.beneficiary_id,
+      name: lpg.beneficiary_id,
+      score: lpg.mean_squared_error,
+    };
+  };
+
+  const selectedInfo = getSelectedEntityInfo();
+
   return (
     <div className="min-h-screen bg-white">
-      {/* Header - Light Theme */}
+      {/* Header */}
       <section className="bg-white py-6 md:py-8 border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -246,12 +472,16 @@ export default function DashboardPage() {
                 <span className="text-xs font-medium text-green-600 uppercase tracking-wide">
                   Live System
                 </span>
+                <span className="text-lg">{schemeConfig.icon}</span>
+                <span className="text-xs font-medium text-primary uppercase tracking-wide px-2 py-0.5 bg-primary/10 rounded-full">
+                  {schemeConfig.name}
+                </span>
               </div>
               <h1 className="text-2xl md:text-3xl font-heading font-bold text-gray-900 mb-1">
-                Risk Intelligence Dashboard
+                {schemeConfig.fullName} Dashboard
               </h1>
               <p className="text-gray-600 text-sm">
-                Operational view for investigating flagged beneficiaries •
+                Operational view for investigating flagged {schemeConfig.entityNamePlural.toLowerCase()} •
                 Real-time data from BigQuery
               </p>
             </div>
@@ -271,10 +501,10 @@ export default function DashboardPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div className="bg-white border border-gray-200 rounded-xl p-5 text-center shadow-sm hover:shadow-md transition-shadow">
               <div className="text-3xl font-heading font-bold text-gray-900 tabular-nums">
-                {summary?.total_beneficiaries?.toLocaleString() || 0}
+                {getTotalCount(summary).toLocaleString()}
               </div>
               <div className="text-xs text-gray-500 mt-1 uppercase tracking-wide">
-                Total Beneficiaries
+                Total {schemeConfig.entityNamePlural}
               </div>
             </div>
             <div className="bg-red-50 border border-red-200 rounded-xl p-5 text-center shadow-sm hover:shadow-md transition-shadow">
@@ -302,6 +532,23 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
+
+          {/* MDM Extra Stats */}
+          {currentScheme === 'MDM' && summary && (
+            <div className="mb-6 bg-blue-50 border border-blue-200 rounded-xl p-4">
+              <div className="flex items-center gap-4">
+                <div className="text-2xl">🍱</div>
+                <div>
+                  <p className="text-sm font-medium text-blue-800">
+                    Total Meals Reported: {((summary as MDMDashboardSummary).total_meals_reported || 0).toLocaleString()}
+                  </p>
+                  <p className="text-xs text-blue-600">
+                    Across all monitored schools in the system
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Quick Risk Distribution Bar */}
           <div className="mb-6 bg-gray-50 border border-gray-200 rounded-xl p-4">
@@ -335,14 +582,14 @@ export default function DashboardPage() {
 
           {/* Main Content: Table + Detail Panel */}
           <div className="grid lg:grid-cols-3 gap-6">
-            {/* Flagged Beneficiaries Table */}
+            {/* Flagged Entities Table */}
             <div className="lg:col-span-2">
               <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
                 <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
                   <div className="flex items-center justify-between">
                     <h2 className="font-heading font-semibold text-gray-900 flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-                      Flagged Beneficiaries
+                      Flagged {schemeConfig.entityNamePlural}
                     </h2>
                     <select
                       value={riskFilter}
@@ -362,77 +609,92 @@ export default function DashboardPage() {
                     <thead className="sticky top-0 bg-gray-50">
                       <tr className="border-b border-gray-200">
                         <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
-                          Beneficiary ID
+                          {schemeConfig.entityName} {currentScheme === 'MDM' ? 'Name' : 'ID'}
                         </th>
+                        {currentScheme === 'MDM' && (
+                          <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
+                            District
+                          </th>
+                        )}
                         <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
                           Risk Level
                         </th>
                         <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
-                          Risk Score (MSE)
+                          {currentScheme === 'MDM' ? 'Anomaly Score' : 'Risk Score (MSE)'}
                         </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
-                      {beneficiaries.map((b) => (
-                        <tr
-                          key={b.beneficiary_id}
-                          onClick={() => handleBeneficiaryClick(b.beneficiary_id)}
-                          className={`cursor-pointer transition-colors ${
-                            selectedBeneficiary?.beneficiary_id ===
-                            b.beneficiary_id
-                              ? "bg-primary/5 border-l-4 border-l-primary"
-                              : "hover:bg-gray-50"
-                          }`}
-                        >
-                          <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                            {b.beneficiary_id}
-                          </td>
-                          <td className="px-4 py-3 text-sm">
-                            <span
-                              className={`px-2 py-1 rounded text-xs font-medium border ${getRiskBadgeStyle(
-                                b.risk_level
-                              )}`}
-                            >
-                              {b.risk_level}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 text-sm">
-                            <div className="flex items-center gap-2">
-                              <div className="w-20 h-2 bg-gray-200 rounded overflow-hidden">
-                                <div
-                                  className={`h-full ${
-                                    b.risk_level === "HIGH"
-                                      ? "bg-red-500"
-                                      : b.risk_level === "MEDIUM"
-                                      ? "bg-amber-500"
-                                      : "bg-green-500"
-                                  }`}
-                                  style={{
-                                    width: `${(b.mean_squared_error / maxMSE) * 100}%`,
-                                  }}
-                                ></div>
-                              </div>
-                              <span className="font-mono text-xs text-gray-600">
-                                {b.mean_squared_error.toFixed(4)}
+                      {entities.map((entity) => {
+                        const entityId = getEntityId(entity);
+                        const entityScore = getEntityScore(entity);
+                        const isSelected = getSelectedEntityId() === entityId;
+                        
+                        return (
+                          <tr
+                            key={entityId}
+                            onClick={() => handleEntityClick(entityId)}
+                            className={`cursor-pointer transition-colors ${
+                              isSelected
+                                ? "bg-primary/5 border-l-4 border-l-primary"
+                                : "hover:bg-gray-50"
+                            }`}
+                          >
+                            <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                              {getEntityDisplayName(entity)}
+                            </td>
+                            {currentScheme === 'MDM' && (
+                              <td className="px-4 py-3 text-sm text-gray-600">
+                                {(entity as MDMSchool).district}
+                              </td>
+                            )}
+                            <td className="px-4 py-3 text-sm">
+                              <span
+                                className={`px-2 py-1 rounded text-xs font-medium border ${getRiskBadgeStyle(
+                                  entity.risk_level
+                                )}`}
+                              >
+                                {entity.risk_level}
                               </span>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
+                            </td>
+                            <td className="px-4 py-3 text-sm">
+                              <div className="flex items-center gap-2">
+                                <div className="w-20 h-2 bg-gray-200 rounded overflow-hidden">
+                                  <div
+                                    className={`h-full ${
+                                      entity.risk_level === "HIGH"
+                                        ? "bg-red-500"
+                                        : entity.risk_level === "MEDIUM"
+                                        ? "bg-amber-500"
+                                        : "bg-green-500"
+                                    }`}
+                                    style={{
+                                      width: `${(entityScore / maxScore) * 100}%`,
+                                    }}
+                                  ></div>
+                                </div>
+                                <span className="font-mono text-xs text-gray-600">
+                                  {entityScore.toFixed(4)}
+                                </span>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
               </div>
             </div>
 
-            {/* Detail Panel - Explainability */}
+            {/* Detail Panel */}
             <div>
               <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm sticky top-24">
                 <div className="px-4 py-3 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
                   <h3 className="font-heading font-semibold text-gray-900">
-                    {selectedBeneficiary
+                    {selectedEntity
                       ? "Case Investigation"
-                      : "Select a Beneficiary"}
+                      : `Select a ${schemeConfig.entityName}`}
                   </h3>
                   <select
                     value={language}
@@ -451,46 +713,83 @@ export default function DashboardPage() {
                       <div className="w-8 h-8 border-2 border-primary/20 rounded-full animate-spin border-t-primary mx-auto"></div>
                       <p className="text-gray-500 text-sm mt-2">Loading...</p>
                     </div>
-                  ) : selectedBeneficiary ? (
+                  ) : selectedEntity ? (
                     <div>
                       {/* ID & Risk Badge */}
                       <div className="flex items-center justify-between mb-3">
-                        <span className="font-heading font-bold text-gray-900">
-                          {selectedBeneficiary.beneficiary_id}
-                        </span>
+                        <div>
+                          <span className="font-heading font-bold text-gray-900 block">
+                            {selectedInfo.name}
+                          </span>
+                          {currentScheme === 'MDM' && selectedInfo.extra && (
+                            <span className="text-xs text-gray-500">
+                              {selectedInfo.extra}
+                            </span>
+                          )}
+                        </div>
                         <span
                           className={`px-2 py-1 rounded text-xs font-medium border ${getRiskBadgeStyle(
-                            selectedBeneficiary.risk_level
+                            selectedEntity.risk_level
                           )}`}
                         >
-                          {selectedBeneficiary.risk_level}
+                          {selectedEntity.risk_level}
                         </span>
                       </div>
+
+                      {/* MDM School Info */}
+                      {currentScheme === 'MDM' && (
+                        <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div>
+                              <span className="text-blue-600">Enrolled:</span>
+                              <span className="ml-1 font-medium text-blue-800">
+                                {(selectedEntity as MDMSchoolDetail).total_enrolled_students}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-blue-600">Attendance:</span>
+                              <span className="ml-1 font-medium text-blue-800">
+                                {((selectedEntity as MDMSchoolDetail).avg_attendance_rate * 100).toFixed(0)}%
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-blue-600">Inspection:</span>
+                              <span className="ml-1 font-medium text-blue-800">
+                                {(selectedEntity as MDMSchoolDetail).last_inspection_score}/100
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-blue-600">Cooks:</span>
+                              <span className="ml-1 font-medium text-blue-800">
+                                {(selectedEntity as MDMSchoolDetail).cook_count}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
 
                       {/* Risk Score */}
                       <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
                         <div className="flex justify-between text-sm mb-1">
                           <span className="text-gray-600">
-                            Anomaly Score (MSE)
+                            Anomaly Score {currentScheme === 'LPG' && '(MSE)'}
                           </span>
                           <span className="font-mono font-semibold text-gray-900">
-                            {selectedBeneficiary.mean_squared_error.toFixed(6)}
+                            {selectedInfo.score.toFixed(6)}
                           </span>
                         </div>
                         <div className="h-2 bg-gray-200 rounded overflow-hidden">
                           <div
                             className={`h-full ${
-                              selectedBeneficiary.risk_level === "HIGH"
+                              selectedEntity.risk_level === "HIGH"
                                 ? "bg-red-500"
-                                : selectedBeneficiary.risk_level === "MEDIUM"
+                                : selectedEntity.risk_level === "MEDIUM"
                                 ? "bg-amber-500"
                                 : "bg-green-500"
                             }`}
                             style={{
                               width: `${Math.min(
-                                (selectedBeneficiary.mean_squared_error /
-                                  maxMSE) *
-                                  100,
+                                (selectedInfo.score / maxScore) * 100,
                                 100
                               )}%`,
                             }}
@@ -503,103 +802,21 @@ export default function DashboardPage() {
                         <h4 className="text-sm font-medium text-gray-700 mb-2">
                           Detected Flags
                         </h4>
-                        <div className="grid grid-cols-2 gap-2 text-xs">
-                          <div
-                            className={`p-2 rounded-lg border ${
-                              selectedBeneficiary.flags.high_recent_activity
-                                ? "bg-red-50 border-red-200"
-                                : "bg-gray-50 border-gray-200"
-                            }`}
-                          >
-                            <span
-                              className={
-                                selectedBeneficiary.flags.high_recent_activity
-                                  ? "text-red-700"
-                                  : "text-gray-400"
-                              }
-                            >
-                              {selectedBeneficiary.flags.high_recent_activity
-                                ? "✓"
-                                : "○"}{" "}
-                              High Recent Activity
-                            </span>
-                          </div>
-                          <div
-                            className={`p-2 rounded-lg border ${
-                              selectedBeneficiary.flags.multiple_dealers
-                                ? "bg-red-50 border-red-200"
-                                : "bg-gray-50 border-gray-200"
-                            }`}
-                          >
-                            <span
-                              className={
-                                selectedBeneficiary.flags.multiple_dealers
-                                  ? "text-red-700"
-                                  : "text-gray-400"
-                              }
-                            >
-                              {selectedBeneficiary.flags.multiple_dealers
-                                ? "✓"
-                                : "○"}{" "}
-                              Multiple Dealers
-                            </span>
-                          </div>
-                          <div
-                            className={`p-2 rounded-lg border ${
-                              selectedBeneficiary.flags.cross_district
-                                ? "bg-red-50 border-red-200"
-                                : "bg-gray-50 border-gray-200"
-                            }`}
-                          >
-                            <span
-                              className={
-                                selectedBeneficiary.flags.cross_district
-                                  ? "text-red-700"
-                                  : "text-gray-400"
-                              }
-                            >
-                              {selectedBeneficiary.flags.cross_district
-                                ? "✓"
-                                : "○"}{" "}
-                              Cross District
-                            </span>
-                          </div>
-                          <div
-                            className={`p-2 rounded-lg border ${
-                              selectedBeneficiary.flags.high_lifetime_usage
-                                ? "bg-red-50 border-red-200"
-                                : "bg-gray-50 border-gray-200"
-                            }`}
-                          >
-                            <span
-                              className={
-                                selectedBeneficiary.flags.high_lifetime_usage
-                                  ? "text-red-700"
-                                  : "text-gray-400"
-                              }
-                            >
-                              {selectedBeneficiary.flags.high_lifetime_usage
-                                ? "✓"
-                                : "○"}{" "}
-                              High Lifetime Usage
-                            </span>
-                          </div>
-                        </div>
+                        {renderFlags()}
                       </div>
 
                       {/* Risk Breakdown */}
-                      {selectedBeneficiary.risk_breakdown &&
-                        selectedBeneficiary.risk_breakdown.factors.length > 0 && (
+                      {selectedEntity.risk_breakdown &&
+                        selectedEntity.risk_breakdown.factors.length > 0 && (
                           <div className="mb-4">
                             <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                               📊 Risk Breakdown
                               <span className="text-xs px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full">
-                                Score:{" "}
-                                {selectedBeneficiary.risk_breakdown.total_risk_score}
+                                Score: {selectedEntity.risk_breakdown.total_risk_score}
                               </span>
                             </h4>
                             <div className="space-y-2">
-                              {selectedBeneficiary.risk_breakdown.factors.map(
+                              {selectedEntity.risk_breakdown.factors.map(
                                 (factor, idx) => (
                                   <div
                                     key={idx}
@@ -635,7 +852,7 @@ export default function DashboardPage() {
                           Observations
                         </h4>
                         <ul className="space-y-1">
-                          {selectedBeneficiary.reasons.map((reason, idx) => (
+                          {selectedEntity.reasons.map((reason, idx) => (
                             <li
                               key={idx}
                               className="flex items-start gap-2 text-sm"
@@ -648,7 +865,7 @@ export default function DashboardPage() {
                       </div>
 
                       {/* Gemini Explanation */}
-                      {selectedBeneficiary.gemini_explanation && (
+                      {selectedEntity.gemini_explanation && (
                         <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-4">
                           <h4 className="text-sm font-medium text-blue-800 mb-2 flex items-center gap-1">
                             <span>✨</span>
@@ -663,43 +880,25 @@ export default function DashboardPage() {
                             </span>
                           </h4>
                           <p className="text-sm text-blue-700 leading-relaxed whitespace-pre-line">
-                            {selectedBeneficiary.gemini_explanation}
+                            {selectedEntity.gemini_explanation}
                           </p>
                         </div>
                       )}
 
                       {/* Audit Panel */}
                       <AuditPanel
-                        beneficiaryId={selectedBeneficiary.beneficiary_id}
-                        riskLevel={selectedBeneficiary.risk_level}
+                        beneficiaryId={selectedInfo.id}
+                        riskLevel={selectedEntity.risk_level}
                         onAuditComplete={() => {}}
                       />
                     </div>
                   ) : (
                     <div className="text-center py-8">
                       <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-                        <svg
-                          className="w-8 h-8 text-gray-400"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                          />
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                          />
-                        </svg>
+                        <span className="text-3xl">{schemeConfig.icon}</span>
                       </div>
                       <p className="text-gray-500 text-sm">
-                        Click on a beneficiary from the table to view detailed
+                        Click on a {schemeConfig.entityName.toLowerCase()} from the table to view detailed
                         risk analysis and AI-generated explanations.
                       </p>
                     </div>
@@ -728,10 +927,20 @@ export default function DashboardPage() {
               How It Works
             </p>
             <p className="text-sm text-blue-700">
-              <strong>Autoencoder reconstructs normal behavior.</strong> High
-              reconstruction error (Mean Squared Error) indicates deviation from
-              expected patterns → potential fraud signal. Risk banding: HIGH
-              (&gt;95th percentile), MEDIUM (75-95th), LOW (&lt;75th).
+              {currentScheme === 'MDM' ? (
+                <>
+                  <strong>Autoencoder reconstructs normal school meal patterns.</strong> High
+                  reconstruction error indicates deviation from expected norms (ghost meals, ingredient inflation, fund overclaims).
+                  Risk banding: HIGH (&gt;95th percentile), MEDIUM (75-95th), LOW (&lt;75th).
+                </>
+              ) : (
+                <>
+                  <strong>Autoencoder reconstructs normal behavior.</strong> High
+                  reconstruction error (Mean Squared Error) indicates deviation from
+                  expected patterns → potential fraud signal. Risk banding: HIGH
+                  (&gt;95th percentile), MEDIUM (75-95th), LOW (&lt;75th).
+                </>
+              )}
             </p>
           </div>
         </div>
