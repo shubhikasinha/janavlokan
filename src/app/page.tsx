@@ -1,6 +1,5 @@
 import React from 'react';
 import { Button } from '../components';
-import { Link } from 'react-router-dom';
 
 /* ---------------- Types ---------------- */
 
@@ -83,11 +82,11 @@ const HomePage: React.FC = () => {
                             <p className="text-sm text-gray-600 mb-4">
                                 Review flagged beneficiaries, investigate individual cases, and take audit actions
                             </p>
-                            <Button to="/dashboard" className="w-full">
+                            <Button href="/dashboard" className="w-full">
                                 🔍 Investigate Cases
                             </Button>
                         </div>
-                        
+
                         <div className="bg-white border-2 border-amber-500 rounded-xl p-6 hover:shadow-lg transition-shadow">
                             <div className="w-12 h-12 bg-amber-500/10 rounded-lg flex items-center justify-center mb-4 mx-auto">
                                 <svg className="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -98,7 +97,7 @@ const HomePage: React.FC = () => {
                             <p className="text-sm text-gray-600 mb-4">
                                 Explore patterns, geographic trends, and predictive risk analysis
                             </p>
-                            <Button variant="secondary" to="/analytics" className="w-full border-amber-500 text-amber-700 hover:bg-amber-50">
+                            <Button variant="secondary" href="/analytics" className="w-full border-amber-500 text-amber-700 hover:bg-amber-50">
                                 📊 View Analytics
                             </Button>
                         </div>
@@ -156,8 +155,8 @@ const HomePage: React.FC = () => {
                                                 isHigh
                                                     ? '#B91C1C'
                                                     : isMedium
-                                                    ? '#D97706'
-                                                    : '#059669'
+                                                        ? '#D97706'
+                                                        : '#059669'
                                             }
                                             strokeWidth={2}
                                             opacity={0.3}
@@ -170,8 +169,8 @@ const HomePage: React.FC = () => {
                                                 isHigh
                                                     ? '#B91C1C'
                                                     : isMedium
-                                                    ? '#D97706'
-                                                    : '#059669'
+                                                        ? '#D97706'
+                                                        : '#059669'
                                             }
                                         />
 
