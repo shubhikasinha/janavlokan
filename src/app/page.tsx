@@ -86,7 +86,7 @@ const HomePage: React.FC = () => {
                                 Investigate Cases
                             </Button>
                         </div>
-                        
+
                         <div className="bg-white border-2 border-amber-500 rounded-xl p-6 hover:shadow-lg transition-shadow">
                             <div className="w-12 h-12 bg-amber-500/10 rounded-lg flex items-center justify-center mb-4 mx-auto">
                                 <svg className="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -155,8 +155,8 @@ const HomePage: React.FC = () => {
                                                 isHigh
                                                     ? '#B91C1C'
                                                     : isMedium
-                                                    ? '#D97706'
-                                                    : '#059669'
+                                                        ? '#D97706'
+                                                        : '#059669'
                                             }
                                             strokeWidth={2}
                                             opacity={0.3}
@@ -169,8 +169,8 @@ const HomePage: React.FC = () => {
                                                 isHigh
                                                     ? '#B91C1C'
                                                     : isMedium
-                                                    ? '#D97706'
-                                                    : '#059669'
+                                                        ? '#D97706'
+                                                        : '#059669'
                                             }
                                         />
 
