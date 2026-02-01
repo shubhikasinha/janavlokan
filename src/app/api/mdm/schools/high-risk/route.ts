@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
 
     // Try primary table first, then fallback
     let results: MDMHighRiskSchool[] = [];
-    
+
     try {
       let query: string;
       const params: Record<string, unknown> = { limit };
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
 
       const [job] = await bigquery.createQueryJob({ query, params });
       const [rows] = await job.getQueryResults();
-      
+
       if (rows.length > 0) {
         results = rows.map((row) => ({
           school_id: Number(row.school_id),
@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
           total_meals_reported: Number(row.total_meals_reported) || 0,
         }));
       }
-    } catch (primaryError) {
+    } catch (_primaryError) {
       console.log('Primary MDM table not found, using fallback...');
     }
 

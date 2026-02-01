@@ -11,9 +11,13 @@ const LanguageSwitcher: React.FC = () => {
     const [active, setActive] = useState("en");
 
     // After hydration, update based on localStorage
+    // Using a microtask to avoid synchronous setState in effect
     useEffect(() => {
         const saved = localStorage.getItem("lang");
-        if (saved) setActive(saved);
+        if (saved && saved !== active) {
+            queueMicrotask(() => setActive(saved));
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const changeLanguage = (lang: string) => {

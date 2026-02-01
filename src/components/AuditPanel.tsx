@@ -23,13 +23,13 @@ export default function AuditPanel({
   riskLevel,
   onAuditComplete,
 }: AuditPanelProps) {
-  const { currentScheme, schemeConfig } = useScheme();
+  const { currentScheme } = useScheme();
   const [notes, setNotes] = useState("");
   const [officerName, setOfficerName] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  
+
   // NEW: Feedback stats state
   const [feedbackStats, setFeedbackStats] = useState<FeedbackStats | null>(null);
   const [feedbackLoading, setFeedbackLoading] = useState(true);
@@ -37,6 +37,7 @@ export default function AuditPanel({
   // Fetch feedback stats on mount
   useEffect(() => {
     fetchFeedbackStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentScheme]);
 
   const fetchFeedbackStats = async () => {
@@ -113,7 +114,7 @@ export default function AuditPanel({
       } else {
         setSuccess(`Action "${action}" recorded successfully!`);
       }
-      
+
       setNotes("");
       onAuditComplete?.();
 
@@ -133,7 +134,7 @@ export default function AuditPanel({
         `/api/audit/export?format=csv&risk_level=${riskLevel}`,
         "_blank"
       );
-    } catch (err) {
+    } catch (_err) {
       setError("Failed to export report");
     }
   };
@@ -183,7 +184,7 @@ export default function AuditPanel({
             <span className="text-[10px] text-red-400/70">(False Positive)</span>
           </button>
         </div>
-        
+
         {/* Feedback Stats Mini Display */}
         {feedbackStats && !feedbackLoading && feedbackStats.total_feedback > 0 && (
           <div className="mt-3 pt-3 border-t border-white/10 grid grid-cols-3 gap-2 text-center">

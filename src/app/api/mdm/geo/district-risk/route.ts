@@ -32,7 +32,7 @@ export async function GET() {
           high_risk_schools: Number(row.high_risk_schools),
         }));
       }
-    } catch (primaryError) {
+    } catch (_primaryError) {
       console.log('Primary MDM table not found for geo, using fallback...');
     }
 

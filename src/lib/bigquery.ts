@@ -6,13 +6,40 @@ let bigqueryClient: BigQuery | null = null;
 
 export function getBigQueryClient(): BigQuery {
   if (!bigqueryClient) {
-    const projectId = process.env.GCP_PROJECT_ID || 'gfg-fot';
-    const keyFilename = process.env.GOOGLE_APPLICATION_CREDENTIALS || 'gcp-key.json';
-    
-    bigqueryClient = new BigQuery({
-      projectId,
-      keyFilename: path.join(process.cwd(), keyFilename),
-    });
+    // Use GOOGLE_PROJECT_ID from .env.local (matching the actual env var name)
+    const projectId = process.env.GOOGLE_PROJECT_ID || process.env.GCP_PROJECT_ID;
+
+    if (!projectId) {
+      throw new Error('Missing GOOGLE_PROJECT_ID environment variable. Check .env.local file.');
+    }
+
+    // Support both file-based auth (gcp-key.json) and inline credentials from env vars
+    const keyFilename = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+    const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
+    const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+
+    if (keyFilename) {
+      // Use service account key file
+      bigqueryClient = new BigQuery({
+        projectId,
+        keyFilename: path.join(process.cwd(), keyFilename),
+      });
+    } else if (clientEmail && privateKey) {
+      // Use inline credentials from environment variables
+      bigqueryClient = new BigQuery({
+        projectId,
+        credentials: {
+          client_email: clientEmail,
+          private_key: privateKey,
+        },
+      });
+    } else {
+      // Fallback to file if it exists
+      bigqueryClient = new BigQuery({
+        projectId,
+        keyFilename: path.join(process.cwd(), 'gcp-key.json'),
+      });
+    }
   }
   return bigqueryClient;
 }
@@ -155,27 +182,27 @@ export function generateMDMReasonsFromFlags(flags: {
   cook_anomaly: boolean;
 }): string[] {
   const reasons: string[] = [];
-  
+
   if (flags.ghost_meals) {
     reasons.push('Reported students served exceeds actual attendance (Ghost Meals detected)');
   }
-  
+
   if (flags.ingredient_inflation) {
     reasons.push('Ingredient usage exceeds expected norms per student');
   }
-  
+
   if (flags.fund_overclaim) {
     reasons.push('Funds claimed significantly higher than expected for student count');
   }
-  
+
   if (flags.cook_anomaly) {
     reasons.push('Meal served without cook present - operational anomaly');
   }
-  
+
   if (reasons.length === 0) {
     reasons.push('School operations align with expected norms and standards');
   }
-  
+
   return reasons;
 }
 
@@ -190,26 +217,26 @@ export function generateReasonsFromFlags(flags: {
   high_lifetime_usage: boolean;
 }): string[] {
   const reasons: string[] = [];
-  
+
   if (flags.high_recent_activity) {
     reasons.push('Unusually high number of LPG refills in the last 30 days');
   }
-  
+
   if (flags.multiple_dealers) {
     reasons.push('Refills taken from multiple dealers');
   }
-  
+
   if (flags.cross_district) {
     reasons.push('LPG refills detected across districts');
   }
-  
+
   if (flags.high_lifetime_usage) {
     reasons.push('Higher-than-expected lifetime refill count');
   }
-  
+
   if (reasons.length === 0) {
     reasons.push('Refill behavior aligns with historical and regional norms');
   }
-  
+
   return reasons;
 }

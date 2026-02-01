@@ -123,7 +123,10 @@ export default function RootLayout({
         />
 
         {/* Google Translate External Script */}
-        <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+        <Script 
+          src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );

@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
         }));
         return NextResponse.json(results);
       }
-    } catch (primaryError) {
+    } catch (_primaryError) {
       console.log('Primary MDM time series query failed, using fallback...');
     }
 
