@@ -9,6 +9,7 @@ const DISTRICT_COORDINATES: Record<string, [number, number]> = {
   "Mumbai": [19.076, 72.8777],
   "Delhi": [28.6139, 77.209],
   "Bangalore": [12.9716, 77.5946],
+  "Madhya Pradesh": [23.1815, 79.9864],
   "Chennai": [13.0827, 80.2707],
   "Kolkata": [22.5726, 88.3639],
   "Hyderabad": [17.385, 78.4867],
@@ -46,6 +47,9 @@ const DISTRICT_COORDINATES: Record<string, [number, number]> = {
   "Jodhpur": [26.2389, 73.0243],
   "Udaipur": [24.5854, 73.7125],
   "Gwalior": [26.2183, 78.1828],
+  "Bhopal": [23.2599, 77.4126],
+  "Indore": [22.7196, 75.8577],
+  "Ratlam": [22.6667, 75.1667],
   "Jabalpur": [23.1815, 79.9864],
   "Unknown": [20.5937, 78.9629],
 };
@@ -75,9 +79,9 @@ function getDistrictCoordinates(districtName: string): [number, number] {
 function getHeatColor(count: number, maxCount: number): string {
   const ratio = count / maxCount;
   if (ratio > 0.7) return "#b91c1c"; // Red-700
-  if (ratio > 0.4) return "#ef4444"; // Red-500
-  if (ratio > 0.2) return "#f87171"; // Red-400
-  return "#fca5a5"; // Red-300
+  if (ratio > 0.4) return "#f3d36bff"; // Red-500
+  if (ratio > 0.2) return "#b9eb8eff"; // Red-400
+  return "#f19b2bff"; // Red-300
 }
 
 // Get radius based on anomaly count

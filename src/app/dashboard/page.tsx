@@ -487,10 +487,10 @@ export default function DashboardPage() {
                 Real-time data from BigQuery
               </p>
             </div>
-            <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
-              <div className="w-full md:w-auto h-11 mt-[2px]"><BatchRefreshButton onRefreshComplete={handleRefreshComplete} className="h-full md:min-w-[160px]" /></div>
-              <div className="flex-1 h-11"><SchemeSwitcher className="h-full whitespace-nowrap" /></div>
-            </div>
+            <div className="flex flex-col md:flex-row gap-5 w-full md:w-auto">
+                            <div className="w-full md:w-auto h-11 mt-[7px]"><BatchRefreshButton onRefreshComplete={handleRefreshComplete} className="h-full md:min-w-[80px] text-xs" /></div>
+                            <div className="flex-1 h-11"><SchemeSwitcher className="h-full whitespace-nowrap" /></div>
+                        </div>
           </div>
         </div>
       </section>
