@@ -34,7 +34,7 @@ export async function GET() {
         }));
         return NextResponse.json(results);
       }
-    } catch (primaryError) {
+    } catch (_primaryError) {
       console.log('Primary MDM table not found for distribution, using fallback...');
     }
 

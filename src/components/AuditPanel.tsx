@@ -23,7 +23,7 @@ export default function AuditPanel({
   riskLevel,
   onAuditComplete,
 }: AuditPanelProps) {
-  const { currentScheme, schemeConfig } = useScheme();
+  const { currentScheme } = useScheme();
   const [notes, setNotes] = useState("");
   const [officerName, setOfficerName] = useState("");
   const [loading, setLoading] = useState(false);
@@ -37,6 +37,7 @@ export default function AuditPanel({
   // Fetch feedback stats on mount
   useEffect(() => {
     fetchFeedbackStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentScheme]);
 
   const fetchFeedbackStats = async () => {
@@ -133,7 +134,7 @@ export default function AuditPanel({
         `/api/audit/export?format=csv&risk_level=${riskLevel}`,
         "_blank"
       );
-    } catch (err) {
+    } catch (_err) {
       setError("Failed to export report");
     }
   };

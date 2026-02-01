@@ -7,7 +7,7 @@ export async function GET() {
 
     // First try the preprocessed fraud table
     // If it doesn't exist, fallback to computing from raw tables
-    let query = `
+    const query = `
       SELECT
         COUNT(*) AS total_schools,
         COUNTIF(risk_level = 'HIGH') AS high_risk,
@@ -31,7 +31,7 @@ export async function GET() {
         };
         return NextResponse.json(result);
       }
-    } catch (primaryError) {
+    } catch (_primaryError) {
       console.log('Primary table not found, trying fallback query...');
     }
 

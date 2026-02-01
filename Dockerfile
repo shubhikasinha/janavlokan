@@ -14,6 +14,7 @@ COPY . .
 RUN npm run build
 
 # Step 6: Expose Port 8080 (GCP's favorite)
+ENV PORT 8080
 EXPOSE 8080
 
 # Step 7: Start the app

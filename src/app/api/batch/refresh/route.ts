@@ -17,7 +17,7 @@ const batchJobs = new Map<string, BatchJobStatus>();
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => ({}));
-    const { job_type = 'FULL_REFRESH' } = body;
+    const { job_type: _job_type = 'FULL_REFRESH' } = body;
 
     const bigquery = getBigQueryClient();
 
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     // 1. Dataflow pipeline to process new transactions
     // 2. Vertex AI batch prediction job
     // 3. Update fraud_with_explanations table
-    
+
     // For demo: Run a simple aggregation query to simulate processing
     const simulationQuery = `
       -- Simulated batch job: Recompute risk statistics
