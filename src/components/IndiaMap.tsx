@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
+import { useScheme } from "@/context/SchemeContext";
 
 // Types
 interface DistrictRisk {
@@ -61,6 +62,36 @@ const DISTRICT_COORDINATES: Record<string, [number, number]> = {
   "Udaipur": [24.5854, 73.7125],
   "Gwalior": [26.2183, 78.1828],
   "Jabalpur": [23.1815, 79.9864],
+  // UP Districts (for MDM scheme)
+  "Prayagraj": [25.4358, 81.8463],
+  "Gorakhpur": [26.7606, 83.3732],
+  "Allahabad": [25.4358, 81.8463], // Same as Prayagraj (old name)
+  "Meerut": [28.9845, 77.7064],
+  "Aligarh": [27.8974, 78.088],
+  "Bareilly": [28.367, 79.4304],
+  "Moradabad": [28.8386, 78.7733],
+  "Saharanpur": [29.9680, 77.5510],
+  "Firozabad": [27.1591, 78.3957],
+  "Mathura": [27.4924, 77.6737],
+  // Bihar Districts (for LPG scheme)
+  "Bhagalpur": [25.2425, 86.9842],
+  "Gaya": [24.7914, 85.0002],
+  "Muzaffarpur": [26.1197, 85.3910],
+  "Ara": [25.5513, 84.6611],
+  "Buxar": [25.5761, 83.9785],
+  "Nalanda": [25.1339, 85.4468],
+  "Begusarai": [25.4182, 86.1272],
+  "Darbhanga": [26.1542, 85.8918],
+  "Purnia": [25.7771, 87.4753],
+  "Samastipur": [25.8626, 85.7811],
+  "Chhapra": [25.7816, 84.7463],
+  "Katihar": [25.5314, 87.5678],
+  "Munger": [25.3744, 86.4735],
+  "Sasaram": [24.9485, 84.0315],
+  "Bihar Sharif": [25.2044, 85.5178],
+  // MP Districts
+  "Madhya Pradesh": [23.1815, 79.9864],
+  "Ratlam": [22.6667, 75.1667],
   "Unknown": [20.5937, 78.9629],
 };
 
@@ -121,44 +152,80 @@ export default function IndiaMap({
   title = "National Risk Overview",
   height = "500px"
 }: IndiaMapProps) {
+  const { currentScheme, schemeConfig } = useScheme();
   const [isClient, setIsClient] = useState(false);
   const [mapData, setMapData] = useState<DistrictRisk[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const fetchedRef = useRef<string | null>(null);
+
+  // Get API endpoint based on scheme
+  const apiEndpoint = currentScheme === 'MDM' ? '/api/mdm/geo/district-risk' : '/api/geo/district-risk';
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
+  // Handle external data passed as props
+  const hasExternalData = data && data.length > 0;
   useEffect(() => {
-    if (data.length > 0) {
+    if (hasExternalData) {
       setMapData(data);
       setLoading(false);
-      return;
     }
+  }, [hasExternalData, data]);
 
+  // Fetch data from API if no external data
+  useEffect(() => {
+    // Skip if external data is provided
+    if (hasExternalData) return;
+    
+    // Only fetch if scheme changed (using ref to avoid dependency issues)
+    if (fetchedRef.current === currentScheme) return;
+    fetchedRef.current = currentScheme;
+
+    const controller = new AbortController();
+    
     async function fetchDistrictData() {
+      setLoading(true);
+      setError(null);
+      console.log(`[IndiaMap] Fetching data for ${currentScheme} from ${apiEndpoint}`);
       try {
-        const res = await fetch("/api/geo/district-risk");
+        const res = await fetch(apiEndpoint, { signal: controller.signal });
+        console.log(`[IndiaMap] Response status: ${res.status}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();
-        setMapData(json);
+        console.log(`[IndiaMap] Received data:`, json);
+        // Handle both array response and potential error object
+        if (Array.isArray(json)) {
+          console.log(`[IndiaMap] Setting ${json.length} districts`);
+          setMapData(json);
+        } else if (json.success === false) {
+          throw new Error(json.error || 'Failed to load data');
+        } else {
+          console.log(`[IndiaMap] No valid data, setting empty array`);
+          setMapData([]);
+        }
       } catch (err) {
+        if (err instanceof Error && err.name === 'AbortError') return;
+        console.error(`[IndiaMap] Error:`, err);
         setError(err instanceof Error ? err.message : "Failed to load map data");
       } finally {
         setLoading(false);
       }
     }
     fetchDistrictData();
-  }, [data]);
+    
+    return () => controller.abort();
+  }, [currentScheme, apiEndpoint, hasExternalData]);
 
   const maxAnomalyCount = useMemo(() =>
     Math.max(...mapData.map((d) => d.anomaly_count), 1),
     [mapData]
   );
 
-  // Loading state
-  if (!isClient || loading) {
+  // Loading state - only show if client-side rendering not ready OR still fetching
+  if (!isClient) {
     return (
       <div
         className="relative rounded-xl overflow-hidden border border-gray-200 bg-gray-50"
@@ -167,7 +234,23 @@ export default function IndiaMap({
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
             <div className="w-12 h-12 border-4 border-primary/20 rounded-full animate-spin border-t-primary mx-auto"></div>
-            <p className="mt-4 text-sm text-gray-500">Loading map...</p>
+            <p className="mt-4 text-sm text-gray-500">Initializing map...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  if (loading) {
+    return (
+      <div
+        className="relative rounded-xl overflow-hidden border border-gray-200 bg-gray-50"
+        style={{ height }}
+      >
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-12 h-12 border-4 border-primary/20 rounded-full animate-spin border-t-primary mx-auto"></div>
+            <p className="mt-4 text-sm text-gray-500">Loading {schemeConfig.name} map data...</p>
           </div>
         </div>
       </div>
@@ -195,6 +278,28 @@ export default function IndiaMap({
             >
               Retry
             </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // No data state
+  if (!loading && mapData.length === 0) {
+    return (
+      <div
+        className="relative rounded-xl overflow-hidden border border-amber-200 bg-amber-50"
+        style={{ height }}
+      >
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center p-6">
+            <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-amber-100 flex items-center justify-center">
+              <svg className="w-6 h-6 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+              </svg>
+            </div>
+            <p className="text-amber-700 font-medium mb-1">No District Data</p>
+            <p className="text-amber-600 text-sm">No anomaly data found for {schemeConfig.name}</p>
           </div>
         </div>
       </div>

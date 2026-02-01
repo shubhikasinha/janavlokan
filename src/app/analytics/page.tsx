@@ -7,6 +7,7 @@ import TimeSeriesChart from "@/components/TimeSeriesChart";
 import BatchRefreshButton from "@/components/BatchRefreshButton";
 import { useScheme } from "@/context/SchemeContext";
 import SchemeSwitcher from "@/components/SchemeSwitcher";
+import IndiaMap from "@/components/IndiaMap";
 import {
   PieChart,
   Pie,
@@ -35,19 +36,6 @@ const DistrictHeatmap = dynamic(
     ),
   }
 );
-
-// Dynamic import for India Map
-const IndiaMap = dynamic(() => import("@/components/IndiaMap"), {
-  ssr: false,
-  loading: () => (
-    <div className="h-[400px] bg-gray-100 rounded-lg flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
-        <p className="text-gray-500">Loading India map...</p>
-      </div>
-    </div>
-  ),
-});
 
 // Chart colors - Government theme
 const RISK_COLORS: Record<string, string> = {
@@ -246,7 +234,7 @@ export default function AnalyticsPage() {
                   </div>
                 </div>
                 <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-                  <IndiaMap title={`${schemeConfig.name} National Risk Heatmap`} height="400px" />
+                  <IndiaMap key={`india-map-${currentScheme}`} title={`${schemeConfig.name} National Risk Heatmap`} height="400px" />
                 </div>
               </div>
 

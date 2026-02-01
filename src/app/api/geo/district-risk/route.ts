@@ -28,6 +28,8 @@ export async function GET() {
       anomaly_count: Number(row.anomaly_count),
     }));
 
+    console.log('LPG District Risk - Districts found:', results.map(d => d.residence_district).join(', '));
+
     return NextResponse.json(results);
   } catch (error) {
     console.error('District Risk Error:', error);

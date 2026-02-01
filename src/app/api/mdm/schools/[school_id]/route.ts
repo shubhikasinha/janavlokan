@@ -30,48 +30,98 @@ export async function GET(
 
     const bigquery = getBigQueryClient();
 
-    // Get all data by joining fraud table with school master
-    const query = `
-      SELECT
-        f.school_id,
-        f.school_name,
-        f.district,
-        f.risk_level,
-        f.anomaly_score,
-        f.flag_ghost_meals,
-        f.flag_ingredient_inflation,
-        f.flag_fund_overclaim,
-        f.flag_cook_anomaly,
-        f.total_meals_reported,
-        s.block,
-        s.village,
-        s.school_type,
-        s.management,
-        s.total_enrolled_students,
-        s.avg_attendance_rate,
-        s.kitchen_type,
-        s.cook_count,
-        s.last_inspection_score
-      FROM \`gfg-fot.lpg_fraud_detection.mdm_fraud_with_explanations\` f
-      LEFT JOIN \`gfg-fot.lpg_fraud_detection.school_master\` s
-      ON f.school_id = s.school_id
-      WHERE f.school_id = @school_id
-    `;
+    let row: any = null;
 
-    const [job] = await bigquery.createQueryJob({
-      query,
-      params: { school_id: parseInt(school_id, 10) }
-    });
-    const [rows] = await job.getQueryResults();
+    // Try primary query with mdm_fraud_with_explanations + mdm_school_master
+    try {
+      const query = `
+        SELECT
+          f.school_id,
+          f.school_name,
+          f.district,
+          f.risk_level,
+          f.anomaly_score,
+          f.flag_ghost_meals,
+          f.flag_ingredient_inflation,
+          f.flag_fund_overclaim,
+          f.flag_cook_anomaly,
+          f.total_meals_reported,
+          s.block,
+          s.village,
+          s.school_type,
+          s.management,
+          s.total_enrolled_students,
+          s.avg_attendance_rate,
+          s.kitchen_type,
+          s.cook_count,
+          s.last_inspection_score
+        FROM \`gfg-fot.lpg_fraud_detection.mdm_fraud_with_explanations\` f
+        LEFT JOIN \`gfg-fot.lpg_fraud_detection.mdm_school_master\` s
+        ON f.school_id = s.school_id
+        WHERE f.school_id = @school_id
+      `;
 
-    if (rows.length === 0) {
+      const [job] = await bigquery.createQueryJob({
+        query,
+        params: { school_id: parseInt(school_id, 10) }
+      });
+      const [rows] = await job.getQueryResults();
+
+      if (rows.length > 0) {
+        row = rows[0];
+      }
+    } catch (_primaryError) {
+      console.log('Primary MDM school detail query failed, trying without school master join...');
+    }
+
+    // Fallback: Query fraud table only without school_master join
+    if (!row) {
+      try {
+        const fallbackQuery = `
+          SELECT
+            f.school_id,
+            f.school_name,
+            f.district,
+            f.risk_level,
+            f.anomaly_score,
+            f.flag_ghost_meals,
+            f.flag_ingredient_inflation,
+            f.flag_fund_overclaim,
+            f.flag_cook_anomaly,
+            f.total_meals_reported,
+            NULL as block,
+            NULL as village,
+            NULL as school_type,
+            NULL as management,
+            NULL as total_enrolled_students,
+            NULL as avg_attendance_rate,
+            NULL as kitchen_type,
+            NULL as cook_count,
+            NULL as last_inspection_score
+          FROM \`gfg-fot.lpg_fraud_detection.mdm_fraud_with_explanations\` f
+          WHERE f.school_id = @school_id
+        `;
+
+        const [fallbackJob] = await bigquery.createQueryJob({
+          query: fallbackQuery,
+          params: { school_id: parseInt(school_id, 10) }
+        });
+        const [fallbackRows] = await fallbackJob.getQueryResults();
+
+        if (fallbackRows.length > 0) {
+          row = fallbackRows[0];
+        }
+      } catch (_fallbackError) {
+        console.log('Fallback MDM school detail query also failed');
+      }
+    }
+
+    if (!row) {
       return NextResponse.json(
         { success: false, error: 'School not found' },
         { status: 404 }
       );
     }
-
-    const row = rows[0];
 
     // Extract flags (deterministic - from BigQuery)
     const flags = {

@@ -91,6 +91,8 @@ export async function GET() {
       anomaly_count: r.anomaly_count,
     }));
 
+    console.log('MDM District Risk - Districts found:', heatmapFormat.map(d => d.residence_district).join(', '));
+
     return NextResponse.json(heatmapFormat);
   } catch (error) {
     console.error('MDM District Risk Error:', error);

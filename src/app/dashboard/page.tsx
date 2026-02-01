@@ -166,9 +166,9 @@ export default function DashboardPage() {
   // Get entity score
   const getEntityScore = useCallback((entity: EntityItem): number => {
     if (currentScheme === 'MDM') {
-      return (entity as MDMSchool).anomaly_score;
+      return (entity as MDMSchool).anomaly_score ?? 0;
     }
-    return (entity as LPGBeneficiary).mean_squared_error;
+    return (entity as LPGBeneficiary).mean_squared_error ?? 0;
   }, [currentScheme]);
 
   // Get total count from summary
@@ -625,14 +625,14 @@ export default function DashboardPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
-                      {entities.map((entity) => {
+                      {entities.map((entity, index) => {
                         const entityId = getEntityId(entity);
                         const entityScore = getEntityScore(entity);
                         const isSelected = getSelectedEntityId() === entityId;
 
                         return (
                           <tr
-                            key={entityId}
+                            key={`${entityId}-${index}`}
                             onClick={() => handleEntityClick(entityId)}
                             className={`cursor-pointer transition-colors ${isSelected
                               ? "bg-primary/5 border-l-4 border-l-primary"
@@ -672,7 +672,7 @@ export default function DashboardPage() {
                                   ></div>
                                 </div>
                                 <span className="font-mono text-xs text-gray-600">
-                                  {entityScore.toFixed(4)}
+                                  {(entityScore ?? 0).toFixed(4)}
                                 </span>
                               </div>
                             </td>

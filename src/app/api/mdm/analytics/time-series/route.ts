@@ -21,7 +21,10 @@ export async function GET(request: NextRequest) {
     // Try primary query with fraud table first
     try {
       const query = `
-        WITH daily_stats AS (
+        WITH date_range AS (
+          SELECT MAX(date) as max_date FROM \`gfg-fot.lpg_fraud_detection.mdm_daily_record\`
+        ),
+        daily_stats AS (
           SELECT
             d.date,
             f.risk_level,
@@ -29,7 +32,8 @@ export async function GET(request: NextRequest) {
           FROM \`gfg-fot.lpg_fraud_detection.mdm_daily_record\` d
           JOIN \`gfg-fot.lpg_fraud_detection.mdm_fraud_with_explanations\` f
           ON d.school_id = f.school_id
-          WHERE d.date >= DATE_SUB(CURRENT_DATE(), INTERVAL @days DAY)
+          CROSS JOIN date_range dr
+          WHERE d.date >= DATE_SUB(dr.max_date, INTERVAL @days DAY)
           GROUP BY d.date, f.risk_level
         )
         SELECT
@@ -57,6 +61,7 @@ export async function GET(request: NextRequest) {
           low_risk_count: Number(row.low_risk_count) || 0,
           total_anomalies: Number(row.total_anomalies) || 0,
         }));
+        console.log('MDM Time Series - Primary query returned', results.length, 'data points');
         return NextResponse.json(results);
       }
     } catch (_primaryError) {
@@ -65,7 +70,10 @@ export async function GET(request: NextRequest) {
 
     // Fallback: Compute risk levels on the fly from mdm_daily_record only
     const fallbackQuery = `
-      WITH school_base AS (
+      WITH date_range AS (
+        SELECT MAX(date) as max_date FROM \`gfg-fot.lpg_fraud_detection.mdm_daily_record\`
+      ),
+      school_base AS (
         SELECT 
           school_id,
           AVG(reported_students_served) as avg_meals,
@@ -94,11 +102,12 @@ export async function GET(request: NextRequest) {
           COUNT(DISTINCT d.school_id) as school_count
         FROM \`gfg-fot.lpg_fraud_detection.mdm_daily_record\` d
         LEFT JOIN school_risk r ON d.school_id = r.school_id
-        WHERE d.date >= DATE_SUB(CURRENT_DATE(), INTERVAL @days DAY)
+        CROSS JOIN date_range dr
+        WHERE d.date >= DATE_SUB(dr.max_date, INTERVAL @days DAY)
         GROUP BY d.date, r.risk_level
       )
       SELECT
-        date,
+        FORMAT_DATE('%Y-%m-%d', date) as date,
         SUM(CASE WHEN risk_level = 'HIGH' THEN school_count ELSE 0 END) as high_risk_count,
         SUM(CASE WHEN risk_level = 'MEDIUM' THEN school_count ELSE 0 END) as medium_risk_count,
         SUM(CASE WHEN risk_level = 'LOW' THEN school_count ELSE 0 END) as low_risk_count,
@@ -113,15 +122,31 @@ export async function GET(request: NextRequest) {
       params: { days }
     });
     const [fallbackRows] = await fallbackJob.getQueryResults();
+    
+    console.log('MDM Time Series - Fallback query rows:', fallbackRows.length);
+    if (fallbackRows.length > 0) {
+      console.log('MDM Time Series - Sample row:', JSON.stringify(fallbackRows[0]));
+    }
 
-    results = fallbackRows.map((row) => ({
-      date: row.date?.value || row.date,
-      high_risk_count: Number(row.high_risk_count) || 0,
-      medium_risk_count: Number(row.medium_risk_count) || 0,
-      low_risk_count: Number(row.low_risk_count) || 0,
-      total_anomalies: Number(row.total_anomalies) || 0,
-    }));
+    results = fallbackRows.map((row) => {
+      // Handle various date formats from BigQuery
+      let dateStr = row.date;
+      if (row.date?.value) {
+        dateStr = row.date.value;
+      } else if (typeof row.date === 'object' && row.date !== null) {
+        // BigQuery DATE object
+        dateStr = `${row.date.year}-${String(row.date.month).padStart(2, '0')}-${String(row.date.day).padStart(2, '0')}`;
+      }
+      return {
+        date: dateStr,
+        high_risk_count: Number(row.high_risk_count) || 0,
+        medium_risk_count: Number(row.medium_risk_count) || 0,
+        low_risk_count: Number(row.low_risk_count) || 0,
+        total_anomalies: Number(row.total_anomalies) || 0,
+      };
+    });
 
+    console.log('MDM Time Series - Results:', results.length > 0 ? `Found ${results.length} data points` : 'No data');
     return NextResponse.json(results);
   } catch (error) {
     console.error('MDM Time Series Error:', error);

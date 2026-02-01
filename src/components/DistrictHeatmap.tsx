@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useRef } from "react";
 import dynamic from "next/dynamic";
 import { useScheme } from "@/context/SchemeContext";
 
@@ -49,6 +49,33 @@ const DISTRICT_COORDINATES: Record<string, [number, number]> = {
   "Gwalior": [26.2183, 78.1828],
   "Ratlam": [22.6667, 75.1667],
   "Jabalpur": [23.1815, 79.9864],
+  // UP Districts (for MDM scheme)
+  "Prayagraj": [25.4358, 81.8463],
+  "Gorakhpur": [26.7606, 83.3732],
+  "Allahabad": [25.4358, 81.8463], // Same as Prayagraj (old name)
+  "Meerut": [28.9845, 77.7064],
+  "Aligarh": [27.8974, 78.088],
+  "Bareilly": [28.367, 79.4304],
+  "Moradabad": [28.8386, 78.7733],
+  "Saharanpur": [29.9680, 77.5510],
+  "Firozabad": [27.1591, 78.3957],
+  "Mathura": [27.4924, 77.6737],
+  // Bihar Districts (for LPG scheme)
+  "Bhagalpur": [25.2425, 86.9842],
+  "Gaya": [24.7914, 85.0002],
+  "Muzaffarpur": [26.1197, 85.3910],
+  "Ara": [25.5513, 84.6611],
+  "Buxar": [25.5761, 83.9785],
+  "Nalanda": [25.1339, 85.4468],
+  "Begusarai": [25.4182, 86.1272],
+  "Darbhanga": [26.1542, 85.8918],
+  "Purnia": [25.7771, 87.4753],
+  "Samastipur": [25.8626, 85.7811],
+  "Chhapra": [25.7816, 84.7463],
+  "Katihar": [25.5314, 87.5678],
+  "Munger": [25.3744, 86.4735],
+  "Sasaram": [24.9485, 84.0315],
+  "Bihar Sharif": [25.2044, 85.5178],
   "Unknown": [20.5937, 78.9629],
 };
 
@@ -132,28 +159,37 @@ export default function DistrictHeatmap({ data = [], onDistrictClick }: District
   const [mapData, setMapData] = useState<DistrictRisk[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const fetchedRef = useRef<string | null>(null);
 
   // Get API endpoint based on scheme
-  const getApiEndpoint = useCallback(() => {
-    return currentScheme === 'MDM' ? '/api/mdm/geo/district-risk' : '/api/geo/district-risk';
-  }, [currentScheme]);
+  const apiEndpoint = currentScheme === 'MDM' ? '/api/mdm/geo/district-risk' : '/api/geo/district-risk';
 
   // Ensure client-side rendering
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  // Fetch data if not provided
+  // Handle external data
+  const hasExternalData = data && data.length > 0;
   useEffect(() => {
-    if (data.length > 0) {
+    if (hasExternalData) {
       setMapData(data);
       setLoading(false);
-      return;
     }
+  }, [hasExternalData, data]);
+
+  // Fetch data if not provided
+  useEffect(() => {
+    if (hasExternalData) return;
+    
+    // Only fetch if scheme changed (using ref to avoid re-renders)
+    if (fetchedRef.current === currentScheme) return;
+    fetchedRef.current = currentScheme;
 
     async function fetchDistrictData() {
+      setLoading(true);
       try {
-        const res = await fetch(getApiEndpoint());
+        const res = await fetch(apiEndpoint);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();
         setMapData(json);
@@ -165,7 +201,7 @@ export default function DistrictHeatmap({ data = [], onDistrictClick }: District
     }
 
     fetchDistrictData();
-  }, [data, currentScheme, getApiEndpoint]);
+  }, [currentScheme, apiEndpoint, hasExternalData]);
 
   // Calculate max for scaling
   const maxAnomalyCount = Math.max(...mapData.map((d) => d.anomaly_count), 1);

@@ -40,15 +40,44 @@ interface EntityItem {
     anomaly_score?: number;
 }
 
+// Scheme-specific slider configurations
+const SLIDER_CONFIG = {
+    LPG: {
+        min: 0,
+        max: 35,
+        step: 0.5,
+        default: 7.3,
+        unit: "MSE",
+        highMultiplier: 2, // HIGH = score > threshold * 2
+    },
+    MDM: {
+        min: 0,
+        max: 0.8,
+        step: 0.01,
+        default: 0.52,
+        unit: "Score",
+        highMultiplier: 1.2, // HIGH = score > threshold * 1.2 (tighter for MDM)
+    },
+};
+
 export default function RiskDistributionPage() {
     const { currentScheme, schemeConfig } = useScheme();
     const [refreshKey, setRefreshKey] = useState(0);
     const [distribution, setDistribution] = useState<RiskDistribution[]>([]);
 
-    // Dynamic Threshold Slider State
-    const [threshold, setThreshold] = useState<number>(15);
+    // Get slider config for current scheme
+    const sliderConfig = SLIDER_CONFIG[currentScheme as keyof typeof SLIDER_CONFIG] || SLIDER_CONFIG.LPG;
+
+    // Dynamic Threshold Slider State - initialize with scheme default
+    const [threshold, setThreshold] = useState<number>(sliderConfig.default);
     const [sliderLoading, setSliderLoading] = useState<boolean>(false);
     const [dynamicResults, setDynamicResults] = useState<EntityItem[]>([]);
+
+    // Reset threshold when scheme changes
+    useEffect(() => {
+        const newConfig = SLIDER_CONFIG[currentScheme as keyof typeof SLIDER_CONFIG] || SLIDER_CONFIG.LPG;
+        setThreshold(newConfig.default);
+    }, [currentScheme]);
 
     // Get API base based on scheme
     const getApiBase = useCallback(() => {
@@ -110,10 +139,10 @@ export default function RiskDistributionPage() {
         return entity.mean_squared_error || 0;
     };
 
-    // Calculate dynamic risk counts based on threshold
+    // Calculate dynamic risk counts based on threshold with scheme-specific multipliers
     const dynamicCounts = {
-        high: dynamicResults.filter(e => getEntityScore(e) > threshold * 2).length,
-        medium: dynamicResults.filter(e => getEntityScore(e) > threshold && getEntityScore(e) <= threshold * 2).length,
+        high: dynamicResults.filter(e => getEntityScore(e) > threshold * sliderConfig.highMultiplier).length,
+        medium: dynamicResults.filter(e => getEntityScore(e) > threshold && getEntityScore(e) <= threshold * sliderConfig.highMultiplier).length,
         low: dynamicResults.filter(e => getEntityScore(e) <= threshold).length,
     };
 
@@ -235,26 +264,30 @@ export default function RiskDistributionPage() {
 
                         <div className="space-y-4">
                             <div className="flex items-center justify-between">
-                                <label htmlFor="threshold-slider" className="text-gray-700 text-sm">Anomaly Score Threshold:</label>
-                                <span className="font-mono font-bold text-xl" style={{ color: '#2f0400' }}>{threshold.toFixed(1)}</span>
+                                <label htmlFor="threshold-slider" className="text-gray-700 text-sm">
+                                    {sliderConfig.unit} Threshold:
+                                </label>
+                                <span className="font-mono font-bold text-xl" style={{ color: '#2f0400' }}>
+                                    {threshold.toFixed(currentScheme === 'MDM' ? 2 : 1)}
+                                </span>
                             </div>
 
                             <div className="relative">
                                 <input
                                     id="threshold-slider"
                                     type="range"
-                                    min="5"
-                                    max="30"
-                                    step="0.5"
+                                    min={sliderConfig.min}
+                                    max={sliderConfig.max}
+                                    step={sliderConfig.step}
                                     value={threshold}
                                     onChange={(e) => setThreshold(Number(e.target.value))}
-                                    title="Adjust anomaly score threshold"
+                                    title={`Adjust ${sliderConfig.unit.toLowerCase()} threshold`}
                                     className="w-full h-3 rounded-lg appearance-none cursor-pointer"
                                     style={{ backgroundColor: '#2f040030', accentColor: '#2f0400' }}
                                 />
                                 <div className="flex justify-between text-xs text-gray-500 mt-1">
-                                    <span>More Sensitive (5)</span>
-                                    <span>Less Sensitive (30)</span>
+                                    <span>More Sensitive ({sliderConfig.min})</span>
+                                    <span>Less Sensitive ({sliderConfig.max})</span>
                                 </div>
                             </div>
 
@@ -262,17 +295,23 @@ export default function RiskDistributionPage() {
                                 <div className="rounded-lg p-3" style={{ backgroundColor: '#830f0015', border: '1px solid #830f0030' }}>
                                     <div className="text-2xl font-bold" style={{ color: '#830f00' }}>{dynamicCounts.high}</div>
                                     <div className="text-xs font-medium" style={{ color: '#830f00' }}>HIGH RISK</div>
-                                    <div className="text-gray-500 text-[10px]">Score &gt; {(threshold * 2).toFixed(1)}</div>
+                                    <div className="text-gray-500 text-[10px]">
+                                        {sliderConfig.unit} &gt; {(threshold * sliderConfig.highMultiplier).toFixed(currentScheme === 'MDM' ? 2 : 1)}
+                                    </div>
                                 </div>
                                 <div className="rounded-lg p-3" style={{ backgroundColor: '#e1870015', border: '1px solid #e1870030' }}>
                                     <div className="text-2xl font-bold" style={{ color: '#e18700' }}>{dynamicCounts.medium}</div>
                                     <div className="text-xs font-medium" style={{ color: '#e18700' }}>MEDIUM RISK</div>
-                                    <div className="text-gray-500 text-[10px]">Score &gt; {threshold.toFixed(1)}</div>
+                                    <div className="text-gray-500 text-[10px]">
+                                        {sliderConfig.unit} &gt; {threshold.toFixed(currentScheme === 'MDM' ? 2 : 1)}
+                                    </div>
                                 </div>
                                 <div className="rounded-lg p-3" style={{ backgroundColor: '#00831915', border: '1px solid #00831930' }}>
                                     <div className="text-2xl font-bold" style={{ color: '#008319' }}>{dynamicCounts.low}</div>
                                     <div className="text-xs font-medium" style={{ color: '#008319' }}>LOW RISK</div>
-                                    <div className="text-gray-500 text-[10px]">Score ≤ {threshold.toFixed(1)}</div>
+                                    <div className="text-gray-500 text-[10px]">
+                                        {sliderConfig.unit} ≤ {threshold.toFixed(currentScheme === 'MDM' ? 2 : 1)}
+                                    </div>
                                 </div>
                             </div>
 
