@@ -8,6 +8,7 @@
 
 JanAvlokan is a cloud-native, privacy-first decision-support platform designed to proactively identify potential leakages in large-scale government welfare schemes. It uses unsupervised machine learning, policy-aware risk calibration, and explainable analytics to help administrators prioritize audits early—without disrupting legitimate beneficiaries.
 
+![alt text](image.png)
 ---
 
 ## Tech Stack
@@ -118,7 +119,7 @@ Models are periodically retrained to adapt to policy, seasonal, and regional cha
 
 ```bash
 # Clone the repository
-git clone https://github.com/Rewant-1/JanAvlokan.git
+git clone https://github.com/shubhikasinha/JanAvlokan.git
 cd JanAvlokan
 
 # Install dependencies
