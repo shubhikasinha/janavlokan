@@ -155,14 +155,15 @@ export default function TimeSeriesChart({ days = 30, showSpikes = true }: TimeSe
                 dataKey="date"
                 tickFormatter={formatDate}
                 tick={{ fontSize: 12 }}
-                stroke="#6b7280"
+                stroke="#64748b"
               />
-              <YAxis tick={{ fontSize: 12 }} stroke="#6b7280" />
+              <YAxis tick={{ fontSize: 12 }} stroke="#64748b" />
               <Tooltip
                 contentStyle={{
                   backgroundColor: "white",
                   border: "1px solid #e5e7eb",
                   borderRadius: "8px",
+                  boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                 }}
                 labelFormatter={(label) => `Date: ${formatDate(label)}`}
               />
@@ -171,24 +172,24 @@ export default function TimeSeriesChart({ days = 30, showSpikes = true }: TimeSe
                 type="monotone"
                 dataKey="high_risk_count"
                 stackId="1"
-                stroke="#ef4444"
-                fill="#fecaca"
+                stroke="#dc2626"
+                fill="#fee2e2"
                 name="High Risk"
               />
               <Area
                 type="monotone"
                 dataKey="medium_risk_count"
                 stackId="1"
-                stroke="#f59e0b"
-                fill="#fef3c7"
+                stroke="#94a3b8"
+                fill="#f1f5f9"
                 name="Medium Risk"
               />
               <Area
                 type="monotone"
                 dataKey="low_risk_count"
                 stackId="1"
-                stroke="#22c55e"
-                fill="#dcfce7"
+                stroke="#cbd5e1"
+                fill="#f8fafc"
                 name="Low Risk"
               />
             </AreaChart>
@@ -223,13 +224,12 @@ export default function TimeSeriesChart({ days = 30, showSpikes = true }: TimeSe
                     <td className="px-4 py-3 font-medium">{formatDate(spike.date)}</td>
                     <td className="px-4 py-3">
                       <span
-                        className={`px-2 py-1 rounded text-xs font-medium ${
-                          spike.spike_type === "CRITICAL"
+                        className={`px-2 py-1 rounded text-xs font-medium ${spike.spike_type === "CRITICAL"
                             ? "bg-red-100 text-red-800"
                             : spike.spike_type === "HIGH"
-                            ? "bg-amber-100 text-amber-800"
-                            : "bg-yellow-100 text-yellow-800"
-                        }`}
+                              ? "bg-amber-100 text-amber-800"
+                              : "bg-yellow-100 text-yellow-800"
+                          }`}
                       >
                         {spike.spike_type}
                       </span>

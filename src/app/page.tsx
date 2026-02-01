@@ -8,16 +8,6 @@ type QuickStat = {
     label: string;
 };
 
-type RiskLevel = 'low' | 'medium' | 'high';
-
-type StateMarker = {
-    name: string;
-    x: number;
-    y: number;
-    flagged: string;
-    risk: RiskLevel;
-};
-
 /* ---------------- Data ---------------- */
 
 // Key stats for quick display
@@ -25,25 +15,7 @@ const quickStats: QuickStat[] = [
     { value: '4.2 Cr', label: 'Beneficiaries Monitored' },
     { value: '12', label: 'Welfare Schemes' },
     { value: '28', label: 'States Covered' },
-    { value: '₹18,450 Cr', label: 'Transactions This Month' },
-];
-
-// State data for India map
-const stateMarkers: StateMarker[] = [
-    { name: 'J&K', x: 175, y: 65, flagged: '1,234', risk: 'medium' },
-    { name: 'Punjab', x: 175, y: 110, flagged: '2,456', risk: 'low' },
-    { name: 'Rajasthan', x: 160, y: 175, flagged: '4,567', risk: 'low' },
-    { name: 'Gujarat', x: 120, y: 230, flagged: '3,890', risk: 'low' },
-    { name: 'Maharashtra', x: 175, y: 285, flagged: '6,789', risk: 'medium' },
-    { name: 'Karnataka', x: 180, y: 350, flagged: '2,345', risk: 'low' },
-    { name: 'Tamil Nadu', x: 210, y: 400, flagged: '3,456', risk: 'low' },
-    { name: 'Kerala', x: 185, y: 420, flagged: '1,890', risk: 'low' },
-    { name: 'UP', x: 265, y: 165, flagged: '12,847', risk: 'high' },
-    { name: 'Bihar', x: 330, y: 185, flagged: '8,234', risk: 'high' },
-    { name: 'MP', x: 225, y: 225, flagged: '5,123', risk: 'medium' },
-    { name: 'West Bengal', x: 365, y: 230, flagged: '4,567', risk: 'medium' },
-    { name: 'Odisha', x: 325, y: 275, flagged: '3,234', risk: 'medium' },
-    { name: 'Assam', x: 420, y: 175, flagged: '1,567', risk: 'low' },
+    { value: '18,450 Cr', label: 'Transactions This Month' },
 ];
 
 /* ---------------- Component ---------------- */
@@ -69,39 +41,6 @@ const HomePage: React.FC = () => {
                         JanAvlokan analyzes welfare transaction patterns to flag potential
                         leakage while ensuring genuine beneficiaries receive uninterrupted support.
                     </p>
-
-                    {/* Clear CTAs with descriptions */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
-                        <div className="bg-white border-2 border-primary rounded-xl p-6 hover:shadow-lg transition-shadow">
-                            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4 mx-auto">
-                                <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                                </svg>
-                            </div>
-                            <h3 className="font-heading font-bold text-gray-900 text-lg mb-2">Investigation Dashboard</h3>
-                            <p className="text-sm text-gray-600 mb-4">
-                                Review flagged beneficiaries, investigate individual cases, and take audit actions
-                            </p>
-                            <Button href="/dashboard" className="w-full">
-                                Investigate Cases
-                            </Button>
-                        </div>
-
-                        <div className="bg-white border-2 border-amber-500 rounded-xl p-6 hover:shadow-lg transition-shadow">
-                            <div className="w-12 h-12 bg-amber-500/10 rounded-lg flex items-center justify-center mb-4 mx-auto">
-                                <svg className="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                                </svg>
-                            </div>
-                            <h3 className="font-heading font-bold text-gray-900 text-lg mb-2">Analytics & Insights</h3>
-                            <p className="text-sm text-gray-600 mb-4">
-                                Explore patterns, geographic trends, and predictive risk analysis
-                            </p>
-                            <Button variant="secondary" href="/analytics" className="w-full border-amber-500 text-amber-700 hover:bg-amber-50">
-                                View Analytics
-                            </Button>
-                        </div>
-                    </div>
                 </div>
             </section>
 
@@ -121,92 +60,6 @@ const HomePage: React.FC = () => {
                             </div>
                         </div>
                     ))}
-                </div>
-            </section>
-
-            {/* Map Section */}
-            <section className="py-10 md:py-14">
-                <div className="max-w-6xl mx-auto px-4">
-                    <h2 className="text-xl md:text-2xl font-heading font-bold text-gray-900 text-center mb-6">
-                        State-wise Risk Monitoring
-                    </h2>
-
-                    <div className="relative max-w-lg mx-auto">
-                        <svg viewBox="0 0 500 500" className="w-full h-auto">
-                            <path
-                                d="M150,50 L175,40 L200,35 L230,30 L260,32 L290,40 L320,55 L350,75 L380,100 L395,130 L400,160 L395,195 L385,230 L375,265 L360,300 L340,340 L310,380 L275,420 L235,450 L195,455 L165,440 L145,400 L130,355 L115,310 L105,265 L100,220 L100,175 L105,135 L115,100 L130,70 Z"
-                                fill="#FEF3C7"
-                                stroke="#D97706"
-                                strokeWidth={2}
-                            />
-
-                            {stateMarkers.map((state, index) => {
-                                const isHigh = state.risk === 'high';
-                                const isMedium = state.risk === 'medium';
-
-                                return (
-                                    <g key={index}>
-                                        <circle
-                                            cx={state.x}
-                                            cy={state.y}
-                                            r={isHigh ? 20 : isMedium ? 16 : 12}
-                                            fill="none"
-                                            stroke={
-                                                isHigh
-                                                    ? '#B91C1C'
-                                                    : isMedium
-                                                        ? '#D97706'
-                                                        : '#059669'
-                                            }
-                                            strokeWidth={2}
-                                            opacity={0.3}
-                                        />
-                                        <circle
-                                            cx={state.x}
-                                            cy={state.y}
-                                            r={isHigh ? 14 : isMedium ? 10 : 7}
-                                            fill={
-                                                isHigh
-                                                    ? '#B91C1C'
-                                                    : isMedium
-                                                        ? '#D97706'
-                                                        : '#059669'
-                                            }
-                                        />
-
-                                        {isHigh && (
-                                            <>
-                                                <line
-                                                    x1={state.x + 15}
-                                                    y1={state.y}
-                                                    x2={state.x + 35}
-                                                    y2={state.y - 15}
-                                                    stroke="#374151"
-                                                    strokeWidth={1}
-                                                />
-                                                <text
-                                                    x={state.x + 38}
-                                                    y={state.y - 18}
-                                                    fontSize={11}
-                                                    fontWeight="bold"
-                                                >
-                                                    {state.name}
-                                                </text>
-                                                <text
-                                                    x={state.x + 38}
-                                                    y={state.y - 6}
-                                                    fontSize={10}
-                                                    fill="#B91C1C"
-                                                >
-                                                    {state.flagged} cases
-                                                </text>
-                                            </>
-                                        )}
-                                    </g>
-                                );
-                            })}
-                        </svg>
-                    </div>
                 </div>
             </section>
         </div>
