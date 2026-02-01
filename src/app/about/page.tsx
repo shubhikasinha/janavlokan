@@ -86,7 +86,11 @@ const faqs = [
     },
     {
         q: 'What schemes can JanAvlokan analyze?',
-        a: 'The platform is scheme-agnostic and can be configured to analyze any welfare program that generates transactional data, including PM-KISAN, MGNREGA, PDS, Ujjwala, and more.',
+        a: 'The platform is scheme-agnostic and can be configured to analyze any welfare program that generates transactional data, including Pradhan Mantri Ujjwala Yojana, PM POSHAN, and more.',
+    },
+    {
+        q: 'What types of fraud patterns does JanAvlokan detect?',
+        a: 'JanAvlokan identifies five key fraud risk categories: Unusual Activity, Suspicious Locations, Scheme Overlaps, Beneficiary Clusters, and Repeat Withdrawals. Each category represents a different mode of potential fraud or system misuse.',
     },
 ];
 
@@ -196,8 +200,98 @@ export default function AboutPage() {
                 </div>
             </section>
 
-            {/* Timeline */}
+            {/* Schemes Currently Monitored */}
             <section className="py-12 md:py-16 bg-white">
+                <div className="max-w-7xl mx-auto px-4">
+                    <div className="border-l-4 border-primary pl-6 mb-8">
+                        <h2 className="text-2xl md:text-3xl font-heading font-bold text-gray-900 mb-2">
+                            Welfare Schemes Monitored
+                        </h2>
+                        <p className="text-gray-600">Current deployment covers major national welfare programs</p>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-6 mb-8">
+                        {/* PM POSHAN */}
+                        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                            <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                                <h3 className="text-xl font-heading font-bold text-gray-900">PM POSHAN</h3>
+                                <p className="text-sm text-gray-600 mt-1">Mid-Day Meal Scheme</p>
+                            </div>
+                            <div className="p-6 space-y-3">
+                                <div>
+                                    <span className="font-medium text-gray-900">Official Name:</span>
+                                    <p className="text-gray-600 text-sm">Pradhan Mantri Poshan Shakti Nirman (revamped 2021)</p>
+                                </div>
+                                <div>
+                                    <span className="font-medium text-gray-900">Coverage:</span>
+                                    <p className="text-gray-600 text-sm">Children in Classes I–VIII in government & aided schools</p>
+                                </div>
+                                <div>
+                                    <span className="font-medium text-gray-900">Monitoring Focus:</span>
+                                    <ul className="text-gray-600 text-sm list-disc list-inside mt-1 space-y-1">
+                                        <li>Inflated beneficiary counts</li>
+                                        <li>Duplicate student enrollments</li>
+                                        <li>Ghost schools and fictitious claims</li>
+                                        <li>Unusual meal distribution patterns</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* PMUY + PAHAL */}
+                        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                            <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                                <h3 className="text-xl font-heading font-bold text-gray-900">PMUY + PAHAL</h3>
+                                <p className="text-sm text-gray-600 mt-1">LPG Subsidy Schemes</p>
+                            </div>
+                            <div className="p-6 space-y-3">
+                                <div>
+                                    <span className="font-medium text-gray-900">Official Names:</span>
+                                    <p className="text-gray-600 text-sm">Pradhan Mantri Ujjwala Yojana (2016) & Direct Benefit Transfer for LPG (2014)</p>
+                                </div>
+                                <div>
+                                    <span className="font-medium text-gray-900">Coverage:</span>
+                                    <p className="text-gray-600 text-sm">BPL/SECC households receiving LPG connections and subsidies</p>
+                                </div>
+                                <div>
+                                    <span className="font-medium text-gray-900">Monitoring Focus:</span>
+                                    <ul className="text-gray-600 text-sm list-disc list-inside mt-1 space-y-1">
+                                        <li>Duplicate LPG connections</li>
+                                        <li>Fake beneficiary accounts</li>
+                                        <li>Excessive refill frequency</li>
+                                        <li>Shared bank account patterns</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
+                        <h3 className="font-heading font-semibold text-gray-900 mb-3">System Capacity</h3>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                            <div>
+                                <div className="text-2xl font-heading font-bold text-primary">4.2 Cr</div>
+                                <div className="text-sm text-gray-600">Beneficiaries Monitored</div>
+                            </div>
+                            <div>
+                                <div className="text-2xl font-heading font-bold text-primary">12</div>
+                                <div className="text-sm text-gray-600">Welfare Schemes</div>
+                            </div>
+                            <div>
+                                <div className="text-2xl font-heading font-bold text-primary">28</div>
+                                <div className="text-sm text-gray-600">States Covered</div>
+                            </div>
+                            <div>
+                                <div className="text-2xl font-heading font-bold text-primary">100M+</div>
+                                <div className="text-sm text-gray-600">Monthly Transactions</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Timeline */}
+            <section className="py-12 md:py-16 bg-gray-50 border-y border-gray-200">
                 <div className="max-w-4xl mx-auto px-4">
                     <div className="border-l-4 border-primary pl-6 mb-8">
                         <h2 className="text-2xl md:text-3xl font-heading font-bold text-gray-900 mb-2">

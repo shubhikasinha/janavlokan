@@ -291,8 +291,103 @@ export default function TechnologyPage() {
                 </div>
             </section>
 
-            {/* Data Privacy */}
+            {/* Alert System & Risk Categorization */}
             <section className="py-12 md:py-16 bg-gray-50 border-y border-gray-200">
+                <div className="max-w-7xl mx-auto px-4">
+                    <div className="border-l-4 border-primary pl-6 mb-8">
+                        <h2 className="text-2xl md:text-3xl font-heading font-bold text-gray-900 mb-2">
+                            Alert System & Risk Categorization
+                        </h2>
+                        <p className="text-gray-600">Real-time fraud pattern detection and intelligent alert prioritization</p>
+                    </div>
+
+                    <div className="grid lg:grid-cols-2 gap-8 mb-8">
+                        <div className="bg-white border border-gray-200 rounded-lg p-6">
+                            <h3 className="font-heading font-semibold text-gray-900 mb-4 border-b border-gray-200 pb-3">
+                                Five Key Fraud Risk Categories
+                            </h3>
+                            <p className="text-gray-600 mb-4">
+                                JanAvlokan identifies and categorizes anomalous behavior into five distinct risk patterns,
+                                each representing a different mode of potential fraud or system misuse:
+                            </p>
+                            <div className="space-y-3">
+                                {[
+                                    { name: 'Unusual Activity', pct: '32%', desc: 'Abnormal transaction patterns, spikes, or irregular claim timing' },
+                                    { name: 'Suspicious Locations', pct: '24%', desc: 'Geographic inconsistencies or claims from unexpected regions' },
+                                    { name: 'Scheme Overlaps', pct: '18%', desc: 'Multiple scheme enrollments with conflicting eligibility criteria' },
+                                    { name: 'Beneficiary Clusters', pct: '15%', desc: 'Groups sharing bank accounts, devices, or other identifiers' },
+                                    { name: 'Repeat Withdrawals', pct: '11%', desc: 'Excessive claim frequency beyond normal beneficiary behavior' },
+                                ].map((cat, idx) => (
+                                    <div key={idx} className="flex items-start gap-3 border-l-2 border-primary pl-3">
+                                        <div className="flex-shrink-0 w-12 text-center">
+                                            <span className="text-lg font-bold text-primary">{cat.pct}</span>
+                                        </div>
+                                        <div>
+                                            <h4 className="font-medium text-gray-900">{cat.name}</h4>
+                                            <p className="text-sm text-gray-600">{cat.desc}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="bg-white border border-gray-200 rounded-lg p-6">
+                            <h3 className="font-heading font-semibold text-gray-900 mb-4 border-b border-gray-200 pb-3">
+                                High-Priority Alert System
+                            </h3>
+                            <p className="text-gray-600 mb-4">
+                                The platform continuously monitors transactions and generates real-time alerts when
+                                high-risk patterns are detected. Each alert includes:
+                            </p>
+                            <div className="space-y-3">
+                                <div className="bg-gray-50 border border-gray-200 rounded p-3">
+                                    <h4 className="font-medium text-gray-900 mb-1">Beneficiary Identifier</h4>
+                                    <p className="text-sm text-gray-600">Anonymized hash for tracking while preserving privacy</p>
+                                </div>
+                                <div className="bg-gray-50 border border-gray-200 rounded p-3">
+                                    <h4 className="font-medium text-gray-900 mb-1">Risk Score & Category</h4>
+                                    <p className="text-sm text-gray-600">Numerical score (0-1) and HIGH/MEDIUM/LOW classification</p>
+                                </div>
+                                <div className="bg-gray-50 border border-gray-200 rounded p-3">
+                                    <h4 className="font-medium text-gray-900 mb-1">Alert Type Description</h4>
+                                    <p className="text-sm text-gray-600">Human-readable explanation (e.g., "Multiple dealers detected")</p>
+                                </div>
+                                <div className="bg-gray-50 border border-gray-200 rounded p-3">
+                                    <h4 className="font-medium text-gray-900 mb-1">Timestamp</h4>
+                                    <p className="text-sm text-gray-600">Exact detection time for audit trail purposes</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white border border-gray-200 rounded-lg p-6">
+                        <h3 className="font-heading font-semibold text-gray-900 mb-4 border-b border-gray-200 pb-3">
+                            Trend Analysis & Weekly Monitoring
+                        </h3>
+                        <div className="grid md:grid-cols-3 gap-6">
+                            <div className="text-center">
+                                <div className="text-3xl font-heading font-bold text-primary mb-2">7%</div>
+                                <div className="text-sm text-gray-600">Average Weekly Increase in Fraud Detection</div>
+                            </div>
+                            <div className="text-center">
+                                <div className="text-3xl font-heading font-bold text-primary mb-2">&lt;1 min</div>
+                                <div className="text-sm text-gray-600">Alert Generation Time from Transaction</div>
+                            </div>
+                            <div className="text-center">
+                                <div className="text-3xl font-heading font-bold text-primary mb-2">24/7</div>
+                                <div className="text-sm text-gray-600">Continuous Real-Time Monitoring</div>
+                            </div>
+                        </div>
+                        <p className="text-gray-600 mt-6 text-center">
+                            Temporal trend analysis tracks weekly changes in fraud patterns, enabling proactive
+                            policy adjustments and resource allocation.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            {/* Data Privacy */}
+            <section className="py-12 md:py-16 bg-white">
                 <div className="max-w-7xl mx-auto px-4">
                     <div className="grid lg:grid-cols-2 gap-8 items-start">
                         <div>

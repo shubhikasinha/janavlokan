@@ -1,5 +1,8 @@
 import React from 'react';
 import { Button } from '../components';
+import HighPriorityAlerts from '../components/HighPriorityAlerts';
+import FraudRiskPieChart from '../components/FraudRiskPieChart';
+import FraudTrendChart from '../components/FraudTrendChart';
 
 /* ---------------- Types ---------------- */
 
@@ -60,6 +63,105 @@ const HomePage: React.FC = () => {
                             </div>
                         </div>
                     ))}
+                </div>
+            </section>
+
+            {/* Scheme Information Section */}
+            <section className="py-8 bg-white border-b border-[#830f0010] mt-8 mb-15">
+                <div className="max-w-6xl mx-auto px-4">
+                    <h2 className="text-2xl font-heading font-bold text-gray-900 mb-6 text-center">
+                        Monitored Welfare Schemes
+                    </h2>
+
+                    <div className="grid md:grid-cols-2 gap-6">
+                        {/* Mid-Day Meal Scheme */}
+                        <div className="bg-white border-2 border-[#830f0020] rounded-lg p-6 shadow-sm hover:border-[#830f0040] transition-colors">
+                            <h3 className="text-xl font-heading font-bold text-[#2f0400] mb-4 pb-3 border-b border-[#830f0020]">
+                                Mid-Day Meal Scheme
+                            </h3>
+
+                            <div className="space-y-3 text-sm">
+                                <div>
+                                    <span className="font-semibold text-[#2f0400]">PM POSHAN</span>
+                                    <span className="text-gray-600 text-xs ml-1">(est. 1995, revamped 2021)</span>
+                                </div>
+
+                                <p className="text-gray-700 leading-relaxed">
+                                    Provides free cooked meals to children in Classes I–VIII in government schools,
+                                    improving nutrition and school attendance.
+                                </p>
+
+                                <div className="bg-[#830f0005] border-l-3 border-[#830f00] pl-3 py-2">
+                                    <p className="text-xs text-gray-700">
+                                        <strong>Coverage:</strong> ~450 cal & 12g protein (Primary),
+                                        ~700 cal & 20g protein (Upper Primary)
+                                    </p>
+                                </div>
+
+                                <div className="flex flex-wrap gap-2 mt-3">
+                                    <span className="text-xs px-2 py-1 bg-[#830f0010] text-[#830f00] rounded">Reduces Malnutrition</span>
+                                    <span className="text-xs px-2 py-1 bg-[#830f0010] text-[#830f00] rounded">Lowers Dropout Rates</span>
+                                    <span className="text-xs px-2 py-1 bg-[#830f0010] text-[#830f00] rounded">Encourages Enrollment</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* LPG Subsidy Scheme */}
+                        <div className="bg-white border-2 border-[#830f0020] rounded-lg p-6 shadow-sm hover:border-[#830f0040] transition-colors">
+                            <h3 className="text-xl font-heading font-bold text-[#2f0400] mb-4 pb-3 border-b border-[#830f0020]">
+                                LPG Subsidy Scheme
+                            </h3>
+
+                            <div className="space-y-3 text-sm">
+                                <div>
+                                    <span className="font-semibold text-[#2f0400]">PMUY + PAHAL</span>
+                                    <span className="text-gray-600 text-xs ml-1">(2014, 2016)</span>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <div className="bg-[#830f0005] rounded p-2">
+                                        <p className="font-semibold text-gray-900 text-xs mb-1">PMUY (2016)</p>
+                                        <p className="text-xs text-gray-700">
+                                            Free LPG connections for BPL/SECC households to promote clean cooking fuel.
+                                        </p>
+                                    </div>
+
+                                    <div className="bg-[#830f0005] rounded p-2">
+                                        <p className="font-semibold text-gray-900 text-xs mb-1">PAHAL (2014)</p>
+                                        <p className="text-xs text-gray-700">
+                                            Direct subsidy transfer to bank accounts via Aadhaar, eliminating fake connections.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="border-l-3 border-[#830f00] pl-3 py-1">
+                                    <p className="text-xs text-gray-700">
+                                        <strong>How it works:</strong> Buy LPG at market price → Subsidy credited to your account
+                                    </p>
+                                </div>
+
+                                <div className="flex flex-wrap gap-2 mt-3">
+                                    <span className="text-xs px-2 py-1 bg-[#830f0010] text-[#830f00] rounded">Prevents Duplicates</span>
+                                    <span className="text-xs px-2 py-1 bg-[#830f0010] text-[#830f00] rounded">Saves Expenditure</span>
+                                    <span className="text-xs px-2 py-1 bg-[#830f0010] text-[#830f00] rounded">Improves Transparency</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* High Priority Alerts & Fraud Risk Breakdown Section */}
+            <section className="py-8 bg-gray-50 mt-15">
+                <h2 className="text-2xl font-heading font-bold text-[#2f0400] mb-4 pb-3 border-b border-[#830f0020] text-center py-10">
+                    High Priority Alerts & Fraud Risk Breakdown
+                </h2>
+                <div className="max-w-7xl mx-auto px-4 mt-10 mb-10">
+                    <div className="grid md:grid-cols-3 gap-6">
+                        <FraudRiskPieChart />
+                        <FraudTrendChart />
+                        <HighPriorityAlerts />
+                    </div>
                 </div>
             </section>
         </div>

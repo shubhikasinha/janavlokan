@@ -47,8 +47,6 @@ const DISTRICT_COORDINATES: Record<string, [number, number]> = {
   "Jodhpur": [26.2389, 73.0243],
   "Udaipur": [24.5854, 73.7125],
   "Gwalior": [26.2183, 78.1828],
-  "Bhopal": [23.2599, 77.4126],
-  "Indore": [22.7196, 75.8577],
   "Ratlam": [22.6667, 75.1667],
   "Jabalpur": [23.1815, 79.9864],
   "Unknown": [20.5937, 78.9629],
@@ -233,7 +231,7 @@ export default function DistrictHeatmap({ data = [], onDistrictClick }: District
       </div>
 
       <MapContainer
-        center={[22.5937, 78.9629]} // Center of India
+        center={[24.5937, 73.9629]} // Center of India
         zoom={8} // Zoomed in for district-level view
         style={{ height: "500px", width: "100%", borderRadius: "0.5rem", border: "1px solid #e5e7eb" }}
         scrollWheelZoom={true}
