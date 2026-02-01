@@ -71,7 +71,7 @@ function getDistrictCoordinates(districtName: string): [number, number] {
   return [baseCoords[0] + latOffset, baseCoords[1] + lngOffset];
 }
 
-// Get color based on anomaly count
+// Get color based on anomaly count - Single-Hue Red Scale (Minimal)
 function getHeatColor(count: number, maxCount: number): string {
   const ratio = count / maxCount;
   if (ratio > 0.7) return "#b91c1c"; // Red-700
@@ -230,7 +230,7 @@ export default function DistrictHeatmap({ data = [], onDistrictClick }: District
 
       <MapContainer
         center={[22.5937, 78.9629]} // Center of India
-        zoom={6} // More zoomed in for district-level view
+        zoom={8} // Zoomed in for district-level view
         style={{ height: "500px", width: "100%", borderRadius: "0.5rem", border: "1px solid #e5e7eb" }}
         scrollWheelZoom={true}
       >

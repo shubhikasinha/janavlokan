@@ -14,10 +14,12 @@ type NavLink = {
 
 /* ---------------- Data ---------------- */
 
-// Updated navigation: Combined Technology+Features, About+Contact
+// Updated navigation with separate analytics pages
 const navLinks: NavLink[] = [
     { path: '/', label: 'Home' },
-    { path: '/analytics', label: 'Analytics' },
+    { path: '/geographic-analysis', label: 'Geography' },
+    { path: '/risk-distribution', label: 'Exposure' },
+    { path: '/temporal-trends', label: 'Trends' },
     { path: '/dashboard', label: 'Dashboard' },
     { path: '/technology', label: 'Technology' },
     { path: '/about', label: 'About' },

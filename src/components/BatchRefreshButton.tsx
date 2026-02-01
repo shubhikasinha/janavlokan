@@ -4,7 +4,9 @@ import { useState } from "react";
 
 interface BatchRefreshButtonProps {
   onRefreshComplete?: () => void;
+  className?: string;
 }
+
 
 interface RefreshResult {
   success: boolean;
@@ -19,12 +21,14 @@ interface RefreshResult {
   error?: string;
 }
 
-export default function BatchRefreshButton({ onRefreshComplete }: BatchRefreshButtonProps) {
+
+export default function BatchRefreshButton({ onRefreshComplete, className = "" }: BatchRefreshButtonProps) {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<RefreshResult | null>(null);
   const [showDetails, setShowDetails] = useState(false);
 
   const handleRefresh = async () => {
+    // ... implementation ...
     setLoading(true);
     setResult(null);
 
@@ -52,15 +56,15 @@ export default function BatchRefreshButton({ onRefreshComplete }: BatchRefreshBu
   };
 
   return (
-    <div className="relative">
+    <div className="relative w-full">
       {/* Main Button */}
       <button
         onClick={handleRefresh}
         disabled={loading}
-        className={`flex items-center gap-2 px-4 py-2 rounded font-medium text-sm transition-all ${loading
-            ? "bg-gray-100 text-gray-500 cursor-not-allowed"
-            : "bg-primary text-white hover:bg-primary/90"
-          }`}
+        className={`flex items-center justify-center gap-2 px-4 py-2 rounded font-medium text-sm transition-all w-full ${loading
+          ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+          : "bg-primary text-white hover:bg-primary/90"
+          } ${className}`}
       >
         {loading ? (
           <>

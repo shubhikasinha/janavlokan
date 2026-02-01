@@ -10,7 +10,7 @@ import SchemeSwitcher from "@/components/SchemeSwitcher";
 // Chart colors for inline distribution display
 // Minimal Chart colors
 const RISK_COLORS: Record<string, string> = {
-  HIGH: "#dc2626",   // Red-600
+  HIGH: "#800404ff",   // Red-600
   MEDIUM: "#94a3b8", // Slate-400
   LOW: "#e2e8f0",    // Slate-200
   UNKNOWN: "#f8fafc", // Slate-50
@@ -487,12 +487,9 @@ export default function DashboardPage() {
                 Real-time data from BigQuery
               </p>
             </div>
-            <div className="grid grid-cols-3 gap-3 w-full md:w-auto min-w-[400px]">
-              <div className="w-full"><SchemeSwitcher /></div>
-              <div className="w-full [&>button]:w-full"><BatchRefreshButton onRefreshComplete={handleRefreshComplete} /></div>
-              <Button href="/analytics" variant="secondary" className="w-full justify-center">
-                Analytics
-              </Button>
+            <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
+              <div className="w-full md:w-auto h-11 mt-[2px]"><BatchRefreshButton onRefreshComplete={handleRefreshComplete} className="h-full md:min-w-[160px]" /></div>
+              <div className="flex-1 h-11"><SchemeSwitcher className="h-full whitespace-nowrap" /></div>
             </div>
           </div>
         </div>
@@ -511,10 +508,10 @@ export default function DashboardPage() {
               </div>
             </div>
             <div className="bg-red-50 border border-red-200 rounded-xl p-5 text-center shadow-sm hover:shadow-md transition-shadow">
-              <div className="text-3xl font-heading font-bold text-red-600 tabular-nums">
+              <div className="text-3xl font-heading font-bold text-red-800 tabular-nums">
                 {summary?.high_risk?.toLocaleString() || 0}
               </div>
-              <div className="text-xs text-red-600/80 mt-1 uppercase tracking-wide">
+              <div className="text-xs text-red-800/80 mt-1 uppercase tracking-wide">
                 High Risk
               </div>
             </div>
@@ -577,7 +574,7 @@ export default function DashboardPage() {
                   ))}
                 </div>
               </div>
-              <Button href="/analytics" variant="secondary" className="text-xs py-1 px-3">
+              <Button href="/risk-distribution" variant="secondary" className="text-xs py-1 px-3">
                 View Full Analysis
               </Button>
             </div>
@@ -953,7 +950,7 @@ export default function DashboardPage() {
             Want to explore patterns, trends, and geographic insights?
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Button href="/analytics">View Analytics & Insights</Button>
+            <Button href="/geographic-analysis">View Analytics & Insights</Button>
             <Button href="/technology" variant="secondary">
               Explore Technology
             </Button>

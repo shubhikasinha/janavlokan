@@ -9,11 +9,15 @@ const schemes: { type: SchemeType; name: string }[] = [
     { type: 'MDM', name: 'Mid Day Meal' },
 ];
 
-const SchemeSwitcher: React.FC = () => {
+interface SchemeSwitcherProps {
+    className?: string;
+}
+
+const SchemeSwitcher: React.FC<SchemeSwitcherProps> = ({ className = "" }) => {
     const { currentScheme, setScheme } = useScheme();
 
     return (
-        <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
+        <div className={`flex items-center gap-2 bg-gray-100 rounded-lg p-1 w-full ${className}`}>
             {schemes.map((scheme) => {
                 const isActive = currentScheme === scheme.type;
 
@@ -21,12 +25,12 @@ const SchemeSwitcher: React.FC = () => {
                     <button
                         key={scheme.type}
                         onClick={() => setScheme(scheme.type)}
-                        className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${isActive
+                        className={`flex-1 flex items-center justify-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${isActive
                             ? 'bg-primary text-white shadow-sm'
                             : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200'
                             }`}
                     >
-                        <span>{scheme.name}</span>
+                        <span className="whitespace-nowrap">{scheme.name}</span>
                     </button>
                 );
             })}

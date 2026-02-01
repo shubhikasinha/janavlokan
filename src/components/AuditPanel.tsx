@@ -139,10 +139,10 @@ export default function AuditPanel({
   };
 
   return (
-    <div className="bg-white/5 border border-white/10 rounded-lg p-4 shadow-sm">
-      <h4 className="font-heading font-semibold text-white mb-3 flex items-center gap-2">
+    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 shadow-sm">
+      <h4 className="font-heading font-semibold text-gray-900 mb-3 flex items-center gap-2">
         Audit Actions
-        <span className="text-xs font-normal text-white/50">
+        <span className="text-xs font-normal text-gray-500">
           (Human-in-the-loop)
         </span>
       </h4>
@@ -150,54 +150,54 @@ export default function AuditPanel({
       {/* ============================================ */}
       {/* NEW: Quick Feedback Buttons for ML Training */}
       {/* ============================================ */}
-      <div className="mb-4 p-3 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/30 rounded-lg">
+      <div className="mb-4 p-3 bg-purple-50 border border-purple-200 rounded-lg">
         <div className="flex items-center justify-between mb-2">
-          <h5 className="text-sm font-medium text-purple-400 flex items-center gap-2">
+          <h5 className="text-sm font-medium text-purple-900 flex items-center gap-2">
             Model Feedback
-            <span className="text-[10px] text-purple-400/70">(Train Future Models)</span>
+            <span className="text-[10px] text-purple-600">(Train Future Models)</span>
           </h5>
           {feedbackStats && !feedbackLoading && (
-            <div className="text-[10px] text-white/50">
-              Accuracy: <span className="text-emerald-400 font-bold">{feedbackStats.accuracy_rate.toFixed(1)}%</span>
+            <div className="text-[10px] text-gray-600">
+              Accuracy: <span className="text-emerald-600 font-bold">{feedbackStats.accuracy_rate.toFixed(1)}%</span>
             </div>
           )}
         </div>
-        <p className="text-xs text-white/50 mb-3">
+        <p className="text-xs text-purple-800 mb-3">
           Is the model&apos;s risk prediction for this beneficiary correct?
         </p>
         <div className="grid grid-cols-2 gap-2">
           <button
             onClick={() => handleAuditAction("FEEDBACK_TRUE_POSITIVE")}
             disabled={loading || !officerName.trim()}
-            className="px-3 py-2.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-lg text-sm font-medium hover:bg-emerald-500/30 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+            className="px-3 py-2.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg text-sm font-medium hover:bg-emerald-100 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
           >
             Correct
-            <span className="text-[10px] text-emerald-400/70">(True Positive)</span>
+            <span className="text-[10px] text-emerald-600/70">(True Positive)</span>
           </button>
           <button
             onClick={() => handleAuditAction("FEEDBACK_FALSE_POSITIVE")}
             disabled={loading || !officerName.trim()}
-            className="px-3 py-2.5 bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg text-sm font-medium hover:bg-red-500/30 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+            className="px-3 py-2.5 bg-red-50 text-red-700 border border-red-200 rounded-lg text-sm font-medium hover:bg-red-100 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
           >
             Wrong
-            <span className="text-[10px] text-red-400/70">(False Positive)</span>
+            <span className="text-[10px] text-red-600/70">(False Positive)</span>
           </button>
         </div>
 
         {/* Feedback Stats Mini Display */}
         {feedbackStats && !feedbackLoading && feedbackStats.total_feedback > 0 && (
-          <div className="mt-3 pt-3 border-t border-white/10 grid grid-cols-3 gap-2 text-center">
+          <div className="mt-3 pt-3 border-t border-purple-200 grid grid-cols-3 gap-2 text-center">
             <div>
-              <div className="text-lg font-bold text-white">{feedbackStats.total_feedback}</div>
-              <div className="text-[10px] text-white/40">Total Feedback</div>
+              <div className="text-lg font-bold text-gray-900">{feedbackStats.total_feedback}</div>
+              <div className="text-[10px] text-gray-500">Total Feedback</div>
             </div>
             <div>
-              <div className="text-lg font-bold text-emerald-400">{feedbackStats.true_positives}</div>
-              <div className="text-[10px] text-white/40">Correct</div>
+              <div className="text-lg font-bold text-emerald-600">{feedbackStats.true_positives}</div>
+              <div className="text-[10px] text-gray-500">Correct</div>
             </div>
             <div>
-              <div className="text-lg font-bold text-red-400">{feedbackStats.false_positives}</div>
-              <div className="text-[10px] text-white/40">Wrong</div>
+              <div className="text-lg font-bold text-red-600">{feedbackStats.false_positives}</div>
+              <div className="text-[10px] text-gray-500">Wrong</div>
             </div>
           </div>
         )}
@@ -205,21 +205,21 @@ export default function AuditPanel({
 
       {/* Officer Name Input */}
       <div className="mb-3">
-        <label className="block text-sm text-white/60 mb-1">
-          Officer Name/ID <span className="text-red-400">*</span>
+        <label className="block text-sm text-gray-700 mb-1">
+          Officer Name/ID <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
           value={officerName}
           onChange={(e) => setOfficerName(e.target.value)}
           placeholder="e.g., Rajesh Kumar / AO-12345"
-          className="w-full px-3 py-2 bg-black/30 border border-white/10 rounded text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
+          className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
         />
       </div>
 
       {/* Notes Input */}
       <div className="mb-3">
-        <label className="block text-sm text-white/60 mb-1">
+        <label className="block text-sm text-gray-700 mb-1">
           Notes (optional)
         </label>
         <textarea
@@ -227,44 +227,44 @@ export default function AuditPanel({
           onChange={(e) => setNotes(e.target.value)}
           placeholder="Add observations, findings, or justification..."
           rows={3}
-          className="w-full px-3 py-2 bg-black/30 border border-white/10 rounded text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 resize-none"
+          className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
         />
       </div>
 
-      {/* Action Buttons - Dark Theme */}
+      {/* Action Buttons - Light Theme */}
       <div className="grid grid-cols-2 gap-2 mb-3">
         <button
           onClick={() => handleAuditAction("REVIEWED")}
           disabled={loading || !officerName.trim()}
-          className="px-3 py-2 min-h-[42px] h-full bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded text-sm font-medium hover:bg-blue-500/30 disabled:opacity-50 transition-colors flex items-center justify-center text-center"
+          className="px-3 py-2 min-h-[42px] h-full bg-blue-50 text-blue-700 border border-blue-200 rounded text-sm font-medium hover:bg-blue-100 disabled:opacity-50 transition-colors flex items-center justify-center text-center"
         >
           Mark Reviewed
         </button>
         <button
           onClick={() => handleAuditAction("VERIFIED")}
           disabled={loading || !officerName.trim()}
-          className="px-3 py-2 min-h-[42px] h-full bg-purple-500/20 text-purple-400 border border-purple-500/30 rounded text-sm font-medium hover:bg-purple-500/30 disabled:opacity-50 transition-colors flex items-center justify-center text-center"
+          className="px-3 py-2 min-h-[42px] h-full bg-purple-50 text-purple-700 border border-purple-200 rounded text-sm font-medium hover:bg-purple-100 disabled:opacity-50 transition-colors flex items-center justify-center text-center"
         >
           Verify Fraud
         </button>
         <button
           onClick={() => handleAuditAction("FLAGGED")}
           disabled={loading || !officerName.trim()}
-          className="px-3 py-2 min-h-[42px] h-full bg-red-500/20 text-red-400 border border-red-500/30 rounded text-sm font-medium hover:bg-red-500/30 disabled:opacity-50 transition-colors flex items-center justify-center text-center"
+          className="px-3 py-2 min-h-[42px] h-full bg-red-50 text-red-700 border border-red-200 rounded text-sm font-medium hover:bg-red-100 disabled:opacity-50 transition-colors flex items-center justify-center text-center"
         >
           Confirm Fraud
         </button>
         <button
           onClick={() => handleAuditAction("CLEARED")}
           disabled={loading || !officerName.trim()}
-          className="px-3 py-2 min-h-[42px] h-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded text-sm font-medium hover:bg-emerald-500/30 disabled:opacity-50 transition-colors flex items-center justify-center text-center"
+          className="px-3 py-2 min-h-[42px] h-full bg-emerald-50 text-emerald-700 border border-emerald-200 rounded text-sm font-medium hover:bg-emerald-100 disabled:opacity-50 transition-colors flex items-center justify-center text-center"
         >
           Clear (Genuine)
         </button>
         <button
           onClick={() => handleAuditAction("NOTE_ADDED")}
           disabled={loading || !notes.trim() || !officerName.trim()}
-          className="col-span-2 px-3 py-2 min-h-[42px] bg-white/5 text-white/70 border border-white/10 rounded text-sm font-medium hover:bg-white/10 disabled:opacity-50 transition-colors flex items-center justify-center text-center"
+          className="col-span-2 px-3 py-2 min-h-[42px] bg-white text-gray-700 border border-gray-300 rounded text-sm font-medium hover:bg-gray-50 disabled:opacity-50 transition-colors flex items-center justify-center text-center"
         >
           Add Note Only
         </button>
@@ -273,34 +273,34 @@ export default function AuditPanel({
       {/* Export Button */}
       <button
         onClick={handleExport}
-        className="w-full px-3 py-2 bg-emerald-500 text-white rounded text-sm font-medium hover:bg-emerald-600 transition-colors flex items-center justify-center gap-2"
+        className="w-full px-3 py-2 bg-primary text-white rounded text-sm font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
       >
         Export Report (CSV)
       </button>
 
-      {/* Status Messages - Dark Theme */}
+      {/* Status Messages - Light Theme */}
       {loading && (
-        <div className="mt-3 p-2 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded text-sm flex items-center gap-2">
-          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400"></div>
+        <div className="mt-3 p-2 bg-blue-50 text-blue-700 border border-blue-200 rounded text-sm flex items-center gap-2">
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
           Recording action...
         </div>
       )}
 
       {success && (
-        <div className="mt-3 p-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded text-sm">
+        <div className="mt-3 p-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded text-sm">
           {success}
         </div>
       )}
 
       {error && (
-        <div className="mt-3 p-2 bg-red-500/20 text-red-400 border border-red-500/30 rounded text-sm">
+        <div className="mt-3 p-2 bg-red-50 text-red-700 border border-red-200 rounded text-sm">
           {error}
         </div>
       )}
 
-      {/* Info Box - Dark Theme */}
-      <div className="mt-3 p-2 bg-white/5 border border-white/10 rounded text-xs text-white/50">
-        <p className="font-medium mb-1 text-white/70">Audit Trail</p>
+      {/* Info Box - Light Theme */}
+      <div className="mt-3 p-2 bg-gray-100 border border-gray-200 rounded text-xs text-gray-500">
+        <p className="font-medium mb-1 text-gray-700">Audit Trail</p>
         <p>All actions are logged with timestamp, officer ID, and notes for compliance and accountability.</p>
       </div>
     </div>

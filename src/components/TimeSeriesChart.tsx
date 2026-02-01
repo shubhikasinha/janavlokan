@@ -172,24 +172,24 @@ export default function TimeSeriesChart({ days = 30, showSpikes = true }: TimeSe
                 type="monotone"
                 dataKey="high_risk_count"
                 stackId="1"
-                stroke="#dc2626"
-                fill="#fee2e2"
+                stroke="#830f00"
+                fill="#830f0030"
                 name="High Risk"
               />
               <Area
                 type="monotone"
                 dataKey="medium_risk_count"
                 stackId="1"
-                stroke="#94a3b8"
-                fill="#f1f5f9"
+                stroke="#e18700"
+                fill="#e1870030"
                 name="Medium Risk"
               />
               <Area
                 type="monotone"
                 dataKey="low_risk_count"
                 stackId="1"
-                stroke="#cbd5e1"
-                fill="#f8fafc"
+                stroke="#008319"
+                fill="#00831930"
                 name="Low Risk"
               />
             </AreaChart>
@@ -225,10 +225,10 @@ export default function TimeSeriesChart({ days = 30, showSpikes = true }: TimeSe
                     <td className="px-4 py-3">
                       <span
                         className={`px-2 py-1 rounded text-xs font-medium ${spike.spike_type === "CRITICAL"
-                            ? "bg-red-100 text-red-800"
-                            : spike.spike_type === "HIGH"
-                              ? "bg-amber-100 text-amber-800"
-                              : "bg-yellow-100 text-yellow-800"
+                          ? "bg-red-100 text-red-800"
+                          : spike.spike_type === "HIGH"
+                            ? "bg-amber-100 text-amber-800"
+                            : "bg-yellow-100 text-yellow-800"
                           }`}
                       >
                         {spike.spike_type}
@@ -286,9 +286,9 @@ export default function TimeSeriesChart({ days = 30, showSpikes = true }: TimeSe
               <Line
                 type="monotone"
                 dataKey="total_anomalies"
-                stroke="#8b5cf6"
+                stroke="#830f00"
                 strokeWidth={2}
-                dot={{ fill: "#8b5cf6", r: 3 }}
+                dot={{ fill: "#830f00", r: 3 }}
                 name="Total Anomalies (High+Medium)"
               />
             </LineChart>

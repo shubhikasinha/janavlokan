@@ -49,11 +49,11 @@ const IndiaMap = dynamic(() => import("@/components/IndiaMap"), {
   ),
 });
 
-// Minimal Chart colors
+// Chart colors - Government theme
 const RISK_COLORS: Record<string, string> = {
-  HIGH: "#dc2626",   // Red-600 (Critical)
-  MEDIUM: "#94a3b8", // Slate-400 (Neutral/Warning)
-  LOW: "#e2e8f0",    // Slate-200 (Safe/Background)
+  HIGH: "#830f00",   // Dark Red (Critical)
+  MEDIUM: "#e18700", // Orange (Warning)
+  LOW: "#008319",    // Green (Safe)
   UNKNOWN: "#f8fafc", // Slate-50
 };
 
