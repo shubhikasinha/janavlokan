@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { Button } from '../components';
 import HighPriorityAlerts from '../components/HighPriorityAlerts';
 import FraudRiskPieChart from '../components/FraudRiskPieChart';
@@ -29,10 +30,12 @@ const HomePage: React.FC = () => {
             {/* Hero Section */}
             <section className="py-12 md:py-16 border-b border-gray-200">
                 <div className="max-w-6xl mx-auto px-4 text-center">
-                    <img
+                    <Image
                         src="/logojan.jpeg"
                         alt="JanAvlokan Logo"
-                        className="h-32 md:h-40 w-auto mx-auto mb-6"
+                        width={160}
+                        height={160}
+                        className="mx-auto mb-6"
                     />
 
                     <h1 className="text-2xl md:text-3xl font-heading font-bold text-gray-900 mb-3">

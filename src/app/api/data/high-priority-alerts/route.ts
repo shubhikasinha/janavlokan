@@ -106,82 +106,24 @@ export async function GET(request: NextRequest) {
             });
         }
 
-        // Fallback mock data if query fails
-        throw new Error('No data returned from BigQuery');
+        // No data returned from BigQuery
+        return NextResponse.json({
+            success: false,
+            error: 'No high-priority alerts found',
+            alerts: [],
+            count: 0,
+            scheme: scheme.toUpperCase()
+        });
 
     } catch (error) {
         console.error('Error fetching high-priority alerts:', error);
-
-        const searchParams = request.nextUrl.searchParams;
-        const scheme = (searchParams.get('scheme') || 'lpg').toLowerCase();
-
-        // Return scheme-appropriate mock data on error for development
-        if (scheme === 'mdm') {
-            const mockMDMAlerts = [
-                {
-                    beneficiary_id: '1001',
-                    entity_name: 'Government Primary School',
-                    district: 'Patna',
-                    risk_level: 'HIGH',
-                    risk_score: 0.85,
-                    alert_type: 'Ghost meals detected',
-                    timestamp: new Date().toISOString(),
-                    scheme: 'MDM'
-                },
-                {
-                    beneficiary_id: '1002',
-                    entity_name: 'Middle School Gaya',
-                    district: 'Gaya',
-                    risk_level: 'HIGH',
-                    risk_score: 0.78,
-                    alert_type: 'Fund overclaim detected',
-                    timestamp: new Date(Date.now() - 3600000).toISOString(),
-                    scheme: 'MDM'
-                }
-            ];
-            return NextResponse.json({
-                success: true,
-                alerts: mockMDMAlerts,
-                count: mockMDMAlerts.length,
-                mock: true,
-                scheme: 'MDM'
-            });
-        }
-
-        // Original LPG mock data
-        const mockAlerts = [
-            {
-                beneficiary_id: 'fc743f63-6a17-401f-ab55-e578dd8544a',
-                risk_level: 'HIGH',
-                risk_score: 30.4811,
-                alert_type: 'Multiple dealers detected',
-                timestamp: new Date().toISOString(),
-                scheme: 'LPG'
-            },
-            {
-                beneficiary_id: 'f042415d-cbda-4888-a082-0fc2b5ffd54a',
-                risk_level: 'HIGH',
-                risk_score: 13.2339,
-                alert_type: 'Unusual transaction pattern',
-                timestamp: new Date(Date.now() - 3600000).toISOString(),
-                scheme: 'LPG'
-            },
-            {
-                beneficiary_id: 'a7ce74ae-b703-49e1-a08d-77a8fcedb223',
-                risk_level: 'HIGH',
-                risk_score: 12.4822,
-                alert_type: 'Cross-district activity',
-                timestamp: new Date(Date.now() - 7200000).toISOString(),
-                scheme: 'LPG'
-            }
-        ];
-
+        const errorMessage = error instanceof Error ? error.message : 'Failed to fetch alerts';
+        
         return NextResponse.json({
-            success: true,
-            alerts: mockAlerts,
-            count: mockAlerts.length,
-            mock: true,
-            scheme: 'LPG'
-        });
+            success: false,
+            error: errorMessage,
+            alerts: [],
+            count: 0
+        }, { status: 500 });
     }
 }

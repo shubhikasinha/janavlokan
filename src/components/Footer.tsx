@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 /* ---------------- Types ---------------- */
 
@@ -19,15 +20,14 @@ type FooterLinks = {
 const footerLinks: FooterLinks = {
     platform: [
         { path: '/about', label: 'About JanAvlokan' },
-        { path: '/features', label: 'Key Features' },
         { path: '/technology', label: 'Technology Stack' },
         { path: '/dashboard', label: 'Risk Dashboard' },
     ],
     resources: [
-        { path: '/contact', label: 'Contact Us' },
-        { path: '#', label: 'Documentation' },
-        { path: '#', label: 'API Reference' },
-        { path: '#', label: 'FAQs' },
+        { path: '/about#contact', label: 'Contact Us' },
+        { path: '/technology', label: 'Documentation' },
+        { path: '/technology#api', label: 'API Reference' },
+        { path: '/about#faq', label: 'FAQs' },
     ],
     government: [
         { path: 'https://india.gov.in', label: 'India.gov.in', external: true },
@@ -47,10 +47,12 @@ const Footer = () => {
                     {/* Brand Section */}
                     <div>
                         <div className="flex items-center gap-3 mb-4">
-                            <img
+                            <Image
                                 src="/logojan.jpeg"
                                 alt="JanAvlokan Logo"
-                                className="h-12 w-auto bg-white rounded p-1"
+                                width={48}
+                                height={48}
+                                className="bg-white rounded p-1"
                             />
                             <div className="flex flex-col">
                                 <span className="notranslate text-xl font-heading font-bold">

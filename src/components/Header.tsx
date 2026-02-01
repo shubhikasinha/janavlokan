@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import LanguageSwitcher from './LanguageSwitcher';
 
@@ -60,10 +61,12 @@ const Header: React.FC = () => {
                     <div className="flex items-center justify-between h-16">
                         {/* Logo */}
                         <Link href="/" className="flex items-center gap-3">
-                            <img
+                            <Image
                                 src="/logojan.jpeg"
                                 alt="JanAvlokan Logo"
-                                className="h-10 w-auto"
+                                width={40}
+                                height={40}
+                                className="w-auto"
                             />
                             <div className="flex flex-col">
                                 <span className="notranslate text-xl font-heading font-bold text-gray-800">

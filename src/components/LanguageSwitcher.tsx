@@ -31,11 +31,13 @@ const LanguageSwitcher: React.FC = () => {
     };
 
     return (
-        <div className="notranslate flex items-center gap-1 bg-neutral-light px-2 py-1 rounded-full shadow-sm border border-primary/20">
+        <div className="notranslate flex items-center gap-1 bg-neutral-light px-2 py-1 rounded-full shadow-sm border border-primary/20" role="group" aria-label="Language selector">
             {languages.map((lang) => (
                 <button
                     key={lang.code}
                     onClick={() => changeLanguage(lang.code)}
+                    aria-label={`Change language to ${lang.code === 'en' ? 'English' : lang.code === 'hi' ? 'Hindi' : 'Punjabi'}`}
+                    aria-pressed={active === lang.code}
                     className={`notranslate px-2 py-0.5 rounded-full text-sm font-semibold transition-all
             ${active === lang.code
                             ? "bg-white text-primary shadow"

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 
 export type SchemeType = 'LPG' | 'MDM';
 
@@ -45,23 +45,24 @@ const schemeConfigs: Record<SchemeType, SchemeContextType['schemeConfig']> = {
 const SchemeContext = createContext<SchemeContextType | undefined>(undefined);
 
 export function SchemeProvider({ children }: { children: ReactNode }) {
+  // Always start with 'LPG' to match server render
   const [currentScheme, setCurrentScheme] = useState<SchemeType>('LPG');
+  const [hydrated, setHydrated] = useState(false);
 
-  const setScheme = useCallback((scheme: SchemeType) => {
-    setCurrentScheme(scheme);
-    // Optional: persist to localStorage
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('janavlokan_scheme', scheme);
+  // Load from localStorage after hydration
+  useEffect(() => {
+    setHydrated(true);
+    const saved = localStorage.getItem('janavlokan_scheme') as SchemeType | null;
+    if (saved && (saved === 'LPG' || saved === 'MDM')) {
+      setCurrentScheme(saved);
     }
   }, []);
 
-  // Load from localStorage on mount
-  React.useEffect(() => {
+  const setScheme = useCallback((scheme: SchemeType) => {
+    setCurrentScheme(scheme);
+    // Persist to localStorage
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('janavlokan_scheme') as SchemeType | null;
-      if (saved && (saved === 'LPG' || saved === 'MDM')) {
-        setCurrentScheme(saved);
-      }
+      localStorage.setItem('janavlokan_scheme', scheme);
     }
   }, []);
 

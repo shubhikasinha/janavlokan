@@ -140,6 +140,12 @@ export default function DashboardPage() {
   const [language, setLanguage] = useState<Language>("hinglish");
   const [refreshKey, setRefreshKey] = useState(0);
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const ITEMS_PER_PAGE = 50;
+
   // Loading states
   const [loading, setLoading] = useState(true);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -194,8 +200,8 @@ export default function DashboardPage() {
           fetch(`${apiBase}/dashboard/summary`),
           fetch(`${apiBase}/dashboard/distribution`),
           fetch(currentScheme === 'MDM'
-            ? `${apiBase}/schools/high-risk?limit=50`
-            : `${apiBase}/beneficiaries/high-risk?limit=50`
+            ? `${apiBase}/schools/high-risk?limit=${ITEMS_PER_PAGE}`
+            : `${apiBase}/beneficiaries/high-risk?limit=${ITEMS_PER_PAGE}`
           ),
         ]);
 
@@ -226,9 +232,12 @@ export default function DashboardPage() {
 
         if (Array.isArray(entitiesData)) {
           setEntities(entitiesData);
+          setCurrentPage(1);
+          setHasMore(entitiesData.length >= ITEMS_PER_PAGE);
         } else {
           console.error('Entities API error:', entitiesData);
           setEntities([]);
+          setHasMore(false);
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unknown error occurred");
@@ -297,6 +306,41 @@ export default function DashboardPage() {
     setSelectedEntity(null);
     setRiskFilter("ALL");
   }, [currentScheme]);
+
+  // Load more entities (pagination)
+  const loadMoreEntities = async () => {
+    if (loadingMore || !hasMore) return;
+
+    setLoadingMore(true);
+    const apiBase = getApiBase();
+    const nextPage = currentPage + 1;
+    const offset = currentPage * ITEMS_PER_PAGE;
+
+    try {
+      const endpoint = currentScheme === 'MDM' ? 'schools/high-risk' : 'beneficiaries/high-risk';
+      const url = riskFilter === "ALL"
+        ? `${apiBase}/${endpoint}?limit=${ITEMS_PER_PAGE}&offset=${offset}`
+        : `${apiBase}/${endpoint}?limit=${ITEMS_PER_PAGE}&offset=${offset}&risk_level=${riskFilter}`;
+
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to load more entities");
+
+      const newData = await res.json();
+
+      if (Array.isArray(newData) && newData.length > 0) {
+        setEntities(prev => [...prev, ...newData]);
+        setCurrentPage(nextPage);
+        setHasMore(newData.length >= ITEMS_PER_PAGE);
+      } else {
+        setHasMore(false);
+      }
+    } catch (err) {
+      console.error("Error loading more entities:", err);
+      setHasMore(false);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   // Risk level styling
   const getRiskBadgeStyle = (level: string) => {
@@ -682,6 +726,34 @@ export default function DashboardPage() {
                     </tbody>
                   </table>
                 </div>
+
+                {/* Load More Button */}
+                {hasMore && entities.length > 0 && (
+                  <div className="p-4 border-t border-gray-200 bg-gray-50">
+                    <button
+                      onClick={loadMoreEntities}
+                      disabled={loadingMore}
+                      className="w-full px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-all disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      {loadingMore ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                          <span>Loading more...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>Load More {schemeConfig.entityNamePlural}</span>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </>
+                      )}
+                    </button>
+                    <p className="text-xs text-gray-500 text-center mt-2">
+                      Showing {entities.length} {schemeConfig.entityNamePlural.toLowerCase()}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 

@@ -157,7 +157,6 @@ export default function IndiaMap({
   const [mapData, setMapData] = useState<DistrictRisk[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const fetchedRef = useRef<string | null>(null);
 
   // Get API endpoint based on scheme
   const apiEndpoint = currentScheme === 'MDM' ? '/api/mdm/geo/district-risk' : '/api/geo/district-risk';
@@ -179,13 +178,9 @@ export default function IndiaMap({
   useEffect(() => {
     // Skip if external data is provided
     if (hasExternalData) return;
-    
-    // Only fetch if scheme changed (using ref to avoid dependency issues)
-    if (fetchedRef.current === currentScheme) return;
-    fetchedRef.current = currentScheme;
 
     const controller = new AbortController();
-    
+
     async function fetchDistrictData() {
       setLoading(true);
       setError(null);
@@ -215,7 +210,7 @@ export default function IndiaMap({
       }
     }
     fetchDistrictData();
-    
+
     return () => controller.abort();
   }, [currentScheme, apiEndpoint, hasExternalData]);
 
@@ -240,7 +235,7 @@ export default function IndiaMap({
       </div>
     );
   }
-  
+
   if (loading) {
     return (
       <div
