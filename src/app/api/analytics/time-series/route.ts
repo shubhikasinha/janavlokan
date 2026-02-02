@@ -16,47 +16,30 @@ export async function GET(request: NextRequest) {
 
     const bigquery = getBigQueryClient();
 
-    // Time-series query - Risk distribution over time
-    // Since we don't have transaction dates, we'll simulate using beneficiary data
-    // In production, this would use actual transaction timestamps
-    // For demo, we generate synthetic time-series based on risk distribution
+    // Query from lpg_daily_risk_summary table (populated via scheduled query)
     const query = `
-      WITH risk_counts AS (
-        SELECT
-          risk_level,
-          COUNT(*) AS total_count
-        FROM \`gfg-fot.lpg_fraud_detection.fraud_with_explanations\`
-        GROUP BY risk_level
-      ),
-      date_series AS (
-        SELECT date
-        FROM UNNEST(GENERATE_DATE_ARRAY(
-          DATE_SUB(CURRENT_DATE(), INTERVAL @days DAY),
-          CURRENT_DATE()
-        )) AS date
-      )
-      SELECT
-        FORMAT_DATE('%Y-%m-%d', d.date) AS date,
-        -- Distribute counts across days with some variance
-        CAST(COALESCE((SELECT total_count FROM risk_counts WHERE risk_level = 'HIGH'), 0) / @days 
-          * (0.8 + 0.4 * RAND()) AS INT64) AS high_risk_count,
-        CAST(COALESCE((SELECT total_count FROM risk_counts WHERE risk_level = 'MEDIUM'), 0) / @days 
-          * (0.8 + 0.4 * RAND()) AS INT64) AS medium_risk_count,
-        CAST(COALESCE((SELECT total_count FROM risk_counts WHERE risk_level = 'LOW'), 0) / @days 
-          * (0.8 + 0.4 * RAND()) AS INT64) AS low_risk_count
-      FROM date_series d
-      ORDER BY d.date ASC
+      SELECT 
+        FORMAT_DATE('%Y-%m-%d', date) as date,
+        high_risk_count,
+        medium_risk_count,
+        low_risk_count,
+        (high_risk_count + medium_risk_count) as total_anomalies
+      FROM \`gfg-fot.lpg_fraud_detection.lpg_daily_risk_summary\`
+      WHERE date >= DATE_SUB(CURRENT_DATE(), INTERVAL @days DAY)
+      ORDER BY date ASC
     `;
 
     const [job] = await bigquery.createQueryJob({ query, params: { days } });
     const [rows] = await job.getQueryResults();
 
+    console.log('LPG Time Series - Found', rows.length, 'data points from summary table');
+
     const results: TimeSeriesDataPoint[] = rows.map((row) => ({
       date: row.date,
-      high_risk_count: Number(row.high_risk_count),
-      medium_risk_count: Number(row.medium_risk_count),
-      low_risk_count: Number(row.low_risk_count),
-      total_anomalies: Number(row.high_risk_count) + Number(row.medium_risk_count),
+      high_risk_count: Number(row.high_risk_count) || 0,
+      medium_risk_count: Number(row.medium_risk_count) || 0,
+      low_risk_count: Number(row.low_risk_count) || 0,
+      total_anomalies: Number(row.total_anomalies) || 0,
     }));
 
     return NextResponse.json(results);

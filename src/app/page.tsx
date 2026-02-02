@@ -1,9 +1,21 @@
+'use client';
+
 import React from 'react';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
-import { Button } from '../components';
 import HighPriorityAlerts from '../components/HighPriorityAlerts';
 import FraudRiskPieChart from '../components/FraudRiskPieChart';
 import FraudTrendChart from '../components/FraudTrendChart';
+
+// Dynamic import for CSVQuickScan (client component)
+const CSVQuickScan = dynamic(() => import('../components/CSVQuickScan'), {
+    ssr: false,
+    loading: () => (
+        <div className="bg-white border-2 border-dashed border-gray-200 rounded-xl p-6 animate-pulse">
+            <div className="h-32 bg-gray-100 rounded-lg"></div>
+        </div>
+    )
+});
 
 /* ---------------- Types ---------------- */
 
@@ -150,6 +162,25 @@ const HomePage: React.FC = () => {
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* CSV Quick Scan Section - NEW */}
+            <section className="py-8 bg-white">
+                <div className="max-w-6xl mx-auto px-4">
+                    <div className="text-center mb-6">
+                        <h2 className="text-2xl font-heading font-bold text-gray-900 mb-2">
+                            Quick Fraud Detection
+                        </h2>
+                        <p className="text-gray-600 text-sm max-w-xl mx-auto">
+                            Upload transaction data for instant AI-powered fraud analysis.
+                            Get real-time risk assessment without affecting your database.
+                        </p>
+                    </div>
+
+                    <div className="max-w-xl mx-auto">
+                        <CSVQuickScan />
                     </div>
                 </div>
             </section>
