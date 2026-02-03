@@ -97,9 +97,15 @@ async function getAccessToken(): Promise<string | null> {
 }
 
 export async function POST(request: NextRequest) {
+    console.log('\n========================================');
+    console.log(' [QUICK-SCAN] New Scan Request Received');
+    console.log('========================================');
+
     try {
         const body = await request.json();
         const { records } = body;
+
+        console.log(` [QUICK-SCAN] Records received: ${records?.length || 0}`);
 
         if (!records || !Array.isArray(records) || records.length === 0) {
             return NextResponse.json({
@@ -125,9 +131,19 @@ export async function POST(request: NextRequest) {
         const accessToken = await getAccessToken();
 
         if (!accessToken) {
-            console.log('No Vertex AI access token, using rule-based detection');
+            console.warn(' [QUICK-SCAN] VERTEX AI AUTH UNAVAILABLE');
+            console.log(' [QUICK-SCAN] Switching to Fallback Rules Engine...');
+            console.log(' [QUICK-SCAN] Rule-based detection covers:');
+            console.log('   • High recent activity (>4 cylinders/30d)');
+            console.log('   • Multiple dealers (>2 unique)');
+            console.log('   • Cross-district patterns');
+            console.log('   • High lifetime usage (>100 cylinders)');
             return runRuleBasedDetection(validRecords);
         }
+
+        console.log(' [QUICK-SCAN] Connected to Vertex AI Endpoint!');
+        console.log(` [QUICK-SCAN] Endpoint: ${VERTEX_AI_ENDPOINT}`);
+        console.log(` [QUICK-SCAN] Sending ${validRecords.length} records for ML inference...`);
 
         // Call Vertex AI endpoint
         const instances = validRecords.map((record: Record<string, unknown>) => ({
@@ -149,10 +165,14 @@ export async function POST(request: NextRequest) {
 
         if (!response.ok) {
             const errorText = await response.text();
-            console.error('Vertex AI Error:', response.status, errorText);
-            console.log('Falling back to rule-based detection...');
+            console.error(` [QUICK-SCAN] Vertex AI Error: ${response.status}`);
+            console.error(` [QUICK-SCAN] Error Details: ${errorText.substring(0, 200)}`);
+            console.log('[QUICK-SCAN] Activating Fallback Rules Engine...');
             return runRuleBasedDetection(validRecords);
         }
+
+        console.log(' [QUICK-SCAN] Vertex AI Response Received!');
+        console.log('[QUICK-SCAN] Processing ML predictions...');
 
         const predictions = await response.json();
 
@@ -173,6 +193,13 @@ export async function POST(request: NextRequest) {
             medium_risk: results.filter(r => r.risk_level === 'MEDIUM').length,
             low_risk: results.filter(r => r.risk_level === 'LOW').length,
         };
+
+        console.log('\n [QUICK-SCAN] === SCAN COMPLETE ===');
+        console.log(`   Total Processed: ${summary.total}`);
+        console.log(`    High Risk: ${summary.high_risk}`);
+        console.log(`    Medium Risk: ${summary.medium_risk}`);
+        console.log(`    Low Risk: ${summary.low_risk}`);
+        console.log('=====================================\n');
 
         return NextResponse.json({
             success: true,

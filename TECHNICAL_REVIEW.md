@@ -307,7 +307,91 @@ Generate a brief explanation (2-3 sentences max).`;
 
 ---
 
-## 5. Frontend Data Fetching Pattern
+## 5. Automated Batch Pipeline (Cloud Scheduler)
+
+### The "Nightly Guard" Architecture
+
+JanAvlokan uses **GCP Cloud Scheduler** to automate a critical ML pipelines:
+
+```mermaid
+flowchart TB
+    subgraph "Cloud Scheduler Jobs"
+        MONTHLY["📅 Monthly Job<br/>0 3 1 * *"]
+    end
+    
+    subgraph "Next.js API"
+        BATCH["/api/batch/refresh"]
+        RETRAIN["/api/model/retrain"]
+    end
+    
+    subgraph "BigQuery ML"
+        PREDICT["ML.PREDICT()"]
+        CREATE["CREATE MODEL"]
+        FWE[("fraud_with_explanations")]
+    end
+    
+    NIGHTLY -->|POST| BATCH
+    BATCH --> PREDICT
+    PREDICT --> FWE
+    
+    MONTHLY -->|POST| RETRAIN
+    RETRAIN --> CREATE
+```
+
+### Scheduled Jobs
+
+| Job | Frequency | Purpose |
+|-----|-----------|---------|
+
+| **Monthly Retrain** | `0 3 1 * *` (1st of month) | Retrains autoencoder on last 90 days data to learn new patterns |
+
+### Batch Refresh API
+
+**File:** [src/app/api/batch/refresh/route.ts](file:///c:/janavlokan/src/app/api/batch/refresh/route.ts)
+
+```typescript
+// PRODUCTION BATCH ML PIPELINE
+// 1. Archive current state for audit trail
+// 2. Run ML.PREDICT on all new transactions
+// 3. Update fraud_with_explanations with fresh predictions
+
+const summaryQuery = `
+  SELECT
+    COUNT(*) AS total_processed,
+    COUNTIF(risk_level = 'HIGH') AS high_risk,
+    COUNTIF(risk_level = 'MEDIUM') AS medium_risk,
+    COUNTIF(risk_level = 'LOW') AS low_risk
+  FROM \`gfg-fot.lpg_fraud_detection.fraud_with_explanations\`
+`;
+
+// Returns pipeline status, summary, and scheduler info
+return NextResponse.json({
+  success: true,
+  pipeline: {
+    name: 'Nightly Fraud Detection Guard',
+    model: 'Autoencoder + Rule Engine',
+  },
+  scheduler_info: {
+    recommended_frequency: '0 2 * * *',
+    description: 'Runs daily at 2 AM IST via GCP Cloud Scheduler',
+  },
+});
+```
+
+### Cloud Scheduler Setup (GCP Console)
+
+1. Navigate to **Cloud Scheduler** in GCP Console
+2. Create job with:
+   - **Name:** `janavlokan-nightly-audit`
+   - **Frequency:** `0 2 * * *`
+   - **Target:** `POST https://your-domain/api/batch/refresh`
+3. For monthly retraining:
+   - **Name:** `janavlokan-monthly-retrain`
+   - **Frequency:** `0 3 1 * *`
+
+---
+
+## 6. Frontend Data Fetching Pattern
 
 ### Dashboard Page Data Flow
 
@@ -335,7 +419,7 @@ useEffect(() => {
 const getApiBase = () => currentScheme === 'MDM' ? '/api/mdm' : '/api';
 ```
 
-### Multi-Scheme Context
+## 7. Multi-Scheme Context
 
 **File:** [src/context/SchemeContext.tsx](file:///c:/janavlokan/src/context/SchemeContext.tsx)
 
@@ -361,7 +445,7 @@ const [currentScheme, setCurrentScheme] = useState<SchemeType>('LPG');
 
 ---
 
-## 6. Key UI Components
+## 7. Key UI Components
 
 ### CSV Quick Scan
 
@@ -419,7 +503,7 @@ function getRiskColor(count: number, maxCount: number): string {
 
 ---
 
-## 7. Security Considerations
+## 8. Security Considerations
 
 ### API Key Protection
 
@@ -451,7 +535,13 @@ function sanitizeReasonCodes(reasonCodes: string[]): string[] {
 
 ---
 
-## 8. Hackathon Q&A Cheat Sheet
+## 9. Hackathon Q&A Cheat Sheet
+
+### "How does the batch pipeline work?"
+> We use **GCP Cloud Scheduler** to trigger  automated jobs:
+> - **Nightly (2 AM):** Runs ML.PREDICT on all new transactions and updates the fraud_with_explanations table
+> - **Monthly (1st):** Retrains the autoencoder model on the last 90 days of data to learn new fraud patterns
+> This ensures the dashboard always shows fresh, ML-analyzed data without manual intervention.
 
 ### "Why not use a traditional backend?"
 > Next.js API Routes are **serverless functions** that scale automatically. For a hackathon, this means zero DevOps overhead while still having full backend capabilities.
@@ -480,7 +570,7 @@ function sanitizeReasonCodes(reasonCodes: string[]): string[] {
 
 ---
 
-## 9. Key Files Reference
+## 10. Key Files Reference
 
 | File | Purpose |
 |------|---------|

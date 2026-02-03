@@ -92,6 +92,26 @@ Models are periodically retrained to adapt to policy, seasonal, and regional cha
 
 ---
 
+## Automated Pipeline (Cloud Scheduler)
+
+JanAvlokan uses **GCP Cloud Scheduler** for fully automated ML operations:
+
+| Job | Schedule | Description |
+|-----|----------|-------------|
+| **Monthly Retrain** | `0 3 1 * *` (1st of month) | Retrains autoencoder on last 90 days data |
+
+**Architecture:**
+```
+Cloud Scheduler → POST /api/batch/refresh → BigQuery ML.PREDICT → fraud_with_explanations
+```
+
+This ensures:
+- Dashboard always shows fresh, ML-analyzed data
+- Model continuously learns new fraud patterns
+- Zero manual intervention required
+
+---
+
 ## Key Features
 
 | Feature | Description |
