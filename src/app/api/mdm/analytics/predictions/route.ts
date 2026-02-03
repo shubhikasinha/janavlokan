@@ -1,7 +1,6 @@
 import { getBigQueryClient } from '@/lib/bigquery';
 import { NextRequest, NextResponse } from 'next/server';
 
-// MDM Predictive Budgeting API
 // Based on historical fraud patterns in Mid Day Meal scheme, predict:
 // 1. Expected wastage/leakage per district for next month
 // 2. Resource allocation recommendations
@@ -11,9 +10,9 @@ interface MDMDistrictPrediction {
   district: string;
   current_high_risk_schools: number;
   total_schools: number;
-  historical_fraud_rate: number;  // % of high-risk cases confirmed
+  historical_fraud_rate: number;
   predicted_wastage_meals: number;
-  predicted_wastage_amount: number;  // In INR
+  predicted_wastage_amount: number;
   confidence_score: number;
   trend: 'INCREASING' | 'STABLE' | 'DECREASING';
   recommended_action: string;
@@ -34,9 +33,8 @@ export async function GET(request: NextRequest) {
 
     const bigquery = getBigQueryClient();
 
-    // Try primary table first (mdm_fraud_with_explanations)
     let rows: any[] = [];
-    
+
     try {
       const districtQuery = `
         WITH district_stats AS (
@@ -95,8 +93,7 @@ export async function GET(request: NextRequest) {
       rows = result;
     } catch (_primaryError) {
       console.log('Primary MDM predictions table not found, using fallback...');
-      
-      // Fallback query using raw tables
+
       const fallbackQuery = `
         WITH school_stats AS (
           SELECT 
@@ -157,19 +154,19 @@ export async function GET(request: NextRequest) {
     // MDM cost assumptions (per meal)
     const COST_PER_MEAL = Number(process.env.MDM_COST_PER_MEAL) || 8;  // Government cost per meal in INR
 
-    // Generate predictions
+    // predictions
     const predictions: MDMDistrictPrediction[] = rows.map((row) => {
       const fraudRate = Number(row.fraud_rate) || 70;
       const highRiskCount = Number(row.high_risk_count) || 0;
       const mediumRiskCount = Number(row.medium_risk_count) || 0;
       const totalMeals = Number(row.total_meals) || 0;
-      
+
       // Predicted fraud cases (high risk * fraud rate + medium risk * 0.25)
       const predictedFraudSchools = Math.round(
-        (highRiskCount * (fraudRate / 100)) + 
+        (highRiskCount * (fraudRate / 100)) +
         (mediumRiskCount * 0.25)
       );
-      
+
       // Assume each fraud school reports ~20% extra meals on average
       const avgMealsPerSchool = totalMeals / (Number(row.total_schools) || 1);
       const wastedMeals = Math.round(predictedFraudSchools * avgMealsPerSchool * 0.2);
@@ -215,7 +212,7 @@ export async function GET(request: NextRequest) {
 
     for (let i = 1; i <= months; i++) {
       const targetMonth = (currentMonth + i) % 12;
-      
+
       // Seasonal adjustment factors (school calendar)
       let seasonalFactor = 1.0;
       // Summer vacation (May-Jun) - reduced meals
@@ -229,7 +226,7 @@ export async function GET(request: NextRequest) {
 
       const totalWastage = predictions.reduce((sum, p) => sum + p.predicted_wastage_meals, 0) * seasonalFactor;
       const totalAmount = predictions.reduce((sum, p) => sum + p.predicted_wastage_amount, 0) * seasonalFactor;
-      
+
       const highRiskDistricts = predictions
         .filter(p => p.trend === 'INCREASING' || p.current_high_risk_schools > 3)
         .slice(0, 5)

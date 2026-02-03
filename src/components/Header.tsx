@@ -6,16 +6,13 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import LanguageSwitcher from './LanguageSwitcher';
 
-/* ---------------- Types ---------------- */
 
 type NavLink = {
     path: string;
     label: string;
 };
 
-/* ---------------- Data ---------------- */
 
-// Updated navigation with separate analytics pages
 const navLinks: NavLink[] = [
     { path: '/', label: 'Home' },
     { path: '/geographic-analysis', label: 'Geography' },
@@ -25,8 +22,6 @@ const navLinks: NavLink[] = [
     { path: '/technology', label: 'Technology' },
     { path: '/about', label: 'About' },
 ];
-
-/* ---------------- Component ---------------- */
 
 const Header: React.FC = () => {
     const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
@@ -55,11 +50,9 @@ const Header: React.FC = () => {
                 </div>
             </div>
 
-            {/* Main Navigation */}
             <nav className="bg-white shadow-sm border-b border-gray-200">
                 <div className="max-w-7xl mx-auto px-4">
                     <div className="flex items-center justify-between h-16">
-                        {/* Logo */}
                         <Link href="/" className="flex items-center gap-3">
                             <Image
                                 src="/logojan.jpeg"
@@ -78,7 +71,6 @@ const Header: React.FC = () => {
                             </div>
                         </Link>
 
-                        {/* Desktop Navigation */}
                         <div className="hidden md:flex items-center bg-gray-100 rounded-full p-1">
                             {navLinks.map((link) => {
                                 const isActive = pathname === link.path;
@@ -98,12 +90,8 @@ const Header: React.FC = () => {
                             })}
                         </div>
 
-                        {/* Language Switcher & Mobile Menu */}
                         <div className="flex items-center gap-3">
-                            {/* Language Switcher */}
                             <LanguageSwitcher />
-
-                            {/* Mobile Menu Button */}
                             <button
                                 onClick={() => setIsMenuOpen((prev) => !prev)}
                                 className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
@@ -135,7 +123,6 @@ const Header: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Mobile Navigation */}
                     {isMenuOpen && (
                         <div className="md:hidden py-4 border-t border-gray-200">
                             {navLinks.map((link) => {

@@ -88,7 +88,6 @@ export default function GeographicAnalysisPage() {
                         </div>
                     </div>
 
-                    {/* Zonal Risk View - Replaces DistrictHeatmap */}
                     <div className="mb-8">
                         <ZonalRiskView key={`zonal-${currentScheme}-${refreshKey}`} />
                     </div>

@@ -2,7 +2,6 @@ import { getBigQueryClient } from '@/lib/bigquery';
 import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 
-// Investigation Management API
 // Allows officers to:
 // 1. Create investigations for beneficiaries
 // 2. Update investigation status
@@ -33,23 +32,6 @@ export async function GET(request: NextRequest) {
 
     const bigquery = getBigQueryClient();
 
-    // Check if investigations table exists
-    // In production, create this table:
-    /*
-    CREATE TABLE `gfg-fot.lpg_fraud_detection.investigations` (
-      investigation_id STRING NOT NULL,
-      beneficiary_id STRING NOT NULL,
-      case_title STRING,
-      status STRING DEFAULT 'OPEN',
-      priority STRING DEFAULT 'MEDIUM',
-      assigned_officer STRING,
-      created_by STRING,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      resolution_notes STRING,
-      estimated_loss FLOAT64
-    );
-    */
 
     let query: string;
     const params: Record<string, unknown> = { limit };
@@ -149,15 +131,15 @@ export async function GET(request: NextRequest) {
         // Stats query failed, continue without
       }
 
-      return NextResponse.json({ 
-        success: true, 
+      return NextResponse.json({
+        success: true,
         investigations,
         stats
       });
     } catch {
       // Table doesn't exist
-      return NextResponse.json({ 
-        success: true, 
+      return NextResponse.json({
+        success: true,
         investigations: [],
         stats: { total: 0, open: 0, in_progress: 0, closed: 0, critical: 0, total_recovered: 0 },
         message: 'Investigations table not initialized'
@@ -174,12 +156,12 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { 
-      beneficiary_id, 
-      case_title, 
-      priority = 'MEDIUM', 
+    const {
+      beneficiary_id,
+      case_title,
+      priority = 'MEDIUM',
       assigned_officer,
-      created_by 
+      created_by
     } = body;
 
     if (!beneficiary_id || !created_by) {
@@ -228,8 +210,8 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       investigation_id,
       message: 'Investigation created successfully'
     });
@@ -244,9 +226,9 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
-    const { 
-      investigation_id, 
-      status, 
+    const {
+      investigation_id,
+      status,
       resolution_notes,
       estimated_loss,
       updated_by
@@ -310,8 +292,8 @@ export async function PATCH(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       message: `Investigation updated to ${status}`
     });
   } catch (error) {

@@ -92,7 +92,7 @@ function getDistrictCoordinates(districtName: string): [number, number] {
     }
   }
 
-  // Use deterministic hash instead of random to prevent flickering
+  // deterministic hash  to prevent flickering
   const baseCoords = DISTRICT_COORDINATES["Unknown"];
   const hash = districtName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
   const latOffset = ((hash % 100) - 50) / 10;
@@ -100,7 +100,7 @@ function getDistrictCoordinates(districtName: string): [number, number] {
   return [baseCoords[0] + latOffset, baseCoords[1] + lngOffset];
 }
 
-// Get color based on anomaly count - Single-Hue Red Scale (Minimal)
+//  color based on anomaly count - Single-Hue Red Scale (Minimal)
 function getHeatColor(count: number, maxCount: number): string {
   const ratio = count / maxCount;
   if (ratio > 0.7) return "#b91c1c"; // Red-700
@@ -161,7 +161,7 @@ export default function DistrictHeatmap({ data = [], onDistrictClick }: District
   const [error, setError] = useState<string | null>(null);
   const fetchedRef = useRef<string | null>(null);
 
-  // Get API endpoint based on scheme
+  //  API endpoint based on scheme
   const apiEndpoint = currentScheme === 'MDM' ? '/api/mdm/geo/district-risk' : '/api/geo/district-risk';
 
   // Ensure client-side rendering
@@ -181,7 +181,7 @@ export default function DistrictHeatmap({ data = [], onDistrictClick }: District
   // Fetch data if not provided
   useEffect(() => {
     if (hasExternalData) return;
-    
+
     // Only fetch if scheme changed (using ref to avoid re-renders)
     if (fetchedRef.current === currentScheme) return;
     fetchedRef.current = currentScheme;
@@ -203,7 +203,7 @@ export default function DistrictHeatmap({ data = [], onDistrictClick }: District
     fetchDistrictData();
   }, [currentScheme, apiEndpoint, hasExternalData]);
 
-  // Calculate max for scaling
+  // Calculating max for scaling
   const maxAnomalyCount = Math.max(...mapData.map((d) => d.anomaly_count), 1);
 
   if (!isClient) {
@@ -243,7 +243,7 @@ export default function DistrictHeatmap({ data = [], onDistrictClick }: District
 
   return (
     <div className="relative">
-      {/* Legend */}
+
       <div className="absolute top-2 right-2 z-[1000] bg-white/95 backdrop-blur-sm p-3 rounded-lg shadow-sm border border-gray-200 text-xs">
         <p className="font-semibold mb-2 text-gray-700">{schemeConfig.name} Anomaly Density</p>
         <div className="space-y-1">

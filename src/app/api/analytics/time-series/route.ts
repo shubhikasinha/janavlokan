@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
 
     const bigquery = getBigQueryClient();
 
-    // Query from lpg_daily_risk_summary table (populated via scheduled query)
+    // Query from lpg_daily_risk_summary table 
     const query = `
       SELECT 
         FORMAT_DATE('%Y-%m-%d', date) as date,

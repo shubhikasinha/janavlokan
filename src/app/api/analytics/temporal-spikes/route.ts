@@ -15,7 +15,7 @@ export async function GET() {
     const bigquery = getBigQueryClient();
 
     // Detect district-level anomaly spikes
-    // Since we don't have transaction dates, we identify districts with high anomaly concentration
+
     const query = `
       WITH district_stats AS (
         SELECT

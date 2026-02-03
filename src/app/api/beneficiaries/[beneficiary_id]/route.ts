@@ -30,7 +30,7 @@ export async function GET(
 
     const bigquery = getBigQueryClient();
 
-    // Get all data from fraud_with_explanations (single source of truth)
+    // Get all data from fraud_with_explanations 
     const query = `
       SELECT
         beneficiary_id,
@@ -44,9 +44,9 @@ export async function GET(
       WHERE beneficiary_id = @beneficiary_id
     `;
 
-    const [job] = await bigquery.createQueryJob({ 
-      query, 
-      params: { beneficiary_id } 
+    const [job] = await bigquery.createQueryJob({
+      query,
+      params: { beneficiary_id }
     });
     const [rows] = await job.getQueryResults();
 
@@ -58,7 +58,7 @@ export async function GET(
     }
 
     const row = rows[0];
-    
+
     // Extract flags (deterministic - from BigQuery)
     const flags = {
       high_recent_activity: Boolean(row.flag_high_recent_activity),
@@ -77,14 +77,9 @@ export async function GET(
       flag_cross_district: flags.cross_district,
       flag_high_lifetime_usage: flags.high_lifetime_usage,
     });
-    
-    // ============================================
-    // NEW: Calculate Risk Breakdown (Explainability)
-    // Shows percentage contribution of each flag to risk
-    // ============================================
+
     const riskBreakdown = calculateRiskBreakdown(flags, Number(row.mean_squared_error) || 0);
-    
-    // Wrap Gemini call in try-catch to handle failures/timeouts gracefully
+
     let geminiExplanation: string;
     try {
       geminiExplanation = await generateGeminiExplanation(
@@ -93,9 +88,7 @@ export async function GET(
         language
       );
     } catch (geminiError) {
-      // Log error but don't crash the request - use deterministic fallback
       console.error('Gemini explanation failed:', geminiError instanceof Error ? geminiError.message : 'Unknown error');
-      // Fallback: use static explanations derived from reasonCodes
       geminiExplanation = getStaticExplanations(reasonCodes, language).join(' ');
     }
 
@@ -117,9 +110,6 @@ export async function GET(
   }
 }
 
-// ============================================
-// Risk Breakdown Calculator (SHAP-like values)
-// ============================================
 interface RiskBreakdown {
   total_risk_score: number;
   factors: {
@@ -139,12 +129,10 @@ function calculateRiskBreakdown(
   },
   mse: number
 ): RiskBreakdown {
-  // Weight assignments (simulated SHAP values)
-  // In a real system, these would come from model interpretation
   const weights = {
-    high_recent_activity: 25,   // 25% weight
-    multiple_dealers: 20,       // 20% weight
-    cross_district: 30,         // 30% weight - highest risk indicator
+    high_recent_activity: 25,
+    multiple_dealers: 20,
+    cross_district: 30,
     high_lifetime_usage: 15,    // 15% weight
     mse_contribution: 10,       // 10% from raw MSE
   };

@@ -7,7 +7,6 @@ import HighPriorityAlerts from '../components/HighPriorityAlerts';
 import FraudRiskPieChart from '../components/FraudRiskPieChart';
 import FraudTrendChart from '../components/FraudTrendChart';
 
-// Dynamic import for CSVQuickScan (client component)
 const CSVQuickScan = dynamic(() => import('../components/CSVQuickScan'), {
     ssr: false,
     loading: () => (
@@ -17,16 +16,13 @@ const CSVQuickScan = dynamic(() => import('../components/CSVQuickScan'), {
     )
 });
 
-/* ---------------- Types ---------------- */
 
 type QuickStat = {
     value: string;
     label: string;
 };
 
-/* ---------------- Data ---------------- */
 
-// Key stats for quick display
 const quickStats: QuickStat[] = [
     { value: '4.2 Cr', label: 'Beneficiaries Monitored' },
     { value: '12', label: 'Welfare Schemes' },
@@ -34,12 +30,11 @@ const quickStats: QuickStat[] = [
     { value: '18,450 Cr', label: 'Transactions This Month' },
 ];
 
-/* ---------------- Component ---------------- */
 
 const HomePage: React.FC = () => {
     return (
         <div className="min-h-screen bg-white">
-            {/* Hero Section */}
+
             <section className="py-12 md:py-16 border-b border-gray-200">
                 <div className="max-w-6xl mx-auto px-4 text-center">
                     <Image
@@ -62,7 +57,6 @@ const HomePage: React.FC = () => {
                 </div>
             </section>
 
-            {/* Quick Stats */}
             <section className="py-6 bg-gray-50 border-b border-gray-200">
                 <div className="max-w-6xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-4">
                     {quickStats.map((stat, index) => (
@@ -81,7 +75,6 @@ const HomePage: React.FC = () => {
                 </div>
             </section>
 
-            {/* Scheme Information Section */}
             <section className="py-8 bg-white border-b border-[#830f0010] mt-8 mb-15">
                 <div className="max-w-6xl mx-auto px-4">
                     <h2 className="text-2xl font-heading font-bold text-gray-900 mb-6 text-center">
@@ -89,7 +82,6 @@ const HomePage: React.FC = () => {
                     </h2>
 
                     <div className="grid md:grid-cols-2 gap-6">
-                        {/* Mid-Day Meal Scheme */}
                         <div className="bg-white border-2 border-[#830f0020] rounded-lg p-6 shadow-sm hover:border-[#830f0040] transition-colors">
                             <h3 className="text-xl font-heading font-bold text-[#2f0400] mb-4 pb-3 border-b border-[#830f0020]">
                                 Mid-Day Meal Scheme
@@ -121,7 +113,6 @@ const HomePage: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* LPG Subsidy Scheme */}
                         <div className="bg-white border-2 border-[#830f0020] rounded-lg p-6 shadow-sm hover:border-[#830f0040] transition-colors">
                             <h3 className="text-xl font-heading font-bold text-[#2f0400] mb-4 pb-3 border-b border-[#830f0020]">
                                 LPG Subsidy Scheme
@@ -166,7 +157,6 @@ const HomePage: React.FC = () => {
                 </div>
             </section>
 
-            {/* CSV Quick Scan Section - NEW */}
             <section className="py-8 bg-white">
                 <div className="max-w-6xl mx-auto px-4">
                     <div className="text-center mb-6">
@@ -185,7 +175,6 @@ const HomePage: React.FC = () => {
                 </div>
             </section>
 
-            {/* High Priority Alerts & Fraud Risk Breakdown Section */}
             <section className="py-8 bg-gray-50 mt-15">
                 <h2 className="text-2xl font-heading font-bold text-[#2f0400] mb-4 pb-3 border-b border-[#830f0020] text-center py-10">
                     High Priority Alerts & Fraud Risk Breakdown

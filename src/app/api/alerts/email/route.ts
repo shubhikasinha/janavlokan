@@ -33,7 +33,6 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString(),
     });
 
-    // Simulate email sending
     const alertRecord = {
       beneficiary_id,
       risk_score,

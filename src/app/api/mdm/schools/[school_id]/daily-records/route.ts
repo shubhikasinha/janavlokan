@@ -73,14 +73,13 @@ export async function GET(
       fund_released_inr: Number(row.fund_released_inr) || 0,
     }));
 
-    // Calculate some stats
     const stats = {
       totalRecords: results.length,
-      avgAttendance: results.length > 0 
-        ? Math.round(results.reduce((sum, r) => sum + r.actual_attendance, 0) / results.length) 
+      avgAttendance: results.length > 0
+        ? Math.round(results.reduce((sum, r) => sum + r.actual_attendance, 0) / results.length)
         : 0,
-      avgServed: results.length > 0 
-        ? Math.round(results.reduce((sum, r) => sum + r.reported_students_served, 0) / results.length) 
+      avgServed: results.length > 0
+        ? Math.round(results.reduce((sum, r) => sum + r.reported_students_served, 0) / results.length)
         : 0,
       totalFundClaimed: results.reduce((sum, r) => sum + r.fund_claimed_inr, 0),
       daysWithGhostMeals: results.filter(r => r.reported_students_served > r.actual_attendance * 1.05).length,

@@ -6,7 +6,6 @@ let bigqueryClient: BigQuery | null = null;
 
 export function getBigQueryClient(): BigQuery {
   if (!bigqueryClient) {
-    // Use GOOGLE_PROJECT_ID from .env.local (matching the actual env var name)
     const projectId = process.env.GOOGLE_PROJECT_ID || process.env.GCP_PROJECT_ID;
 
     if (!projectId) {
@@ -34,7 +33,6 @@ export function getBigQueryClient(): BigQuery {
         },
       });
     } else {
-      // Fallback to file if it exists
       bigqueryClient = new BigQuery({
         projectId,
         keyFilename: path.join(process.cwd(), 'gcp-key.json'),
@@ -44,15 +42,7 @@ export function getBigQueryClient(): BigQuery {
   return bigqueryClient;
 }
 
-// ============================================
-// SCHEME TYPES
-// ============================================
 export type SchemeType = 'LPG' | 'MDM';
-
-// ============================================
-// Type definitions for API responses
-// Using NEW table: fraud_with_explanations
-// ============================================
 
 export interface DashboardSummary {
   total_beneficiaries: number;
@@ -66,7 +56,6 @@ export interface RiskDistribution {
   count: number;
 }
 
-// NEW: Updated to include flag columns from fraud_with_explanations
 export interface HighRiskBeneficiary {
   beneficiary_id: string;
   risk_level: string;
@@ -87,18 +76,14 @@ export interface BeneficiaryDetail {
     cross_district: boolean;
     high_lifetime_usage: boolean;
   };
-  reasons: string[];           // Human-readable reasons (static)
-  gemini_explanation?: string; // AI-polished explanation (optional)
+  reasons: string[];
+  gemini_explanation?: string;
 }
 
 export interface DistrictRisk {
   residence_district: string;
   anomaly_count: number;
 }
-
-// ============================================
-// MDM (Mid Day Meal) Type Definitions
-// ============================================
 
 export interface MDMDashboardSummary {
   total_schools: number;
@@ -171,10 +156,6 @@ export interface MDMDailyRecord {
   fund_released_inr: number;
 }
 
-// ============================================
-// MDM Fraud Flag Reason Generator
-// DETERMINISTIC - No AI inference here
-// ============================================
 export function generateMDMReasonsFromFlags(flags: {
   ghost_meals: boolean;
   ingredient_inflation: boolean;
@@ -206,10 +187,6 @@ export function generateMDMReasonsFromFlags(flags: {
   return reasons;
 }
 
-// ============================================
-// Helper: Generate human-readable reasons from flags
-// DETERMINISTIC - No AI inference here
-// ============================================
 export function generateReasonsFromFlags(flags: {
   high_recent_activity: boolean;
   multiple_dealers: boolean;

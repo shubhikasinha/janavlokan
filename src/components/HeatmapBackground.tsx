@@ -15,7 +15,6 @@ interface HeatmapBackgroundProps {
     className?: string;
 }
 
-// Generate hotspots outside component to avoid re-renders
 function generateHotspots(): Hotspot[] {
     const count = 30;
     const spots: Hotspot[] = [];
@@ -98,20 +97,17 @@ export default function HeatmapBackground({ opacity = 0.15, className = "" }: He
 
     return (
         <div className={`fixed inset-0 z-0 pointer-events-none overflow-hidden ${className}`}>
-            {/* Animated heatmap canvas */}
             <canvas
                 ref={canvasRef}
                 style={{ opacity }}
                 className="w-full h-full"
             />
-            
-            {/* Scanline / HUD Grid Overlay */}
+
             <div
                 style={{ opacity: 0.03 }}
                 className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.1)_50%),linear-gradient(90deg,rgba(255,0,0,0.02),rgba(0,255,0,0.01),rgba(0,0,255,0.02))] z-10 pointer-events-none bg-[length:100%_4px,3px_100%]"
             />
 
-            {/* Static stylized grid overlay */}
             <svg
                 style={{ opacity: 0.03 }}
                 className="absolute inset-0 w-full h-full text-emerald-500"
@@ -123,8 +119,7 @@ export default function HeatmapBackground({ opacity = 0.15, className = "" }: He
                 <path d="M100,100 L900,900 M100,900 L900,100" stroke="currentColor" strokeWidth="0.5" />
             </svg>
 
-            {/* Subtle vignette effect */}
-            <div 
+            <div
                 className="absolute inset-0 pointer-events-none"
                 style={{
                     background: 'radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.3) 100%)'

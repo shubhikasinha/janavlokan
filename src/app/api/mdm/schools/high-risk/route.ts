@@ -11,7 +11,6 @@ export async function GET(request: NextRequest) {
 
     const bigquery = getBigQueryClient();
 
-    // Try primary table first, then fallback
     let results: MDMHighRiskSchool[] = [];
 
     try {
@@ -87,7 +86,6 @@ export async function GET(request: NextRequest) {
       console.log('Primary MDM table not found, using fallback...');
     }
 
-    // Fallback: Compute from raw tables
     if (results.length === 0) {
       const fallbackQuery = `
         WITH school_stats AS (

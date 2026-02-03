@@ -59,7 +59,7 @@ const privacyMeasures = [
     },
 ];
 
-// Features content (combined from features page)
+// Features content 
 const features = [
     {
         title: 'Anomaly Detection Without Labeled Fraud Data',
@@ -137,7 +137,6 @@ const mlFeatures = [
 export default function TechnologyPage() {
     return (
         <div className="min-h-screen">
-            {/* Hero Section - White */}
             <section className="bg-white py-12 md:py-16 border-b border-gray-200">
                 <div className="max-w-7xl mx-auto px-4">
                     <h1 className="text-3xl md:text-4xl font-heading font-bold text-gray-900 mb-4">
@@ -150,7 +149,6 @@ export default function TechnologyPage() {
                 </div>
             </section>
 
-            {/* Key Capabilities Section */}
             <section className="py-12 md:py-16 bg-white">
                 <div className="max-w-7xl mx-auto px-4">
                     <div className="border-l-4 border-primary pl-6 mb-8">
@@ -186,7 +184,6 @@ export default function TechnologyPage() {
                 </div>
             </section>
 
-            {/* Architecture Overview */}
             <section className="py-12 md:py-16 bg-gray-50 border-y border-gray-200">
                 <div className="max-w-7xl mx-auto px-4">
                     <div className="border-l-4 border-primary pl-6 mb-8">
@@ -219,7 +216,6 @@ export default function TechnologyPage() {
                 </div>
             </section>
 
-            {/* ML Approach */}
             <section className="py-12 md:py-16 bg-white">
                 <div className="max-w-7xl mx-auto px-4">
                     <div className="border-l-4 border-primary pl-6 mb-8">
@@ -286,7 +282,6 @@ export default function TechnologyPage() {
                 </div>
             </section>
 
-            {/* Alert System & Risk Categorization */}
             <section className="py-12 md:py-16 bg-gray-50 border-y border-gray-200">
                 <div className="max-w-7xl mx-auto px-4">
                     <div className="border-l-4 border-primary pl-6 mb-8">
@@ -381,7 +376,6 @@ export default function TechnologyPage() {
                 </div>
             </section>
 
-            {/* Data Privacy */}
             <section className="py-12 md:py-16 bg-white">
                 <div className="max-w-7xl mx-auto px-4">
                     <div className="grid lg:grid-cols-2 gap-8 items-start">

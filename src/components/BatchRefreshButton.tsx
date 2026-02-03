@@ -28,7 +28,6 @@ export default function BatchRefreshButton({ onRefreshComplete, className = "" }
   const [showDetails, setShowDetails] = useState(false);
 
   const handleRefresh = async () => {
-    // ... implementation ...
     setLoading(true);
     setResult(null);
 
@@ -57,7 +56,6 @@ export default function BatchRefreshButton({ onRefreshComplete, className = "" }
 
   return (
     <div className="relative w-full">
-      {/* Main Button */}
       <button
         onClick={handleRefresh}
         disabled={loading}
@@ -91,7 +89,6 @@ export default function BatchRefreshButton({ onRefreshComplete, className = "" }
         )}
       </button>
 
-      {/* Result Popup */}
       {result && (
         <div
           className={`absolute top-full right-0 mt-2 w-72 p-4 rounded-lg shadow-lg z-50 ${result.success ? "bg-green-50 border border-green-200" : "bg-red-50 border border-red-200"

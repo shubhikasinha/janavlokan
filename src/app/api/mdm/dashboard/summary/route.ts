@@ -5,8 +5,7 @@ export async function GET() {
   try {
     const bigquery = getBigQueryClient();
 
-    // First try the preprocessed fraud table
-    // If it doesn't exist, fallback to computing from raw tables
+
     const query = `
       SELECT
         COUNT(*) AS total_schools,
@@ -35,7 +34,6 @@ export async function GET() {
       console.log('Primary table not found, trying fallback query...');
     }
 
-    // Fallback: Compute from raw tables (mdm_daily_record + mdm_school_master)
     const fallbackQuery = `
       WITH school_stats AS (
         SELECT 

@@ -17,7 +17,6 @@ export default function TemporalTrendsPage() {
 
     return (
         <div className="min-h-screen bg-white">
-            {/* Header */}
             <section className="bg-white py-6 md:py-8 border-b border-gray-200">
                 <div className="max-w-7xl mx-auto px-4">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -60,7 +59,6 @@ export default function TemporalTrendsPage() {
                         showSpikes={true}
                     />
 
-                    {/* Info Cards */}
                     <div className="mt-8 grid md:grid-cols-3 gap-4">
                         <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
                             <h3 className="font-heading font-semibold text-gray-900 mb-2 flex items-center gap-2">

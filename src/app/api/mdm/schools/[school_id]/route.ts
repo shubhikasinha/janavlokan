@@ -74,7 +74,6 @@ export async function GET(
       console.log('Primary MDM school detail query failed, trying without school master join...');
     }
 
-    // Fallback: Query fraud table only without school_master join
     if (!row) {
       try {
         const fallbackQuery = `
@@ -123,7 +122,6 @@ export async function GET(
       );
     }
 
-    // Extract flags (deterministic - from BigQuery)
     const flags = {
       ghost_meals: Boolean(row.flag_ghost_meals),
       ingredient_inflation: Boolean(row.flag_ingredient_inflation),
@@ -131,10 +129,8 @@ export async function GET(
       cook_anomaly: Boolean(row.flag_cook_anomaly),
     };
 
-    // Generate deterministic reasons from flags
     const reasons = generateMDMReasonsFromFlags(flags);
 
-    // Generate AI-polished explanation via Gemini
     const reasonCodes = mdmFlagsToReasonCodes({
       flag_ghost_meals: flags.ghost_meals,
       flag_ingredient_inflation: flags.ingredient_inflation,
@@ -142,10 +138,8 @@ export async function GET(
       flag_cook_anomaly: flags.cook_anomaly,
     });
 
-    // Calculate Risk Breakdown
     const riskBreakdown = calculateMDMRiskBreakdown(flags, Number(row.anomaly_score) || 0);
 
-    // Gemini explanation with fallback
     let geminiExplanation: string;
     try {
       geminiExplanation = await generateMDMGeminiExplanation(
@@ -187,9 +181,7 @@ export async function GET(
   }
 }
 
-// ============================================
 // MDM Risk Breakdown Calculator
-// ============================================
 interface MDMRiskBreakdown {
   total_risk_score: number;
   factors: {

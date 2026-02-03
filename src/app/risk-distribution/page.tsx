@@ -56,7 +56,7 @@ const SLIDER_CONFIG = {
         step: 0.01,
         default: 0.52,
         unit: "Score",
-        highMultiplier: 1.2, // HIGH = score > threshold * 1.2 (tighter for MDM)
+        highMultiplier: 1.2, // HIGH = score > threshold * 2
     },
 };
 
@@ -65,7 +65,7 @@ export default function RiskDistributionPage() {
     const [refreshKey, setRefreshKey] = useState(0);
     const [distribution, setDistribution] = useState<RiskDistribution[]>([]);
 
-    // Get slider config for current scheme
+    // slider config for current scheme
     const sliderConfig = SLIDER_CONFIG[currentScheme as keyof typeof SLIDER_CONFIG] || SLIDER_CONFIG.LPG;
 
     // Dynamic Threshold Slider State - initialize with scheme default
@@ -79,12 +79,10 @@ export default function RiskDistributionPage() {
         setThreshold(newConfig.default);
     }, [currentScheme]);
 
-    // Get API base based on scheme
     const getApiBase = useCallback(() => {
         return currentScheme === 'MDM' ? '/api/mdm' : '/api';
     }, [currentScheme]);
 
-    // Fetch distribution data
     useEffect(() => {
         async function fetchDistribution() {
             try {
@@ -101,7 +99,6 @@ export default function RiskDistributionPage() {
         fetchDistribution();
     }, [refreshKey, currentScheme, getApiBase]);
 
-    // Fetch dynamic threshold data
     useEffect(() => {
         const fetchDynamicData = async () => {
             setSliderLoading(true);

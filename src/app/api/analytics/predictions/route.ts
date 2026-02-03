@@ -2,7 +2,6 @@ import { getBigQueryClient } from '@/lib/bigquery';
 import { NextRequest, NextResponse } from 'next/server';
 
 // Predictive Budgeting API
-// Based on historical fraud patterns, predict:
 // 1. Expected wastage/leakage per district for next month
 // 2. Resource allocation recommendations
 // 3. Seasonal adjustments (festivals, elections)
@@ -97,13 +96,13 @@ export async function GET(request: NextRequest) {
       const fraudRate = Number(row.fraud_rate) || 75;
       const highRiskCount = Number(row.high_risk_count) || 0;
       const mediumRiskCount = Number(row.medium_risk_count) || 0;
-      
+
       // Predicted fraud cases (high risk * fraud rate + medium risk * 0.3)
       const predictedFraudCases = Math.round(
-        (highRiskCount * (fraudRate / 100)) + 
+        (highRiskCount * (fraudRate / 100)) +
         (mediumRiskCount * 0.3)
       );
-      
+
       // Assume each fraud case = 2 extra cylinders per month on average
       const wastedCylinders = predictedFraudCases * 2;
       const wastedAmount = wastedCylinders * SUBSIDY_PER_CYLINDER;
@@ -147,7 +146,7 @@ export async function GET(request: NextRequest) {
 
     for (let i = 1; i <= months; i++) {
       const targetMonth = (currentMonth + i) % 12;
-      
+
       // Seasonal adjustment factors
       let seasonalFactor = 1.0;
       // Winter months (Nov-Feb) have higher LPG usage
@@ -159,7 +158,7 @@ export async function GET(request: NextRequest) {
 
       const totalWastage = predictions.reduce((sum, p) => sum + p.predicted_wastage_units, 0) * seasonalFactor;
       const totalAmount = predictions.reduce((sum, p) => sum + p.predicted_wastage_amount, 0) * seasonalFactor;
-      
+
       const highRiskDistricts = predictions
         .filter(p => p.trend === 'INCREASING' || p.current_high_risk_count > 5)
         .slice(0, 5)

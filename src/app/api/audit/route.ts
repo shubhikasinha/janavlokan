@@ -2,7 +2,6 @@ import { getBigQueryClient, SchemeType } from '@/lib/bigquery';
 import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 
-// Audit trail types - matches BigQuery table schema
 export interface AuditEntry {
   audit_id: string;
   beneficiary_id: string;  // For LPG: beneficiary_id, For MDM: school_id
@@ -36,8 +35,6 @@ export async function GET(request: NextRequest) {
 
     const bigquery = getBigQueryClient();
 
-    // Check if audit_trail table exists, if not return empty
-    // In production, this table would be created via migration
     let query: string;
     const params: Record<string, unknown> = { limit, scheme_type: schemeType };
 
@@ -74,14 +71,12 @@ export async function GET(request: NextRequest) {
         notes: row.notes || '',
         previous_risk_level: row.previous_risk_level,  // Model's original prediction
         new_status: row.new_status,                    // Human's decision
-        scheme_type: row.scheme_type || 'LPG',         // Default to LPG for old entries
+        scheme_type: row.scheme_type || 'LPG',
         created_at: row.created_at?.value || row.created_at,
       }));
 
       return NextResponse.json({ success: true, audits: results });
     } catch {
-      // Table doesn't exist yet - return empty array
-      // In a real system, you'd create the table via migration
       return NextResponse.json({ success: true, audits: [], message: 'Audit trail not initialized' });
     }
   } catch (error) {
@@ -168,7 +163,6 @@ export async function POST(request: NextRequest) {
         },
       });
     } catch {
-      // Table might not exist - log locally for demo
       console.log('AUDIT ENTRY (Table not created):', auditEntry);
     }
 

@@ -7,8 +7,6 @@ import BatchRefreshButton from "@/components/BatchRefreshButton";
 import { useScheme } from "@/context/SchemeContext";
 import SchemeSwitcher from "@/components/SchemeSwitcher";
 
-// Chart colors for inline distribution display
-// Minimal Chart colors
 const RISK_COLORS: Record<string, string> = {
   HIGH: "#800404ff",   // Red-600
   MEDIUM: "#94a3b8", // Slate-400
@@ -16,9 +14,6 @@ const RISK_COLORS: Record<string, string> = {
   UNKNOWN: "#f8fafc", // Slate-50
 };
 
-// ============================================
-// LPG Types
-// ============================================
 interface LPGDashboardSummary {
   total_beneficiaries: number;
   high_risk: number;
@@ -51,9 +46,6 @@ interface LPGBeneficiaryDetail {
   risk_breakdown?: RiskBreakdown;
 }
 
-// ============================================
-// MDM Types
-// ============================================
 interface MDMDashboardSummary {
   total_schools: number;
   high_risk: number;
@@ -101,9 +93,6 @@ interface MDMSchoolDetail {
   risk_breakdown?: RiskBreakdown;
 }
 
-// ============================================
-// Common Types
-// ============================================
 interface RiskDistribution {
   risk_level: string;
   count: number;

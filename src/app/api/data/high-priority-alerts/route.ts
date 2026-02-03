@@ -106,7 +106,6 @@ export async function GET(request: NextRequest) {
             });
         }
 
-        // No data returned from BigQuery
         return NextResponse.json({
             success: false,
             error: 'No high-priority alerts found',
@@ -118,7 +117,7 @@ export async function GET(request: NextRequest) {
     } catch (error) {
         console.error('Error fetching high-priority alerts:', error);
         const errorMessage = error instanceof Error ? error.message : 'Failed to fetch alerts';
-        
+
         return NextResponse.json({
             success: false,
             error: errorMessage,

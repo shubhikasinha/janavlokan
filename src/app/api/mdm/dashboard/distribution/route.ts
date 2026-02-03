@@ -7,7 +7,6 @@ export async function GET() {
 
     let results: RiskDistribution[] = [];
 
-    // Try primary table first
     try {
       const query = `
         SELECT
@@ -38,7 +37,6 @@ export async function GET() {
       console.log('Primary MDM table not found for distribution, using fallback...');
     }
 
-    // Fallback: Compute from raw tables
     const fallbackQuery = `
       WITH school_stats AS (
         SELECT 

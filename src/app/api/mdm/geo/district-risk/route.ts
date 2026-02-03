@@ -7,7 +7,6 @@ export async function GET() {
 
     let results: MDMDistrictRisk[] = [];
 
-    // Try primary table first
     try {
       const query = `
         SELECT
@@ -36,7 +35,6 @@ export async function GET() {
       console.log('Primary MDM table not found for geo, using fallback...');
     }
 
-    // Fallback: Compute from raw tables
     if (results.length === 0) {
       const fallbackQuery = `
         WITH school_stats AS (
@@ -85,7 +83,6 @@ export async function GET() {
       }));
     }
 
-    // Return in format compatible with existing heatmap
     const heatmapFormat = results.map(r => ({
       residence_district: r.district,
       anomaly_count: r.anomaly_count,

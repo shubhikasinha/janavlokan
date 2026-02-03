@@ -16,9 +16,7 @@ export async function GET() {
 
     let results: MDMTemporalSpike[] = [];
 
-    // Try primary table first
     try {
-      // Detect district-level anomaly spikes for MDM schools
       const query = `
         WITH district_stats AS (
           SELECT
@@ -72,7 +70,6 @@ export async function GET() {
       console.log('Primary MDM temporal spikes query failed, using fallback...');
     }
 
-    // Fallback: Compute from raw tables
     const fallbackQuery = `
       WITH school_stats AS (
         SELECT 

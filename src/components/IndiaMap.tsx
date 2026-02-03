@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
 import { useScheme } from "@/context/SchemeContext";
 
-// Types
+
 interface DistrictRisk {
   residence_district: string;
   anomaly_count: number;

@@ -1,7 +1,6 @@
 import { getBigQueryClient } from '@/lib/bigquery';
 import { NextRequest, NextResponse } from 'next/server';
 
-// MDM Network/Collusion Analysis API
 // Identifies suspicious patterns in Mid Day Meal scheme like:
 // 1. Districts with high concentration of high-risk schools
 // 2. Clusters of schools with similar anomaly patterns (potential collusion)
@@ -98,8 +97,7 @@ export async function GET(request: NextRequest) {
         }));
       } catch (_primaryError) {
         console.log('Primary MDM network query failed, using fallback...');
-        
-        // Fallback query
+
         const fallbackQuery = `
           WITH school_stats AS (
             SELECT 
@@ -378,7 +376,7 @@ function generateMultiFlagInsights(schools: MDMSchoolCluster[]): string[] {
   }
 
   // Count by flag combinations
-  const ghostAndFund = schools.filter(s => 
+  const ghostAndFund = schools.filter(s =>
     s.flags.includes('ghost_meals') && s.flags.includes('fund_overclaim')
   ).length;
 

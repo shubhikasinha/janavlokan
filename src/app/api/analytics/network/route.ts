@@ -2,7 +2,6 @@ import { getBigQueryClient } from '@/lib/bigquery';
 import { NextRequest, NextResponse } from 'next/server';
 
 // Network/Collusion Analysis API
-// Identifies suspicious patterns like:
 // 1. Dealers with high concentration of high-risk beneficiaries
 // 2. Groups of beneficiaries sharing the same dealer with anomalies
 // 3. Cross-district transaction patterns

@@ -138,7 +138,6 @@ export default function CSVQuickScan() {
 
             {!results ? (
                 <>
-                    {/* Drop Zone */}
                     <div
                         onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                         onDragLeave={() => setIsDragging(false)}
@@ -181,7 +180,6 @@ export default function CSVQuickScan() {
                         </div>
                     )}
 
-                    {/* Sample Format */}
                     <div className="mt-4 p-3 bg-gray-50 rounded-lg">
                         <p className="text-xs font-medium text-gray-600 mb-2">Expected CSV Format:</p>
                         <code className="text-[10px] text-gray-500 block overflow-x-auto">
@@ -190,9 +188,7 @@ export default function CSVQuickScan() {
                     </div>
                 </>
             ) : (
-                /* Results Display */
                 <div className="space-y-4">
-                    {/* Summary Cards */}
                     <div className="grid grid-cols-4 gap-2">
                         <div className="bg-gray-50 rounded-lg p-3 text-center">
                             <div className="text-lg font-bold text-gray-900">{results.summary?.total}</div>
@@ -212,7 +208,6 @@ export default function CSVQuickScan() {
                         </div>
                     </div>
 
-                    {/* Mode Badge */}
                     <div className="flex items-center justify-between">
                         <span className="text-xs px-2 py-1 bg-blue-50 text-blue-700 rounded-full">
                             {results.mode === 'vertex_ai' ? '⚡ Vertex AI' : '🔧 Rule-Based'}
@@ -225,7 +220,6 @@ export default function CSVQuickScan() {
                         </button>
                     </div>
 
-                    {/* Results Table */}
                     {results.results && results.results.length > 0 && (
                         <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-lg">
                             <table className="w-full text-xs">

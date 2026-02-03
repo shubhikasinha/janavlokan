@@ -16,7 +16,6 @@ export async function GET(request: NextRequest) {
 
     const bigquery = getBigQueryClient();
 
-    // First, check what data exists in the table
     const checkQuery = `
       SELECT 
         MIN(date) as min_date, 
@@ -54,7 +53,6 @@ export async function GET(request: NextRequest) {
       console.log('MDM First row:', JSON.stringify(rows[0]));
     }
 
-    // Sort by date ascending for chart display
     const results: TimeSeriesData[] = rows.map((row) => ({
       date: row.date,
       high_risk_count: Number(row.high_risk_count) || 0,

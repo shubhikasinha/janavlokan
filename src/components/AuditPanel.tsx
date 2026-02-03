@@ -30,14 +30,11 @@ export default function AuditPanel({
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // NEW: Feedback stats state
   const [feedbackStats, setFeedbackStats] = useState<FeedbackStats | null>(null);
   const [feedbackLoading, setFeedbackLoading] = useState(true);
 
-  // Fetch feedback stats on mount
   useEffect(() => {
     fetchFeedbackStats();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentScheme]);
 
   const fetchFeedbackStats = async () => {
@@ -64,7 +61,7 @@ export default function AuditPanel({
     setError(null);
     setSuccess(null);
 
-    // Determine new_status based on action (Human decision)
+    //  (Human decision)
     const getNewStatus = (action: AuditAction): string => {
       switch (action) {
         case "CLEARED":
@@ -97,7 +94,7 @@ export default function AuditPanel({
           officer_id: officerName.trim().replace(/\s+/g, "_").toUpperCase(),
           notes: notes.trim(),
           new_status: getNewStatus(action),
-          scheme_type: currentScheme,  // Add scheme type
+          scheme_type: currentScheme,
         }),
       });
 
@@ -107,7 +104,6 @@ export default function AuditPanel({
         throw new Error(data.error || "Failed to record audit action");
       }
 
-      // Refresh feedback stats after feedback action
       if (action.startsWith("FEEDBACK_")) {
         fetchFeedbackStats();
         setSuccess(`Feedback recorded: ${action === "FEEDBACK_TRUE_POSITIVE" ? "True Positive (Correct)" : "False Positive (Wrong)"}`);
@@ -118,7 +114,6 @@ export default function AuditPanel({
       setNotes("");
       onAuditComplete?.();
 
-      // Clear success message after 3 seconds
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to record action");
@@ -129,7 +124,6 @@ export default function AuditPanel({
 
   const handleExport = async () => {
     try {
-      // Open CSV download in new tab
       window.open(
         `/api/audit/export?format=csv&risk_level=${riskLevel}`,
         "_blank"
@@ -148,9 +142,6 @@ export default function AuditPanel({
         </span>
       </h4>
 
-      {/* ============================================ */}
-      {/* NEW: Quick Feedback Buttons for ML Training */}
-      {/* ============================================ */}
       <div className="mb-4 p-3 bg-[#830f0008] border border-[#830f0020] rounded-lg">
         <div className="flex items-center justify-between mb-2">
           <h5 className="text-sm font-medium text-[#830f00] flex items-center gap-2">
@@ -185,7 +176,6 @@ export default function AuditPanel({
           </button>
         </div>
 
-        {/* Feedback Stats Mini Display */}
         {feedbackStats && !feedbackLoading && feedbackStats.total_feedback > 0 && (
           <div className="mt-3 pt-3 border-t border-[#830f0020] grid grid-cols-3 gap-2 text-center">
             <div>
@@ -204,7 +194,6 @@ export default function AuditPanel({
         )}
       </div>
 
-      {/* Officer Name Input */}
       <div className="mb-3">
         <label className="block text-sm text-gray-700 mb-1">
           Officer Name/ID <span className="text-red-500">*</span>
@@ -218,7 +207,6 @@ export default function AuditPanel({
         />
       </div>
 
-      {/* Notes Input */}
       <div className="mb-3">
         <label className="block text-sm text-gray-700 mb-1">
           Notes (optional)
@@ -232,7 +220,6 @@ export default function AuditPanel({
         />
       </div>
 
-      {/* Action Buttons - Subtle Theme */}
       <div className="grid grid-cols-2 gap-2 mb-3">
         <button
           onClick={() => handleAuditAction("REVIEWED")}
@@ -271,7 +258,6 @@ export default function AuditPanel({
         </button>
       </div>
 
-      {/* Export Button */}
       <button
         onClick={handleExport}
         className="w-full px-3 py-2 bg-primary text-white rounded text-sm font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
@@ -279,7 +265,6 @@ export default function AuditPanel({
         Export Report (CSV)
       </button>
 
-      {/* Status Messages - Light Theme */}
       {loading && (
         <div className="mt-3 p-2 bg-blue-50 text-blue-700 border border-blue-200 rounded text-sm flex items-center gap-2">
           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
@@ -299,7 +284,6 @@ export default function AuditPanel({
         </div>
       )}
 
-      {/* Info Box - Light Theme */}
       <div className="mt-3 p-2 bg-gray-100 border border-gray-200 rounded text-xs text-gray-500">
         <p className="font-medium mb-1 text-gray-700">Audit Trail</p>
         <p>All actions are logged with timestamp, officer ID, and notes for compliance and accountability.</p>

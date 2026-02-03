@@ -10,7 +10,6 @@ interface BatchJobStatus {
   error_message?: string;
 }
 
-// Simulated batch job status storage (in production, use Redis or DB)
 const batchJobs = new Map<string, BatchJobStatus>();
 
 // POST: Trigger a batch refresh job
@@ -33,15 +32,7 @@ export async function POST(request: NextRequest) {
 
     batchJobs.set(jobId, jobStatus);
 
-    // In a real system, this would trigger:
-    // 1. Dataflow pipeline to process new transactions
-    // 2. Vertex AI batch prediction job
-    // 3. Update fraud_with_explanations table
-
-    // For demo: Run a simple aggregation query to simulate processing
     const simulationQuery = `
-      -- Simulated batch job: Recompute risk statistics
-      -- In production, this would be a full ML pipeline
       SELECT
         COUNT(*) AS total_processed,
         COUNTIF(risk_level = 'HIGH') AS high_risk,

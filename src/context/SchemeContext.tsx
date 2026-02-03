@@ -45,11 +45,9 @@ const schemeConfigs: Record<SchemeType, SchemeContextType['schemeConfig']> = {
 const SchemeContext = createContext<SchemeContextType | undefined>(undefined);
 
 export function SchemeProvider({ children }: { children: ReactNode }) {
-  // Always start with 'LPG' to match server render
   const [currentScheme, setCurrentScheme] = useState<SchemeType>('LPG');
   const [hydrated, setHydrated] = useState(false);
 
-  // Load from localStorage after hydration
   useEffect(() => {
     setHydrated(true);
     const saved = localStorage.getItem('janavlokan_scheme') as SchemeType | null;
@@ -60,7 +58,6 @@ export function SchemeProvider({ children }: { children: ReactNode }) {
 
   const setScheme = useCallback((scheme: SchemeType) => {
     setCurrentScheme(scheme);
-    // Persist to localStorage
     if (typeof window !== 'undefined') {
       localStorage.setItem('janavlokan_scheme', scheme);
     }
@@ -87,5 +84,4 @@ export function useScheme() {
   return context;
 }
 
-// Export configs for use elsewhere
 export { schemeConfigs };
