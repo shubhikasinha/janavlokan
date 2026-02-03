@@ -29,19 +29,14 @@ const gcpServices = [
 
 const mlModels = [
     {
-        name: 'Isolation Forest',
-        role: 'Primary Anomaly Detector',
-        description: 'Isolates anomalies by randomly selecting features and splitting values. Effective for high-dimensional data with no labeled samples.',
-    },
-    {
         name: 'Autoencoders',
-        role: 'Pattern Reconstruction',
-        description: 'Neural networks that learn to compress and reconstruct normal patterns. High reconstruction error indicates anomalies.',
+        role: 'Primary Anomaly Detector',
+        description: 'Neural networks trained in BigQuery ML that learn to compress and reconstruct normal beneficiary behavior patterns. High reconstruction error (MSE) indicates anomalous behavior.',
     },
     {
-        name: 'DBSCAN',
-        role: 'Density-Based Clustering',
-        description: 'Groups together closely packed points and marks points in low-density regions as outliers. Handles varying cluster densities.',
+        name: 'Rule-Based Detection',
+        role: 'Fallback & Explainability',
+        description: 'Deterministic rule engine that generates human-readable flags (high recent activity, multiple dealers, cross-district usage) for audit explanations.',
     },
 ];
 
@@ -70,9 +65,9 @@ const features = [
         title: 'Anomaly Detection Without Labeled Fraud Data',
         description: 'JanAvlokan uses unsupervised learning to identify deviations from normal behavior, eliminating the dependency on pre-labeled fraud datasets which are rare and delayed in public finance systems.',
         highlights: [
-            'Isolation Forest as primary detector',
-            'Autoencoders for pattern reconstruction',
-            'DBSCAN for density-based clustering',
+            'Autoencoder-based anomaly detection in BigQuery ML',
+            'Mean Squared Error (MSE) as anomaly score',
+            'Rule-based fallback for explainability',
             'No dependency on labeled training data',
         ],
     },
@@ -231,7 +226,7 @@ export default function TechnologyPage() {
                         <h2 className="text-2xl md:text-3xl font-heading font-bold text-gray-900 mb-2">
                             Machine Learning Approach
                         </h2>
-                        <p className="text-gray-600">Hybrid unsupervised ensemble for robust anomaly detection</p>
+                        <p className="text-gray-600">Autoencoder-based unsupervised anomaly detection with BigQuery ML</p>
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">

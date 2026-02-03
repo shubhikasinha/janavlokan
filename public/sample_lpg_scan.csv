@@ -1,0 +1,11 @@
+beneficiary_id,total_transactions_30d,total_cylinders_30d,unique_dealers_30d,unique_districts_30d,lifetime_cylinders
+BEN_TEST_001,8,12,3,2,156
+BEN_TEST_002,2,2,1,1,24
+BEN_TEST_003,5,7,2,1,89
+BEN_TEST_004,10,15,4,3,210
+BEN_TEST_005,1,1,1,1,12
+BEN_TEST_006,6,8,2,2,134
+BEN_TEST_007,3,3,1,1,45
+BEN_TEST_008,9,14,3,2,178
+BEN_TEST_009,4,5,2,1,67
+BEN_TEST_010,7,10,3,2,145

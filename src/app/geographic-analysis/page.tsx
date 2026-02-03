@@ -1,28 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import dynamic from "next/dynamic";
 import { Button } from "@/components/Button";
 import BatchRefreshButton from "@/components/BatchRefreshButton";
 import { useScheme } from "@/context/SchemeContext";
 import SchemeSwitcher from "@/components/SchemeSwitcher";
 import IndiaMap from "@/components/IndiaMap";
-
-// Dynamic import for map (no SSR)
-const DistrictHeatmap = dynamic(
-    () => import("@/components/DistrictHeatmap"),
-    {
-        ssr: false,
-        loading: () => (
-            <div className="h-[500px] bg-gray-100 rounded-lg flex items-center justify-center">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
-                    <p className="text-gray-500">Loading map component...</p>
-                </div>
-            </div>
-        ),
-    }
-);
+import ZonalRiskView from "@/components/ZonalRiskView";
 
 interface DistrictRisk {
     residence_district: string;
@@ -59,11 +43,11 @@ export default function GeographicAnalysisPage() {
                                 Geographic Analysis
                             </h1>
                             <p className="text-gray-600 text-sm">
-                                State and district-level risk heatmaps • {schemeConfig.fullName}
+                                Regional risk distribution and district-level heatmaps • {schemeConfig.fullName}
                             </p>
                         </div>
-                        <div className="flex flex-col md:flex-row gap-5 w-full md:w-auto">
-                            <div className="w-full md:w-auto h-11 mt-[7px]"><BatchRefreshButton onRefreshComplete={handleRefreshComplete} className="h-full md:min-w-[80px] text-xs" /></div>
+                        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                            <div className="w-full sm:w-auto h-11 mt-[7px]"><BatchRefreshButton onRefreshComplete={handleRefreshComplete} className="h-full md:min-w-[80px] text-xs" /></div>
                             <div className="flex-1 h-11"><SchemeSwitcher className="h-full whitespace-nowrap" /></div>
                         </div>
                     </div>
@@ -74,30 +58,13 @@ export default function GeographicAnalysisPage() {
                 <div className="max-w-7xl mx-auto px-4">
                     {/* India Map Overview */}
                     <div className="mb-8">
-                        <div className="flex items-center justify-between mb-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
                             <div>
                                 <h2 className="text-xl font-heading font-semibold text-gray-900">
                                     National Risk Overview
                                 </h2>
                                 <p className="text-sm text-gray-500">
-                                    State-wise risk concentration across India • {schemeConfig.fullName}
-                                </p>
-                            </div>
-                        </div>
-                        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-                            <IndiaMap key={`india-map-${currentScheme}`} title={`${schemeConfig.name} National Risk Heatmap`} height="400px" />
-                        </div>
-                    </div>
-
-                    {/* District Heatmap Section */}
-                    <div className="mb-8">
-                        <div className="flex items-center justify-between mb-4">
-                            <div>
-                                <h2 className="text-xl font-heading font-semibold text-gray-900">
-                                    District-Level Risk Heatmap
-                                </h2>
-                                <p className="text-sm text-gray-500">
-                                    Click markers for detailed anomaly information • {schemeConfig.entityNamePlural}
+                                    District-wise risk concentration across India • {schemeConfig.fullName}
                                 </p>
                             </div>
                             {selectedDistrict && (
@@ -111,37 +78,40 @@ export default function GeographicAnalysisPage() {
                                 </div>
                             )}
                         </div>
-
-                        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-                            <DistrictHeatmap
-                                key={`${refreshKey}-${currentScheme}`}
+                        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                            <IndiaMap
+                                key={`india-map-${currentScheme}-${refreshKey}`}
+                                title={`${schemeConfig.name} National Risk Heatmap`}
+                                height="400px"
                                 onDistrictClick={handleDistrictClick}
                             />
                         </div>
+                    </div>
 
-                        {/* Map Legend */}
-                        <div className="mt-4 grid md:grid-cols-3 gap-4">
-                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                <p className="font-medium text-blue-800 mb-1">How to Use</p>
-                                <p className="text-sm text-blue-700">
-                                    Hover over circles to see district names. Click for detailed popup.
-                                    Larger circles = more anomalies.
-                                </p>
-                            </div>
-                            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                                <p className="font-medium text-amber-800 mb-1">Coverage</p>
-                                <p className="text-sm text-amber-700">
-                                    Map shows districts with detected {currentScheme === 'MDM' ? 'school' : 'beneficiary'} anomalies.
-                                    Colors indicate relative risk concentration.
-                                </p>
-                            </div>
-                            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                                <p className="font-medium text-green-800 mb-1">Insight</p>
-                                <p className="text-sm text-green-700">
-                                    Use geographic clustering to identify regional patterns
-                                    and allocate audit resources efficiently.
-                                </p>
-                            </div>
+                    {/* Zonal Risk View - Replaces DistrictHeatmap */}
+                    <div className="mb-8">
+                        <ZonalRiskView key={`zonal-${currentScheme}-${refreshKey}`} />
+                    </div>
+
+                    {/* Info Cards */}
+                    <div className="grid md:grid-cols-3 gap-4">
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <p className="font-medium text-blue-800 mb-1">How It Works</p>
+                            <p className="text-sm text-blue-700">
+                                Districts are grouped into regional zones. Risk levels are calculated from flagged {schemeConfig.entityNamePlural.toLowerCase()}.
+                            </p>
+                        </div>
+                        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                            <p className="font-medium text-amber-800 mb-1">Data Source</p>
+                            <p className="text-sm text-amber-700">
+                                Real-time aggregation from BigQuery. High and Medium risk {schemeConfig.entityNamePlural.toLowerCase()} are counted as flagged.
+                            </p>
+                        </div>
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                            <p className="font-medium text-green-800 mb-1">Use Case</p>
+                            <p className="text-sm text-green-700">
+                                Identify regional patterns and allocate audit resources to high-concentration zones.
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -149,3 +119,4 @@ export default function GeographicAnalysisPage() {
         </div>
     );
 }
+

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { GoogleAuth } from 'google-auth-library';
 
 // Vertex AI Endpoint for LPG Fraud Detection
 const VERTEX_AI_ENDPOINT = 'projects/541357109155/locations/us-central1/endpoints/4204003599522463744';
@@ -19,6 +20,80 @@ interface PredictionResult {
     risk_level: string;
     risk_score: number;
     flags: string[];
+}
+
+// Rule-based fraud detection function
+function runRuleBasedDetection(validRecords: Record<string, unknown>[]) {
+    const results = validRecords.map((record) => {
+        const flags: string[] = [];
+        let riskScore = 0;
+
+        const cylinders30d = Number(record.total_cylinders_30d) || 0;
+        const dealers30d = Number(record.unique_dealers_30d) || 0;
+        const districts30d = Number(record.unique_districts_30d) || 0;
+        const lifetimeCylinders = Number(record.lifetime_cylinders) || 0;
+
+        if (cylinders30d > 4) {
+            flags.push('high_recent_activity');
+            riskScore += 0.3;
+        }
+        if (dealers30d > 2) {
+            flags.push('multiple_dealers');
+            riskScore += 0.25;
+        }
+        if (districts30d > 1) {
+            flags.push('cross_district');
+            riskScore += 0.25;
+        }
+        if (lifetimeCylinders > 100) {
+            flags.push('high_lifetime_usage');
+            riskScore += 0.2;
+        }
+
+        const risk_level = riskScore >= 0.5 ? 'HIGH' : riskScore >= 0.25 ? 'MEDIUM' : 'LOW';
+
+        return {
+            beneficiary_id: String(record.beneficiary_id),
+            risk_level,
+            risk_score: Math.min(riskScore, 1),
+            flags
+        };
+    });
+
+    const summary = {
+        total: results.length,
+        high_risk: results.filter((r: PredictionResult) => r.risk_level === 'HIGH').length,
+        medium_risk: results.filter((r: PredictionResult) => r.risk_level === 'MEDIUM').length,
+        low_risk: results.filter((r: PredictionResult) => r.risk_level === 'LOW').length,
+    };
+
+    return NextResponse.json({
+        success: true,
+        mode: 'rule_based',
+        summary,
+        results: results.slice(0, 100),
+        total_processed: results.length
+    });
+}
+
+// Get access token using service account credentials
+async function getAccessToken(): Promise<string | null> {
+    try {
+        const auth = new GoogleAuth({
+            credentials: {
+                client_email: process.env.GOOGLE_CLIENT_EMAIL,
+                private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+            },
+            scopes: ['https://www.googleapis.com/auth/cloud-platform'],
+        });
+
+        const client = await auth.getClient();
+        const tokenResponse = await client.getAccessToken();
+        return tokenResponse.token || null;
+    } catch (error) {
+        console.error('Failed to get access token:', error);
+        return null;
+    }
 }
 
 export async function POST(request: NextRequest) {
@@ -46,70 +121,12 @@ export async function POST(request: NextRequest) {
             }, { status: 400 });
         }
 
-        // Get access token for Vertex AI
-        const accessToken = process.env.GOOGLE_ACCESS_TOKEN;
+        // Get access token using service account
+        const accessToken = await getAccessToken();
 
         if (!accessToken) {
-            // Fallback: Use rule-based detection if no Vertex AI access
             console.log('No Vertex AI access token, using rule-based detection');
-            const results = validRecords.map((record: Record<string, number | string>) => {
-                const flags: string[] = [];
-                let riskScore = 0;
-
-                // Rule-based fraud detection
-                const cylinders30d = Number(record.total_cylinders_30d) || 0;
-                const dealers30d = Number(record.unique_dealers_30d) || 0;
-                const districts30d = Number(record.unique_districts_30d) || 0;
-                const lifetimeCylinders = Number(record.lifetime_cylinders) || 0;
-
-                // High recent activity
-                if (cylinders30d > 4) {
-                    flags.push('high_recent_activity');
-                    riskScore += 0.3;
-                }
-
-                // Multiple dealers
-                if (dealers30d > 2) {
-                    flags.push('multiple_dealers');
-                    riskScore += 0.25;
-                }
-
-                // Cross district
-                if (districts30d > 1) {
-                    flags.push('cross_district');
-                    riskScore += 0.25;
-                }
-
-                // High lifetime usage
-                if (lifetimeCylinders > 100) {
-                    flags.push('high_lifetime_usage');
-                    riskScore += 0.2;
-                }
-
-                const risk_level = riskScore >= 0.5 ? 'HIGH' : riskScore >= 0.25 ? 'MEDIUM' : 'LOW';
-
-                return {
-                    beneficiary_id: String(record.beneficiary_id),
-                    risk_level,
-                    risk_score: Math.min(riskScore, 1),
-                    flags
-                };
-            });
-
-            const summary = {
-                total: results.length,
-                high_risk: results.filter((r: PredictionResult) => r.risk_level === 'HIGH').length,
-                medium_risk: results.filter((r: PredictionResult) => r.risk_level === 'MEDIUM').length,
-                low_risk: results.filter((r: PredictionResult) => r.risk_level === 'LOW').length,
-            };
-
-            return NextResponse.json({
-                success: true,
-                mode: 'rule_based',
-                summary,
-                results: results.slice(0, 100), // Return first 100 for display
-                total_processed: results.length
-            });
+            return runRuleBasedDetection(validRecords);
         }
 
         // Call Vertex AI endpoint
@@ -131,8 +148,10 @@ export async function POST(request: NextRequest) {
         });
 
         if (!response.ok) {
-            console.error('Vertex AI Error:', response.status, await response.text());
-            throw new Error('Vertex AI prediction failed');
+            const errorText = await response.text();
+            console.error('Vertex AI Error:', response.status, errorText);
+            console.log('Falling back to rule-based detection...');
+            return runRuleBasedDetection(validRecords);
         }
 
         const predictions = await response.json();
