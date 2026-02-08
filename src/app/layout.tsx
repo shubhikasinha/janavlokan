@@ -6,7 +6,12 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import GoogleTranslateClient from "@/components/GoogleTranslateClient";
 import { SchemeProvider } from "@/context/SchemeContext";
-import ChatWidget from "@/components/ChatWidget";
+import dynamic from "next/dynamic";
+
+// Dynamic import with ssr: false to prevent hydration mismatch from Dialogflow iframe
+const ChatWidget = dynamic(() => import("@/components/ChatWidget"), {
+  ssr: false,
+});
 
 const inter = Inter({
   variable: "--font-inter",
