@@ -6,7 +6,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import GoogleTranslateClient from "@/components/GoogleTranslateClient";
 import { SchemeProvider } from "@/context/SchemeContext";
-import ChatWidget from "@/components/ChatWidget";
+import ChatWidgetWrapper from "@/components/ChatWidgetWrapper";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -44,7 +44,7 @@ export default function RootLayout({
               {children}
             </main>
             <Footer />
-            <ChatWidget />
+            <ChatWidgetWrapper />
           </div>
         </SchemeProvider>
 
