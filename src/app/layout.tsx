@@ -6,6 +6,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import GoogleTranslateClient from "@/components/GoogleTranslateClient";
 import { SchemeProvider } from "@/context/SchemeContext";
+import ChatWidget from "@/components/ChatWidget";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -43,6 +44,7 @@ export default function RootLayout({
               {children}
             </main>
             <Footer />
+            <ChatWidget />
           </div>
         </SchemeProvider>
 
@@ -123,7 +125,7 @@ export default function RootLayout({
         />
 
         {/* Google Translate External Script */}
-        <Script 
+        <Script
           src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
           strategy="afterInteractive"
         />

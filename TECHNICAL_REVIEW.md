@@ -566,7 +566,7 @@ function sanitizeReasonCodes(reasonCodes: string[]): string[] {
 > - **Visualization:** Recharts (charts), Leaflet (maps)
 > - **Backend:** Next.js API Routes (serverless)
 > - **Database:** Google BigQuery
-> - **AI/ML:** BigQuery ML, Vertex AI, Gemini 2.0 Flash
+> - **AI/ML:** BigQuery ML, Vertex AI, Gemini 3.0 Flash
 
 ---
 

@@ -408,56 +408,45 @@ export default function DashboardPage() {
   const renderFlags = () => {
     if (!selectedEntity) return null;
 
+    // Helper component for flag badge
+    const FlagBadge = ({ active, label }: { active: boolean; label: string }) => (
+      <div
+        className={`px-3 py-2 rounded-lg border transition-colors flex items-center gap-2 ${active
+          ? "bg-red-50 border-red-200"
+          : "bg-gray-50 border-gray-200"
+          }`}
+      >
+        <span
+          className={`w-2 h-2 rounded-full ${active ? "bg-red-500" : "bg-gray-300"
+            }`}
+        />
+        <span
+          className={`text-xs font-medium ${active ? "text-red-700" : "text-gray-500"
+            }`}
+        >
+          {label}
+        </span>
+      </div>
+    );
+
     if (currentScheme === 'MDM') {
       const mdmEntity = selectedEntity as MDMSchoolDetail;
       return (
-        <div className="grid grid-cols-2 gap-2 text-xs">
-          <div className={`p-2 rounded-lg border ${mdmEntity.flags.ghost_meals ? "bg-red-50 border-red-200" : "bg-gray-50 border-gray-200"}`}>
-            <span className={mdmEntity.flags.ghost_meals ? "text-red-700" : "text-gray-400"}>
-              {mdmEntity.flags.ghost_meals ? "Yes" : "No"} Ghost Meals
-            </span>
-          </div>
-          <div className={`p-2 rounded-lg border ${mdmEntity.flags.ingredient_inflation ? "bg-red-50 border-red-200" : "bg-gray-50 border-gray-200"}`}>
-            <span className={mdmEntity.flags.ingredient_inflation ? "text-red-700" : "text-gray-400"}>
-              {mdmEntity.flags.ingredient_inflation ? "Yes" : "No"} Ingredient Inflation
-            </span>
-          </div>
-          <div className={`p-2 rounded-lg border ${mdmEntity.flags.fund_overclaim ? "bg-red-50 border-red-200" : "bg-gray-50 border-gray-200"}`}>
-            <span className={mdmEntity.flags.fund_overclaim ? "text-red-700" : "text-gray-400"}>
-              {mdmEntity.flags.fund_overclaim ? "Yes" : "No"} Fund Overclaim
-            </span>
-          </div>
-          <div className={`p-2 rounded-lg border ${mdmEntity.flags.cook_anomaly ? "bg-red-50 border-red-200" : "bg-gray-50 border-gray-200"}`}>
-            <span className={mdmEntity.flags.cook_anomaly ? "text-red-700" : "text-gray-400"}>
-              {mdmEntity.flags.cook_anomaly ? "Yes" : "No"} Cook Anomaly
-            </span>
-          </div>
+        <div className="grid grid-cols-2 gap-2">
+          <FlagBadge active={mdmEntity.flags.ghost_meals} label="Ghost Meals" />
+          <FlagBadge active={mdmEntity.flags.ingredient_inflation} label="Ingredient Inflation" />
+          <FlagBadge active={mdmEntity.flags.fund_overclaim} label="Fund Overclaim" />
+          <FlagBadge active={mdmEntity.flags.cook_anomaly} label="Cook Anomaly" />
         </div>
       );
     } else {
       const lpgEntity = selectedEntity as LPGBeneficiaryDetail;
       return (
-        <div className="grid grid-cols-2 gap-2 text-xs">
-          <div className={`p-2 rounded-lg border ${lpgEntity.flags.high_recent_activity ? "bg-red-50 border-red-200" : "bg-gray-50 border-gray-200"}`}>
-            <span className={lpgEntity.flags.high_recent_activity ? "text-red-700" : "text-gray-400"}>
-              {lpgEntity.flags.high_recent_activity ? "Yes" : "No"} High Recent Activity
-            </span>
-          </div>
-          <div className={`p-2 rounded-lg border ${lpgEntity.flags.multiple_dealers ? "bg-red-50 border-red-200" : "bg-gray-50 border-gray-200"}`}>
-            <span className={lpgEntity.flags.multiple_dealers ? "text-red-700" : "text-gray-400"}>
-              {lpgEntity.flags.multiple_dealers ? "Yes" : "No"} Multiple Dealers
-            </span>
-          </div>
-          <div className={`p-2 rounded-lg border ${lpgEntity.flags.cross_district ? "bg-red-50 border-red-200" : "bg-gray-50 border-gray-200"}`}>
-            <span className={lpgEntity.flags.cross_district ? "text-red-700" : "text-gray-400"}>
-              {lpgEntity.flags.cross_district ? "Yes" : "No"} Cross District
-            </span>
-          </div>
-          <div className={`p-2 rounded-lg border ${lpgEntity.flags.high_lifetime_usage ? "bg-red-50 border-red-200" : "bg-gray-50 border-gray-200"}`}>
-            <span className={lpgEntity.flags.high_lifetime_usage ? "text-red-700" : "text-gray-400"}>
-              {lpgEntity.flags.high_lifetime_usage ? "Yes" : "No"} High Lifetime Usage
-            </span>
-          </div>
+        <div className="grid grid-cols-2 gap-2">
+          <FlagBadge active={lpgEntity.flags.high_recent_activity} label="High Recent Activity" />
+          <FlagBadge active={lpgEntity.flags.multiple_dealers} label="Multiple Dealers" />
+          <FlagBadge active={lpgEntity.flags.cross_district} label="Cross District" />
+          <FlagBadge active={lpgEntity.flags.high_lifetime_usage} label="High Lifetime Usage" />
         </div>
       );
     }
@@ -869,32 +858,38 @@ export default function DashboardPage() {
                           <div className="mb-4">
                             <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                               Risk Breakdown
-                              <span className="text-xs px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full">
+                              <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full">
                                 Score: {selectedEntity.risk_breakdown.total_risk_score}
                               </span>
                             </h4>
-                            <div className="space-y-2">
+                            <div className="space-y-3">
                               {selectedEntity.risk_breakdown.factors.map(
                                 (factor, idx) => (
                                   <div
                                     key={idx}
-                                    className="bg-gray-50 border border-gray-200 rounded-lg p-2"
+                                    className="bg-gray-50 border border-gray-200 rounded-lg p-2.5"
                                   >
-                                    <div className="flex justify-between items-center mb-1">
-                                      <span className="text-xs text-gray-700">
+                                    <div className="flex justify-between items-center mb-1.5">
+                                      <span className="text-xs font-medium text-gray-700">
                                         {factor.factor}
                                       </span>
-                                      <span className="text-xs font-bold text-amber-600">
+                                      <span className={`text-xs font-semibold ${factor.percentage >= 40 ? 'text-red-600' :
+                                        factor.percentage >= 20 ? 'text-amber-600' :
+                                          'text-green-600'
+                                        }`}>
                                         {factor.percentage}%
                                       </span>
                                     </div>
                                     <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
                                       <div
-                                        className="h-full bg-[#830f00] rounded-full"
+                                        className={`h-full rounded-full ${factor.percentage >= 40 ? 'bg-red-500' :
+                                          factor.percentage >= 20 ? 'bg-amber-500' :
+                                            'bg-green-500'
+                                          }`}
                                         style={{ width: `${factor.percentage}%` }}
                                       />
                                     </div>
-                                    <p className="text-[10px] text-gray-500 mt-1">
+                                    <p className="text-[11px] text-gray-500 mt-1.5">
                                       {factor.description}
                                     </p>
                                   </div>
@@ -925,17 +920,12 @@ export default function DashboardPage() {
                       {/* Gemini Explanation */}
                       {selectedEntity.gemini_explanation && (
                         <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-4">
-                          <h4 className="text-sm font-medium text-blue-800 mb-2 flex items-center gap-1">
-                            <span></span>
-                            <span>
-                              AI Explanation (
-                              {language === "hi"
-                                ? "हिंदी"
-                                : language === "hinglish"
-                                  ? "Hinglish"
-                                  : "English"}
-                              )
-                            </span>
+                          <h4 className="text-sm font-medium text-blue-800 mb-2">
+                            AI Explanation ({language === "hi"
+                              ? "हिंदी"
+                              : language === "hinglish"
+                                ? "Hinglish"
+                                : "English"})
                           </h4>
                           <p className="text-sm text-blue-700 leading-relaxed whitespace-pre-line">
                             {selectedEntity.gemini_explanation}

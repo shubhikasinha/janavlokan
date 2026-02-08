@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useCallback, ReactNode, useSyncExternalStore } from 'react';
 
 export type SchemeType = 'LPG' | 'MDM';
 
@@ -44,23 +44,51 @@ const schemeConfigs: Record<SchemeType, SchemeContextType['schemeConfig']> = {
 
 const SchemeContext = createContext<SchemeContextType | undefined>(undefined);
 
-export function SchemeProvider({ children }: { children: ReactNode }) {
-  const [currentScheme, setCurrentScheme] = useState<SchemeType>('LPG');
-  const [hydrated, setHydrated] = useState(false);
+// Store for syncing with localStorage
+let listeners: Array<() => void> = [];
+let schemeStore: SchemeType = 'LPG';
 
-  useEffect(() => {
-    setHydrated(true);
-    const saved = localStorage.getItem('janavlokan_scheme') as SchemeType | null;
-    if (saved && (saved === 'LPG' || saved === 'MDM')) {
-      setCurrentScheme(saved);
-    }
-  }, []);
+function getSchemeSnapshot(): SchemeType {
+  return schemeStore;
+}
+
+function getServerSchemeSnapshot(): SchemeType {
+  return 'LPG'; // SSR default
+}
+
+function subscribeToScheme(callback: () => void): () => void {
+  listeners.push(callback);
+  return () => {
+    listeners = listeners.filter(l => l !== callback);
+  };
+}
+
+function setSchemeStore(scheme: SchemeType): void {
+  schemeStore = scheme;
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('janavlokan_scheme', scheme);
+  }
+  listeners.forEach(l => l());
+}
+
+// Initialize from localStorage on client
+if (typeof window !== 'undefined') {
+  const saved = localStorage.getItem('janavlokan_scheme');
+  if (saved === 'LPG' || saved === 'MDM') {
+    schemeStore = saved;
+  }
+}
+
+export function SchemeProvider({ children }: { children: ReactNode }) {
+  // Use useSyncExternalStore to sync with localStorage without useEffect setState
+  const currentScheme = useSyncExternalStore(
+    subscribeToScheme,
+    getSchemeSnapshot,
+    getServerSchemeSnapshot
+  );
 
   const setScheme = useCallback((scheme: SchemeType) => {
-    setCurrentScheme(scheme);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('janavlokan_scheme', scheme);
-    }
+    setSchemeStore(scheme);
   }, []);
 
   const value: SchemeContextType = {
@@ -85,3 +113,4 @@ export function useScheme() {
 }
 
 export { schemeConfigs };
+

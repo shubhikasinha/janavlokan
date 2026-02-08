@@ -19,6 +19,7 @@ const navLinks: NavLink[] = [
     { path: '/risk-distribution', label: 'Exposure' },
     { path: '/temporal-trends', label: 'Trends' },
     { path: '/dashboard', label: 'Dashboard' },
+    { path: '/reports', label: 'Reports' },
     { path: '/technology', label: 'Technology' },
     { path: '/about', label: 'About' },
 ];

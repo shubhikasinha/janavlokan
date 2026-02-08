@@ -1,4 +1,6 @@
-import { getBigQueryClient } from '@/lib/bigquery';
+import { executeQuery, TABLES } from '@/lib/bigquery';
+import { getDashboardService, getBeneficiaryService, getMDMService } from '@/lib/services';
+import { getCacheService } from '@/lib/cache';
 import { NextRequest, NextResponse } from 'next/server';
 
 interface BatchJobStatus {
@@ -12,13 +14,14 @@ interface BatchJobStatus {
 
 const batchJobs = new Map<string, BatchJobStatus>();
 
-// POST: Trigger a batch refresh job
+/**
+ * POST /api/batch/refresh
+ * Trigger a batch refresh job and invalidate all caches
+ */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => ({}));
     const { job_type: _job_type = 'FULL_REFRESH' } = body;
-
-    const bigquery = getBigQueryClient();
 
     // Generate job ID
     const jobId = `batch_${Date.now()}_${Math.random().toString(36).substring(7)}`;
@@ -32,39 +35,11 @@ export async function POST(request: NextRequest) {
 
     batchJobs.set(jobId, jobStatus);
 
+    console.log('🛡️ [BATCH] Starting Nightly Fraud Detection Pipeline...');
+    console.log(`📋 [BATCH] Job ID: ${jobId}`);
+    console.log(`⏰ [BATCH] Timestamp: ${new Date().toISOString()}`);
 
-    // PRODUCTION BATCH ML PIPELINE
-
-    // This query represents our Nightly Guard system:
-    // 1. Archive current predictions for audit trail
-    // 2. Run ML.PREDICT on new transactions
-    // 3. Update fraud_with_explanations with fresh predictions
-    // ============================================
-
-    console.log(' [BATCH] Starting Nightly Fraud Detection Pipeline...');
-    console.log(` [BATCH] Job ID: ${jobId}`);
-    console.log(` [BATCH] Timestamp: ${new Date().toISOString()}`);
-
-    // In production, this would be the full ML.PREDICT pipeline:
-    // const batchPredictionQuery = `
-    //   -- Archive current state for audit trail
-    //   CREATE OR REPLACE TABLE \`gfg-fot.lpg_fraud_detection.history_predictions_${Date.now()}\` AS
-    //   SELECT * FROM \`gfg-fot.lpg_fraud_detection.fraud_with_explanations\`;
-    //
-    //   -- Run BigQuery ML Model on all transactions
-    //   INSERT INTO \`gfg-fot.lpg_fraud_detection.fraud_with_explanations\`
-    //   SELECT
-    //     beneficiary_id,
-    //     predicted_risk_level as risk_level,
-    //     predicted_anomaly_score as anomaly_score,
-    //     'Batch Update: Autoencoder Detection' as risk_reason
-    //   FROM ML.PREDICT(
-    //     MODEL \`gfg-fot.lpg_fraud_detection.fraud_autoencoder_model\`,
-    //     (SELECT * FROM \`gfg-fot.lpg_fraud_detection.daily_transactions\`)
-    //   );
-    // `;
-
-    // Current query: Read ML-processed data from fraud_with_explanations
+    // Query current stats using centralized TABLES constant
     const summaryQuery = `
       SELECT
         COUNT(*) AS total_processed,
@@ -72,13 +47,32 @@ export async function POST(request: NextRequest) {
         COUNTIF(risk_level = 'MEDIUM') AS medium_risk,
         COUNTIF(risk_level = 'LOW') AS low_risk,
         MAX(CURRENT_TIMESTAMP()) AS last_updated
-      FROM \`gfg-fot.lpg_fraud_detection.fraud_with_explanations\`
+      FROM \`${TABLES.LPG_FRAUD}\`
     `;
 
     try {
       console.log('🔍 [BATCH] Querying fraud_with_explanations table...');
-      const [job] = await bigquery.createQueryJob({ query: summaryQuery });
-      const [rows] = await job.getQueryResults();
+      const result = await executeQuery<{
+        total_processed: number;
+        high_risk: number;
+        medium_risk: number;
+        low_risk: number;
+        last_updated: { value: string } | string;
+      }>(summaryQuery);
+
+      const rows = result.rows;
+
+      // IMPORTANT: Invalidate all caches after batch refresh
+      console.log('🗑️ [BATCH] Invalidating all caches...');
+      const cache = getCacheService();
+      const cacheStats = cache.getStats();
+      cache.clear();
+      console.log(`🗑️ [BATCH] Cleared ${cacheStats.size} cached entries`);
+
+      // Also invalidate service-level caches
+      getDashboardService().invalidateCache();
+      getBeneficiaryService().invalidateCache();
+      getMDMService().invalidateCache();
 
       // Update job status
       jobStatus.status = 'COMPLETED';
@@ -87,11 +81,11 @@ export async function POST(request: NextRequest) {
 
       batchJobs.set(jobId, jobStatus);
 
-      console.log(' [BATCH] Pipeline Complete!');
-      console.log(` [BATCH] Records Processed: ${jobStatus.records_processed}`);
-      console.log(` [BATCH] High Risk: ${rows[0]?.high_risk}`);
-      console.log(` [BATCH] Medium Risk: ${rows[0]?.medium_risk}`);
-      console.log(` [BATCH] Low Risk: ${rows[0]?.low_risk}`);
+      console.log('✅ [BATCH] Pipeline Complete!');
+      console.log(`📊 [BATCH] Records Processed: ${jobStatus.records_processed}`);
+      console.log(`🔴 [BATCH] High Risk: ${rows[0]?.high_risk}`);
+      console.log(`🟡 [BATCH] Medium Risk: ${rows[0]?.medium_risk}`);
+      console.log(`🟢 [BATCH] Low Risk: ${rows[0]?.low_risk}`);
 
       return NextResponse.json({
         success: true,
@@ -108,7 +102,13 @@ export async function POST(request: NextRequest) {
           high_risk: rows[0]?.high_risk,
           medium_risk: rows[0]?.medium_risk,
           low_risk: rows[0]?.low_risk,
-          last_updated: rows[0]?.last_updated?.value || new Date().toISOString(),
+          last_updated: typeof rows[0]?.last_updated === 'object'
+            ? rows[0]?.last_updated.value
+            : new Date().toISOString(),
+        },
+        cache: {
+          invalidated: true,
+          entries_cleared: cacheStats.size,
         },
         scheduler_info: {
           recommended_frequency: '0 2 * * *',
@@ -134,18 +134,25 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// GET: Check batch job status
+/**
+ * GET /api/batch/refresh
+ * Check batch job status
+ */
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const jobId = searchParams.get('job_id');
+
+    // Return cache stats along with job info
+    const cache = getCacheService();
+    const cacheStats = cache.getStats();
 
     if (jobId) {
       const job = batchJobs.get(jobId);
       if (!job) {
         return NextResponse.json({ success: false, error: 'Job not found' }, { status: 404 });
       }
-      return NextResponse.json({ success: true, job });
+      return NextResponse.json({ success: true, job, cache: cacheStats });
     }
 
     // Return recent jobs
@@ -157,6 +164,7 @@ export async function GET(request: NextRequest) {
       success: true,
       jobs: recentJobs,
       total: batchJobs.size,
+      cache: cacheStats,
     });
   } catch (error) {
     console.error('Batch Status Error:', error);

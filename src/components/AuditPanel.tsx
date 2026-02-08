@@ -9,7 +9,7 @@ interface AuditPanelProps {
   onAuditComplete?: () => void;
 }
 
-type AuditAction = "REVIEWED" | "FLAGGED" | "CLEARED" | "NOTE_ADDED" | "VERIFIED" | "FEEDBACK_TRUE_POSITIVE" | "FEEDBACK_FALSE_POSITIVE";
+type AuditAction = "REVIEWED" | "VERIFIED" | "CLEARED" | "NOTE_ADDED";
 
 interface FeedbackStats {
   total_feedback: number;
@@ -51,7 +51,7 @@ export default function AuditPanel({
     }
   };
 
-  const handleAuditAction = async (action: AuditAction) => {
+  const handleAuditAction = async (action: AuditAction, isModelCorrect?: boolean) => {
     if (!officerName.trim()) {
       setError("Please enter your name/ID");
       return;
@@ -61,27 +61,26 @@ export default function AuditPanel({
     setError(null);
     setSuccess(null);
 
-    //  (Human decision)
-    const getNewStatus = (action: AuditAction): string => {
+    // Map action to status with integrated feedback
+    const getNewStatus = (action: AuditAction, isCorrect?: boolean): string => {
       switch (action) {
-        case "CLEARED":
-          return "GENUINE";           // Human says: Not fraud, false positive
-        case "FLAGGED":
-          return "CONFIRMED_FRAUD";   // Human says: Yes, this is fraud
         case "VERIFIED":
-          return "VERIFIED_FRAUD";    // Human says: Verified fraud, action taken
+          return "VERIFIED_FRAUD";    // Human confirms fraud = Model was CORRECT
+        case "CLEARED":
+          return "FALSE_POSITIVE";    // Human says genuine = Model was WRONG
         case "REVIEWED":
-          return "UNDER_REVIEW";      // Human says: Needs more investigation
+          return "UNDER_REVIEW";      // Needs more investigation
         case "NOTE_ADDED":
-          return riskLevel;           // No status change, just adding notes
-        case "FEEDBACK_TRUE_POSITIVE":
-          return "TRUE_POSITIVE";     // Human says: Model was correct
-        case "FEEDBACK_FALSE_POSITIVE":
-          return "FALSE_POSITIVE";    // Human says: Model was wrong
+          return riskLevel;           // No status change
         default:
           return riskLevel;
       }
     };
+
+    // Determine feedback action for ML training
+    const feedbackAction = action === "VERIFIED" ? "FEEDBACK_TRUE_POSITIVE"
+      : action === "CLEARED" ? "FEEDBACK_FALSE_POSITIVE"
+        : null;
 
     try {
       const res = await fetch("/api/audit", {
@@ -89,11 +88,11 @@ export default function AuditPanel({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           beneficiary_id: beneficiaryId,
-          action: action.startsWith("FEEDBACK_") ? "FEEDBACK" : action,
+          action: feedbackAction || action,
           officer_name: officerName.trim(),
           officer_id: officerName.trim().replace(/\s+/g, "_").toUpperCase(),
           notes: notes.trim(),
-          new_status: getNewStatus(action),
+          new_status: getNewStatus(action, isModelCorrect),
           scheme_type: currentScheme,
         }),
       });
@@ -104,11 +103,18 @@ export default function AuditPanel({
         throw new Error(data.error || "Failed to record audit action");
       }
 
-      if (action.startsWith("FEEDBACK_")) {
+      const actionLabels: Record<AuditAction, string> = {
+        VERIFIED: "✅ Confirmed as Fraud (Model Correct)",
+        CLEARED: "❌ Marked as Genuine (Model Wrong)",
+        REVIEWED: "📋 Marked for Review",
+        NOTE_ADDED: "📝 Note Added",
+      };
+
+      setSuccess(actionLabels[action] || `Action recorded!`);
+
+      // Refresh stats if model feedback was given
+      if (feedbackAction) {
         fetchFeedbackStats();
-        setSuccess(`Feedback recorded: ${action === "FEEDBACK_TRUE_POSITIVE" ? "True Positive (Correct)" : "False Positive (Wrong)"}`);
-      } else {
-        setSuccess(`Action "${action}" recorded successfully!`);
       }
 
       setNotes("");
@@ -136,64 +142,37 @@ export default function AuditPanel({
   return (
     <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 shadow-sm">
       <h4 className="font-heading font-semibold text-gray-900 mb-3 flex items-center gap-2">
-        Audit Actions
+        Officer Decision
         <span className="text-xs font-normal text-gray-500">
           (Human-in-the-loop)
         </span>
       </h4>
 
-      <div className="mb-4 p-3 bg-[#830f0008] border border-[#830f0020] rounded-lg">
-        <div className="flex items-center justify-between mb-2">
-          <h5 className="text-sm font-medium text-[#830f00] flex items-center gap-2">
-            Model Feedback
-            <span className="text-[10px] text-[#830f00]/70">(Train Future Models)</span>
-          </h5>
-          {feedbackStats && !feedbackLoading && (
-            <div className="text-[10px] text-gray-600">
-              Accuracy: <span className="text-[#830f00] font-bold">{feedbackStats.accuracy_rate.toFixed(1)}%</span>
-            </div>
-          )}
-        </div>
-        <p className="text-xs text-gray-700 mb-3">
-          Is the model&apos;s risk prediction for this beneficiary correct?
-        </p>
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            onClick={() => handleAuditAction("FEEDBACK_TRUE_POSITIVE")}
-            disabled={loading || !officerName.trim()}
-            className="px-3 py-2.5 bg-[#830f0010] text-[#830f00] border border-[#830f0030] rounded-lg text-sm font-medium hover:bg-[#830f0020] disabled:opacity-50 transition-all flex items-center justify-center gap-2"
-          >
-            Correct
-            <span className="text-[10px] text-[#830f00]/60">(True Positive)</span>
-          </button>
-          <button
-            onClick={() => handleAuditAction("FEEDBACK_FALSE_POSITIVE")}
-            disabled={loading || !officerName.trim()}
-            className="px-3 py-2.5 bg-gray-100 text-gray-700 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-200 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
-          >
-            Wrong
-            <span className="text-[10px] text-gray-600/70">(False Positive)</span>
-          </button>
-        </div>
-
-        {feedbackStats && !feedbackLoading && feedbackStats.total_feedback > 0 && (
-          <div className="mt-3 pt-3 border-t border-[#830f0020] grid grid-cols-3 gap-2 text-center">
+      {/* Model Accuracy Stats */}
+      {feedbackStats && !feedbackLoading && feedbackStats.total_feedback > 0 && (
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-medium text-blue-800">Model Performance</span>
+            <span className="text-lg font-bold text-blue-700">{feedbackStats.accuracy_rate.toFixed(1)}%</span>
+          </div>
+          <div className="grid grid-cols-3 gap-2 text-center text-xs">
             <div>
-              <div className="text-lg font-bold text-gray-900">{feedbackStats.total_feedback}</div>
-              <div className="text-[10px] text-gray-500">Total Feedback</div>
+              <div className="font-bold text-gray-700">{feedbackStats.total_feedback}</div>
+              <div className="text-gray-500">Total</div>
             </div>
             <div>
-              <div className="text-lg font-bold text-[#830f00]">{feedbackStats.true_positives}</div>
-              <div className="text-[10px] text-gray-500">Correct</div>
+              <div className="font-bold text-green-600">{feedbackStats.true_positives}</div>
+              <div className="text-gray-500">Correct</div>
             </div>
             <div>
-              <div className="text-lg font-bold text-gray-600">{feedbackStats.false_positives}</div>
-              <div className="text-[10px] text-gray-500">Wrong</div>
+              <div className="font-bold text-red-600">{feedbackStats.false_positives}</div>
+              <div className="text-gray-500">Wrong</div>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
+      {/* Officer Name Input */}
       <div className="mb-3">
         <label className="block text-sm text-gray-700 mb-1">
           Officer Name/ID <span className="text-red-500">*</span>
@@ -207,6 +186,7 @@ export default function AuditPanel({
         />
       </div>
 
+      {/* Notes Input */}
       <div className="mb-3">
         <label className="block text-sm text-gray-700 mb-1">
           Notes (optional)
@@ -215,49 +195,55 @@ export default function AuditPanel({
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           placeholder="Add observations, findings, or justification..."
-          rows={3}
+          rows={2}
           className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-2 mb-3">
-        <button
-          onClick={() => handleAuditAction("REVIEWED")}
-          disabled={loading || !officerName.trim()}
-          className="px-3 py-2 min-h-[42px] h-full bg-[#830f0010] text-[#830f00] border border-[#830f0030] rounded text-sm font-medium hover:bg-[#830f0020] disabled:opacity-50 transition-colors flex items-center justify-center text-center"
-        >
-          Mark Reviewed
-        </button>
-        <button
-          onClick={() => handleAuditAction("VERIFIED")}
-          disabled={loading || !officerName.trim()}
-          className="px-3 py-2 min-h-[42px] h-full bg-[#830f0015] text-[#830f00] border border-[#830f0040] rounded text-sm font-medium hover:bg-[#830f0025] disabled:opacity-50 transition-colors flex items-center justify-center text-center"
-        >
-          Verify Fraud
-        </button>
-        <button
-          onClick={() => handleAuditAction("FLAGGED")}
-          disabled={loading || !officerName.trim()}
-          className="px-3 py-2 min-h-[42px] h-full bg-[#830f0020] text-[#830f00] border border-[#830f0050] rounded text-sm font-medium hover:bg-[#830f0030] disabled:opacity-50 transition-colors flex items-center justify-center text-center"
-        >
-          Confirm Fraud
-        </button>
-        <button
-          onClick={() => handleAuditAction("CLEARED")}
-          disabled={loading || !officerName.trim()}
-          className="px-3 py-2 min-h-[42px] h-full bg-gray-100 text-gray-700 border border-gray-300 rounded text-sm font-medium hover:bg-gray-200 disabled:opacity-50 transition-colors flex items-center justify-center text-center"
-        >
-          Clear (Genuine)
-        </button>
-        <button
-          onClick={() => handleAuditAction("NOTE_ADDED")}
-          disabled={loading || !notes.trim() || !officerName.trim()}
-          className="col-span-2 px-3 py-2 min-h-[42px] bg-white text-gray-700 border border-gray-300 rounded text-sm font-medium hover:bg-gray-50 disabled:opacity-50 transition-colors flex items-center justify-center text-center"
-        >
-          Add Note Only
-        </button>
+      {/* Simplified Action Buttons - Merged with Model Feedback */}
+      <div className="space-y-2 mb-3">
+        <p className="text-xs text-gray-500 mb-2">Is this prediction correct?</p>
+
+        {/* Primary Actions */}
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            onClick={() => handleAuditAction("VERIFIED")}
+            disabled={loading || !officerName.trim()}
+            className="px-3 py-2.5 bg-[#830f0015] text-[#830f00] border border-[#830f0040] rounded-lg text-sm font-medium hover:bg-[#830f0025] disabled:opacity-50 transition-colors flex flex-col items-center justify-center gap-0.5"
+          >
+            <span>Confirm Fraud</span>
+            <span className="text-[10px] opacity-70">Model correct</span>
+          </button>
+          <button
+            onClick={() => handleAuditAction("CLEARED")}
+            disabled={loading || !officerName.trim()}
+            className="px-3 py-2.5 bg-gray-100 text-gray-700 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-200 disabled:opacity-50 transition-colors flex flex-col items-center justify-center gap-0.5"
+          >
+            <span>Mark Genuine</span>
+            <span className="text-[10px] opacity-70">Model wrong</span>
+          </button>
+        </div>
+
+        {/* Secondary Actions */}
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            onClick={() => handleAuditAction("REVIEWED")}
+            disabled={loading || !officerName.trim()}
+            className="px-3 py-2 bg-amber-50 text-amber-700 border border-amber-200 rounded-lg text-xs font-medium hover:bg-amber-100 disabled:opacity-50 transition-colors"
+          >
+            Needs Review
+          </button>
+          <button
+            onClick={() => handleAuditAction("NOTE_ADDED")}
+            disabled={loading || !notes.trim() || !officerName.trim()}
+            className="px-3 py-2 bg-gray-50 text-gray-600 border border-gray-200 rounded-lg text-xs font-medium hover:bg-gray-100 disabled:opacity-50 transition-colors"
+          >
+            Add Note Only
+          </button>
+        </div>
       </div>
 
+      {/* Export Button */}
       <button
         onClick={handleExport}
         className="w-full px-3 py-2 bg-primary text-white rounded text-sm font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
@@ -265,28 +251,29 @@ export default function AuditPanel({
         Export Report (CSV)
       </button>
 
+      {/* Status Messages */}
       {loading && (
-        <div className="mt-3 p-2 bg-blue-50 text-blue-700 border border-blue-200 rounded text-sm flex items-center gap-2">
-          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+        <div className="mt-3 p-2 bg-gray-100 text-gray-700 rounded text-sm flex items-center gap-2">
+          <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
           Recording action...
         </div>
       )}
 
       {success && (
-        <div className="mt-3 p-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded text-sm">
+        <div className="mt-3 p-2 bg-green-50 text-green-700 rounded text-sm">
           {success}
         </div>
       )}
 
       {error && (
-        <div className="mt-3 p-2 bg-red-50 text-red-700 border border-red-200 rounded text-sm">
+        <div className="mt-3 p-2 bg-red-50 text-red-700 rounded text-sm">
           {error}
         </div>
       )}
 
-      <div className="mt-3 p-2 bg-gray-100 border border-gray-200 rounded text-xs text-gray-500">
-        <p className="font-medium mb-1 text-gray-700">Audit Trail</p>
-        <p>All actions are logged with timestamp, officer ID, and notes for compliance and accountability.</p>
+      {/* Audit Info */}
+      <div className="mt-3 p-2 bg-gray-50 border border-gray-200 rounded text-xs text-gray-500">
+        <p>All actions are logged for compliance & model training.</p>
       </div>
     </div>
   );

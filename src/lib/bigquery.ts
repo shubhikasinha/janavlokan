@@ -1,6 +1,35 @@
 import { BigQuery } from '@google-cloud/bigquery';
 import path from 'path';
 
+// ============================================
+// CENTRALIZED TABLE REFERENCES
+// All BigQuery table names in one place
+// ============================================
+export const TABLES = {
+  // LPG Scheme Tables
+  LPG_FRAUD: 'gfg-fot.lpg_fraud_detection.fraud_with_explanations',
+  LPG_TRANSACTIONS: 'gfg-fot.lpg_fraud_detection.transactions',
+  LPG_FEATURES: 'gfg-fot.lpg_fraud_detection.lpg_features_with_id',
+  LPG_BENEFICIARIES: 'gfg-fot.lpg_fraud_detection.Beneficiaries',
+
+  // MDM Scheme Tables
+  MDM_FRAUD: 'gfg-fot.lpg_fraud_detection.mdm_fraud_with_explanations',
+  MDM_DAILY_RECORDS: 'gfg-fot.lpg_fraud_detection.mdm_daily_records',
+
+  // Shared Tables
+  AUDIT_TRAIL: 'gfg-fot.lpg_fraud_detection.audit_trail',
+  INVESTIGATIONS: 'gfg-fot.lpg_fraud_detection.investigations',
+} as const;
+
+// ============================================
+// QUERY RESULT INTERFACE
+// ============================================
+export interface QueryResult<T> {
+  rows: T[];
+  executionTimeMs: number;
+  cached: boolean;
+}
+
 // Singleton BigQuery client
 let bigqueryClient: BigQuery | null = null;
 
@@ -40,6 +69,33 @@ export function getBigQueryClient(): BigQuery {
     }
   }
   return bigqueryClient;
+}
+
+// ============================================
+// QUERY EXECUTION WITH TIMING
+// ============================================
+export async function executeQuery<T>(
+  query: string,
+  params?: Record<string, unknown>
+): Promise<QueryResult<T>> {
+  const startTime = Date.now();
+  const bigquery = getBigQueryClient();
+
+  const [job] = await bigquery.createQueryJob({ query, params });
+  const [rows] = await job.getQueryResults();
+
+  const executionTimeMs = Date.now() - startTime;
+
+  // Log slow queries for debugging
+  if (executionTimeMs > 2000) {
+    console.warn(`[BigQuery] Slow query (${executionTimeMs}ms):`, query.substring(0, 100));
+  }
+
+  return {
+    rows: rows as T[],
+    executionTimeMs,
+    cached: false,
+  };
 }
 
 export type SchemeType = 'LPG' | 'MDM';

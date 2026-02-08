@@ -1,5 +1,6 @@
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_API_URL = process.env.GEMINI_API_URL || 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+// Correct URL format: https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent
+const GEMINI_API_URL = process.env.GEMINI_API_URL || 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.0-flash:generateContent';
 
 const GEMINI_REQUEST_TIMEOUT = 10_000;
 
@@ -101,7 +102,18 @@ export function getStaticExplanations(
   language: SupportedLanguage = DEFAULT_LANGUAGE
 ): string[] {
   const templates = REASON_TEMPLATES[language] || REASON_TEMPLATES[DEFAULT_LANGUAGE];
-  return reasonCodes.map(code => templates[code] || templates.normal);
+
+  // Filter out 'normal' if there are actual flags present
+  const filteredCodes = reasonCodes.filter(code => code !== 'normal');
+
+  // If we have actual flags, show those explanations
+  // Only show 'normal' if it's the ONLY reason code
+  if (filteredCodes.length > 0) {
+    return filteredCodes.map(code => templates[code] || `Flag: ${code}`);
+  }
+
+  // Truly no flags - show normal
+  return [templates.normal];
 }
 
 // Generate AI-powered explanation via Gemini (with safety guards)
