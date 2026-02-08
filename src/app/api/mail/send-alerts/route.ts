@@ -2,8 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { getBigQueryClient } from '@/lib/bigquery';
 
-// Initialize Resend - set RESEND_API_KEY in .env.local
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Resend is initialized lazily when needed to avoid crashes when API key is not set
+let resendInstance: Resend | null = null;
+function getResend(): Resend | null {
+    if (process.env.RESEND_API_KEY && !resendInstance) {
+        resendInstance = new Resend(process.env.RESEND_API_KEY);
+    }
+    return resendInstance;
+}
 
 // Mock recipients data - in production, this would come from a database
 export const RECIPIENTS = [
@@ -393,7 +399,8 @@ export async function POST(request: NextRequest) {
         const plainText = generatePlainText(recipientName, district, fraudCases);
 
         // Check if Resend API key is configured
-        if (process.env.RESEND_API_KEY) {
+        const resend = getResend();
+        if (resend) {
             // Send email using Resend
             const { data, error } = await resend.emails.send({
                 from: 'JanAvlokan Alerts <onboarding@resend.dev>', // Use your verified domain in production
