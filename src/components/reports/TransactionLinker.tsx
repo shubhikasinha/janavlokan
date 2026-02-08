@@ -330,9 +330,9 @@ const TransactionLinker: React.FC<TransactionLinkerProps> = ({
 
                                         <div className="text-right">
                                             <p className="text-lg font-bold text-gray-900">
-                                                {(beneficiary.mean_squared_error * 100).toFixed(1)}%
+                                                {beneficiary.mean_squared_error.toFixed(2)}
                                             </p>
-                                            <p className="text-xs text-gray-500">Risk</p>
+                                            <p className="text-xs text-gray-500">Anomaly Score</p>
                                         </div>
                                     </div>
                                 ))}

@@ -53,8 +53,8 @@ const FindingCard: React.FC<FindingCardProps> = ({
                             {finding.severity.toUpperCase()}
                         </span>
                         <span className={`px-2 py-1 rounded text-xs font-medium ${finding.status === 'open' ? 'bg-blue-100 text-blue-700' :
-                                finding.status === 'resolved' ? 'bg-green-100 text-green-700' :
-                                    'bg-yellow-100 text-yellow-700'
+                            finding.status === 'resolved' ? 'bg-green-100 text-green-700' :
+                                'bg-yellow-100 text-yellow-700'
                             }`}>
                             {finding.status.toUpperCase()}
                         </span>
@@ -98,8 +98,8 @@ const FindingCard: React.FC<FindingCardProps> = ({
                                     key={sev}
                                     onClick={() => onUpdate({ ...finding, severity: sev })}
                                     className={`px-2 py-1 rounded text-xs font-medium transition-all ${finding.severity === sev
-                                            ? `${severityColors[sev].button} text-white`
-                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                        ? `${severityColors[sev].button} text-white`
+                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                         }`}
                                 >
                                     {sev[0].toUpperCase()}
@@ -169,9 +169,9 @@ const FindingCard: React.FC<FindingCardProps> = ({
                                 className="inline-flex items-center gap-1 px-2 py-1 bg-primary/10 text-primary text-xs rounded-lg"
                             >
                                 <span className="font-mono">{tx.beneficiaryId.slice(0, 8)}...</span>
-                                <span className={`px-1 rounded ${tx.riskScore > 0.8 ? 'bg-red-500 text-white' :
-                                        tx.riskScore > 0.5 ? 'bg-orange-500 text-white' :
-                                            'bg-gray-500 text-white'
+                                <span className={`px-1 rounded ${tx.riskScore > 15 ? 'bg-red-500 text-white' :
+                                    tx.riskScore > 5 ? 'bg-orange-500 text-white' :
+                                        'bg-gray-500 text-white'
                                     }`}>
                                     {tx.riskScore.toFixed(2)}
                                 </span>
