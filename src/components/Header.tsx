@@ -20,6 +20,7 @@ const navLinks: NavLink[] = [
     { path: '/temporal-trends', label: 'Trends' },
     { path: '/dashboard', label: 'Dashboard' },
     { path: '/reports', label: 'Reports' },
+    { path: '/mail-alerts', label: 'Mail Alerts' },
     { path: '/technology', label: 'Technology' },
     { path: '/about', label: 'About' },
 ];
