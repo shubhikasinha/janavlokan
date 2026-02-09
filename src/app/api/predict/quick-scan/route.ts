@@ -8,11 +8,11 @@ const VERTEX_AI_URL = `https://us-central1-aiplatform.googleapis.com/v1/${VERTEX
 // Expected CSV columns for LPG scheme
 const LPG_COLUMNS = [
     'beneficiary_id',
-    'total_transactions_30d',
-    'total_cylinders_30d',
-    'unique_dealers_30d',
-    'unique_districts_30d',
-    'lifetime_cylinders'
+    'avg_amount',
+    'cross_district_txns',
+    'total_txns',
+    'txns_last_30d',
+    'unique_dealers'
 ];
 
 interface PredictionResult {
@@ -28,24 +28,25 @@ function runRuleBasedDetection(validRecords: Record<string, unknown>[]) {
         const flags: string[] = [];
         let riskScore = 0;
 
-        const cylinders30d = Number(record.total_cylinders_30d) || 0;
-        const dealers30d = Number(record.unique_dealers_30d) || 0;
-        const districts30d = Number(record.unique_districts_30d) || 0;
-        const lifetimeCylinders = Number(record.lifetime_cylinders) || 0;
+        const avgAmount = Number(record.avg_amount) || 0;
+        const crossDistrictTxns = Number(record.cross_district_txns) || 0;
+        const totalTxns = Number(record.total_txns) || 0;
+        const txnsLast30d = Number(record.txns_last_30d) || 0;
+        const uniqueDealers = Number(record.unique_dealers) || 0;
 
-        if (cylinders30d > 4) {
+        if (txnsLast30d > 4) {
             flags.push('high_recent_activity');
             riskScore += 0.3;
         }
-        if (dealers30d > 2) {
+        if (uniqueDealers > 2) {
             flags.push('multiple_dealers');
             riskScore += 0.25;
         }
-        if (districts30d > 1) {
+        if (crossDistrictTxns > 0) {
             flags.push('cross_district');
             riskScore += 0.25;
         }
-        if (lifetimeCylinders > 100) {
+        if (totalTxns > 100) {
             flags.push('high_lifetime_usage');
             riskScore += 0.2;
         }
@@ -114,6 +115,13 @@ export async function POST(request: NextRequest) {
             }, { status: 400 });
         }
 
+        // DEBUG LOGGING
+        if (records.length > 0) {
+            console.log(' [QUICK-SCAN] First record keys:', Object.keys(records[0]));
+            // Check for BOM or hidden chars
+            console.log(' [QUICK-SCAN] Keys hex codes:', Object.keys(records[0]).map(k => k.split('').map(c => c.charCodeAt(0))));
+        }
+
         // Validate records have required fields
         const validRecords = records.filter((record: Record<string, unknown>) => {
             return LPG_COLUMNS.every(col => col in record);
@@ -147,11 +155,11 @@ export async function POST(request: NextRequest) {
 
         // Call Vertex AI endpoint
         const instances = validRecords.map((record: Record<string, unknown>) => ({
-            total_transactions_30d: Number(record.total_transactions_30d) || 0,
-            total_cylinders_30d: Number(record.total_cylinders_30d) || 0,
-            unique_dealers_30d: Number(record.unique_dealers_30d) || 0,
-            unique_districts_30d: Number(record.unique_districts_30d) || 0,
-            lifetime_cylinders: Number(record.lifetime_cylinders) || 0,
+            avg_amount: Number(record.avg_amount) || 0,
+            cross_district_txns: Number(record.cross_district_txns) || 0,
+            total_txns: Number(record.total_txns) || 0,
+            txns_last_30d: Number(record.txns_last_30d) || 0,
+            unique_dealers: Number(record.unique_dealers) || 0,
         }));
 
         const response = await fetch(VERTEX_AI_URL, {
@@ -175,15 +183,52 @@ export async function POST(request: NextRequest) {
         console.log('[QUICK-SCAN] Processing ML predictions...');
 
         const predictions = await response.json();
+        console.log(' [QUICK-SCAN] Full Vertex AI Response:', JSON.stringify(predictions, null, 2));
 
         // Map predictions back to records
+        // The model is an autoencoder that returns mean_squared_error as anomaly score
+        // Higher MSE = more anomalous = higher risk
         const results: PredictionResult[] = validRecords.map((record: Record<string, unknown>, idx: number) => {
             const prediction = predictions.predictions?.[idx] || {};
+
+            // Get MSE from model output
+            const mse = Number(prediction.mean_squared_error) || 0;
+
+            // Normalize MSE to 0-1 scale for risk_score
+            // Based on observed values, MSE can range from ~30 to 7e20
+            // Using log scale for better distribution
+            const logMse = mse > 0 ? Math.log10(mse) : 0;
+            const riskScore = Math.min(logMse / 20, 1); // Normalize to 0-1
+
+            // Classify risk level based on MSE thresholds
+            // Low: MSE < 1e10, Medium: 1e10 - 1e17, High: > 1e17
+            let riskLevel: string;
+            const flags: string[] = [];
+
+            if (mse > 1e17) {
+                riskLevel = 'HIGH';
+                flags.push('high_anomaly_score');
+            } else if (mse > 1e10) {
+                riskLevel = 'MEDIUM';
+                flags.push('moderate_anomaly');
+            } else {
+                riskLevel = 'LOW';
+            }
+
+            // Add flags based on input features
+            const crossDistrictTxns = Number(record.cross_district_txns) || 0;
+            const uniqueDealers = Number(record.unique_dealers) || 0;
+            const txnsLast30d = Number(record.txns_last_30d) || 0;
+
+            if (crossDistrictTxns > 0) flags.push('cross_district');
+            if (uniqueDealers > 2) flags.push('multiple_dealers');
+            if (txnsLast30d > 4) flags.push('high_recent_activity');
+
             return {
                 beneficiary_id: String(record.beneficiary_id),
-                risk_level: prediction.risk_level || 'UNKNOWN',
-                risk_score: prediction.risk_score || 0,
-                flags: prediction.flags || [],
+                risk_level: riskLevel,
+                risk_score: riskScore,
+                flags
             };
         });
 

@@ -22,7 +22,7 @@ export default function MailAlertsPage() {
     const [loading, setLoading] = useState(true);
     const [sendingAll, setSendingAll] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string>('');
-    const [resendConfigured, setResendConfigured] = useState(false);
+
 
     useEffect(() => {
         fetchRecipients();
@@ -34,7 +34,7 @@ export default function MailAlertsPage() {
             const data = await response.json();
             if (data.success) {
                 setRecipients(data.recipients);
-                setResendConfigured(data.resendConfigured);
+
                 const initialStatus: EmailStatus = {};
                 data.recipients.forEach((r: Recipient) => {
                     initialStatus[r.id] = 'pending';
@@ -139,13 +139,7 @@ export default function MailAlertsPage() {
                     </p>
                 </div>
 
-                {/* Resend Status Indicator */}
-                <div className={`mb-4 p-3 rounded-lg flex items-center gap-2 ${resendConfigured ? 'bg-green-50 border border-green-200' : 'bg-yellow-50 border border-yellow-200'}`}>
-                    <div className={`w-2 h-2 rounded-full ${resendConfigured ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
-                    <span className={`text-sm font-medium ${resendConfigured ? 'text-green-700' : 'text-yellow-700'}`}>
-                        {resendConfigured ? 'Resend API configured - Real emails enabled' : 'Demo Mode - Emails are simulated'}
-                    </span>
-                </div>
+
 
                 {/* Error Banner */}
                 {errorMessage && (
