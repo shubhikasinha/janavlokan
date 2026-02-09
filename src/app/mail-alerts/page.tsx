@@ -106,8 +106,8 @@ export default function MailAlertsPage() {
         const labels: Record<string, string> = {
             pending: 'Pending',
             sending: 'Sending...',
-            sent: 'Sent ✓',
-            failed: 'Failed ✗'
+            sent: 'Sent',
+            failed: 'Failed'
         };
         return (
             <span className={`px-3 py-1 rounded-full text-xs font-medium ${styles[status]}`}>

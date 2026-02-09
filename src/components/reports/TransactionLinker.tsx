@@ -199,9 +199,9 @@ const TransactionLinker: React.FC<TransactionLinkerProps> = ({
                 ></div>
 
                 {/* Modal */}
-                <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[80vh] overflow-hidden">
+                <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[80vh] flex flex-col">
                     {/* Header */}
-                    <div className="bg-gradient-to-r from-primary to-primary-light text-white px-6 py-4">
+                    <div className="flex-shrink-0 bg-gradient-to-r from-primary to-primary-light text-white px-6 py-4">
                         <div className="flex items-center justify-between">
                             <div>
                                 <h2 className="text-xl font-heading font-semibold">
@@ -223,7 +223,7 @@ const TransactionLinker: React.FC<TransactionLinkerProps> = ({
                     </div>
 
                     {/* Filters */}
-                    <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                    <div className="flex-shrink-0 px-6 py-4 bg-gray-50 border-b border-gray-200">
                         <div className="flex items-center gap-4">
                             <div className="flex-1">
                                 <input
@@ -260,7 +260,7 @@ const TransactionLinker: React.FC<TransactionLinkerProps> = ({
                     </div>
 
                     {/* Content */}
-                    <div className="overflow-y-auto max-h-[400px] p-6">
+                    <div className="flex-1 min-h-0 overflow-y-auto p-6">
                         {loading ? (
                             <div className="flex items-center justify-center py-12">
                                 <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
@@ -317,10 +317,10 @@ const TransactionLinker: React.FC<TransactionLinkerProps> = ({
                                             <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
                                                 <span>Risk Score: {beneficiary.mean_squared_error.toFixed(4)}</span>
                                                 {beneficiary.flag_high_recent_activity && (
-                                                    <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">Recent Activity</span>
+                                                    <span className="px-1.5 py-0.5 bg-accent-light text-primary rounded">Recent Activity</span>
                                                 )}
                                                 {beneficiary.flag_multiple_dealers && (
-                                                    <span className="px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded">Multi Dealer</span>
+                                                    <span className="px-1.5 py-0.5 bg-secondary-light text-primary rounded">Multi Dealer</span>
                                                 )}
                                                 {beneficiary.flag_cross_district && (
                                                     <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded">Cross District</span>
@@ -341,7 +341,7 @@ const TransactionLinker: React.FC<TransactionLinkerProps> = ({
                     </div>
 
                     {/* Footer */}
-                    <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                    <div className="flex-shrink-0 px-6 py-4 bg-gray-50 border-t border-gray-200">
                         <div className="flex items-center justify-between">
                             <p className="text-sm text-gray-600">
                                 {selected.size} beneficiary(s) selected
