@@ -46,15 +46,21 @@ const FindingCard: React.FC<FindingCardProps> = ({
             <div className="p-4 bg-white border-b border-gray-200">
                 <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
-                        <span className="text-lg font-semibold text-primary font-mono">
-                            Para {finding.paraNumber}
-                        </span>
+                        <div className="flex items-center gap-1">
+                            <span className="text-sm text-gray-500">Para</span>
+                            <input
+                                type="text"
+                                value={finding.paraNumber}
+                                onChange={(e) => onUpdate({ ...finding, paraNumber: e.target.value })}
+                                className="w-16 px-1 py-0.5 text-lg font-semibold text-primary font-mono bg-transparent border-b border-transparent hover:border-gray-300 focus:border-primary focus:outline-none"
+                            />
+                        </div>
                         <span className={`px-2 py-1 rounded text-xs font-medium ${colors.bg} ${colors.text}`}>
                             {finding.severity.toUpperCase()}
                         </span>
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${finding.status === 'open' ? 'bg-blue-100 text-blue-700' :
-                                finding.status === 'resolved' ? 'bg-green-100 text-green-700' :
-                                    'bg-yellow-100 text-yellow-700'
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${finding.status === 'open' ? 'bg-secondary/20 text-secondary-dark' :
+                            finding.status === 'resolved' ? 'bg-green-100 text-green-700' :
+                                'bg-yellow-100 text-yellow-700'
                             }`}>
                             {finding.status.toUpperCase()}
                         </span>
@@ -98,8 +104,8 @@ const FindingCard: React.FC<FindingCardProps> = ({
                                     key={sev}
                                     onClick={() => onUpdate({ ...finding, severity: sev })}
                                     className={`px-2 py-1 rounded text-xs font-medium transition-all ${finding.severity === sev
-                                            ? `${severityColors[sev].button} text-white`
-                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                        ? `${severityColors[sev].button} text-white`
+                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                         }`}
                                 >
                                     {sev[0].toUpperCase()}
@@ -169,9 +175,9 @@ const FindingCard: React.FC<FindingCardProps> = ({
                                 className="inline-flex items-center gap-1 px-2 py-1 bg-primary/10 text-primary text-xs rounded-lg"
                             >
                                 <span className="font-mono">{tx.beneficiaryId.slice(0, 8)}...</span>
-                                <span className={`px-1 rounded ${tx.riskScore > 0.8 ? 'bg-red-500 text-white' :
-                                        tx.riskScore > 0.5 ? 'bg-orange-500 text-white' :
-                                            'bg-gray-500 text-white'
+                                <span className={`px-1 rounded ${tx.riskScore > 15 ? 'bg-red-500 text-white' :
+                                    tx.riskScore > 5 ? 'bg-orange-500 text-white' :
+                                        'bg-gray-500 text-white'
                                     }`}>
                                     {tx.riskScore.toFixed(2)}
                                 </span>
@@ -296,6 +302,7 @@ const FindingsPanel: React.FC<FindingsPanelProps> = ({
         medium: findings.filter(f => f.severity === 'medium').length,
         low: findings.filter(f => f.severity === 'low').length,
         totalAmount: findings.reduce((sum, f) => sum + (f.amountInvolved || 0), 0),
+        linkedCount: linkedTransactions.length,
     };
 
     return (
@@ -331,6 +338,11 @@ const FindingsPanel: React.FC<FindingsPanelProps> = ({
                                 </span>
                             )}
                         </div>
+                        <div className="h-10 w-px bg-gray-200"></div>
+                        <div className="text-center">
+                            <p className="text-xl font-bold text-accent">{stats.linkedCount}</p>
+                            <p className="text-xs text-gray-500">Linked Transactions</p>
+                        </div>
                         {stats.totalAmount > 0 && (
                             <>
                                 <div className="h-10 w-px bg-gray-200"></div>
@@ -338,7 +350,7 @@ const FindingsPanel: React.FC<FindingsPanelProps> = ({
                                     <p className="text-lg font-bold text-red-600">
                                         {stats.totalAmount.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 })}
                                     </p>
-                                    <p className="text-xs text-gray-500">Total Amount Involved</p>
+                                    <p className="text-xs text-gray-500">Amount Involved</p>
                                 </div>
                             </>
                         )}

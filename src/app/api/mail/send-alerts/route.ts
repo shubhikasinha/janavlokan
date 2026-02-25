@@ -204,7 +204,7 @@ function generateEmailHtml(recipientName: string, district: string, fraudCases: 
             : 'background-color: #fffbeb; color: #d97706;'}
                 ">${fraud.risk_level}</span>
             </td>
-            <td style="padding: 12px; text-align: center; font-weight: 600;">${(fraud.risk_score * 100).toFixed(1)}%</td>
+            <td style="padding: 12px; text-align: center; font-weight: 600;">${fraud.risk_score.toFixed(2)}</td>
             <td style="padding: 12px; color: #374151;">${fraud.alert_type}</td>
         </tr>
     `).join('');
@@ -331,7 +331,7 @@ function generatePlainText(recipientName: string, district: string, fraudCases: 
     const fraudList = fraudCases.map((fraud, index) =>
         `${index + 1}. Beneficiary: ${fraud.beneficiary_id}
    Dealer: ${fraud.dealer_id || 'N/A'} (${fraud.dealer_name || 'N/A'})
-   Risk: ${fraud.risk_level} (${(fraud.risk_score * 100).toFixed(1)}%)
+   Risk: ${fraud.risk_level} (${fraud.risk_score.toFixed(2)})
    Alert: ${fraud.alert_type}`
     ).join('\n\n');
 

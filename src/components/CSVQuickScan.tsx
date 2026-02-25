@@ -37,7 +37,7 @@ export default function CSVQuickScan() {
         const lines = text.trim().split('\n');
         if (lines.length < 2) return [];
 
-        const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/['"]/g, ''));
+        const headers = lines[0].split(',').map(h => h.trim().replace(/^\ufeff/, '').toLowerCase().replace(/['"]/g, ''));
 
         return lines.slice(1).map(line => {
             const values = line.split(',').map(v => v.trim().replace(/['"]/g, ''));
@@ -183,7 +183,7 @@ export default function CSVQuickScan() {
                     <div className="mt-4 p-3 bg-gray-50 rounded-lg">
                         <p className="text-xs font-medium text-gray-600 mb-2">Expected CSV Format:</p>
                         <code className="text-[10px] text-gray-500 block overflow-x-auto">
-                            beneficiary_id, total_transactions_30d, total_cylinders_30d, unique_dealers_30d, unique_districts_30d, lifetime_cylinders
+                            beneficiary_id, avg_amount, cross_district_txns, total_txns, txns_last_30d, unique_dealers
                         </code>
                     </div>
                 </>

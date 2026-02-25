@@ -144,6 +144,13 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId }) => {
     };
 
     const applyTemplate = (sectionKey: string) => {
+        if (!report) return;
+        const existingContent = report.sections[sectionKey as keyof typeof report.sections];
+        if (existingContent && typeof existingContent === 'string' && existingContent.length > 0) {
+            if (!confirm('This will replace existing content with the CAG template. Continue?')) {
+                return;
+            }
+        }
         if (sectionKey === 'preface') {
             updateSection('preface', CAG_TEMPLATE_PREFACE);
         } else if (sectionKey === 'introduction') {
@@ -268,7 +275,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId }) => {
                             onClick={() => updateReportField('status', status)}
                             className={`px-4 py-2 rounded-lg font-medium transition-all ${report.status === status
                                 ? status === 'draft' ? 'bg-yellow-500 text-white'
-                                    : status === 'in_review' ? 'bg-blue-500 text-white'
+                                    : status === 'in_review' ? 'bg-secondary text-white'
                                         : 'bg-green-500 text-white'
                                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                 }`}
@@ -340,16 +347,16 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId }) => {
 
         return (
             <div className="space-y-4">
-                {hasTemplate && !content && (
-                    <div className="bg-accent/10 border border-accent/30 rounded-lg p-4">
-                        <p className="text-sm text-gray-700 mb-3">
-                            Use the CAG-style template to get started quickly
+                {hasTemplate && (
+                    <div className="bg-accent/10 border border-accent/30 rounded-lg p-4 flex items-center justify-between">
+                        <p className="text-sm text-gray-700">
+                            {content ? 'Reset section to CAG-style template' : 'Use the CAG-style template to get started quickly'}
                         </p>
                         <button
                             onClick={() => applyTemplate(sectionKey)}
-                            className="bg-accent hover:bg-accent-light text-primary font-medium py-2 px-4 rounded-lg transition-all text-sm"
+                            className="bg-accent hover:bg-accent-light text-primary font-medium py-2 px-4 rounded-lg transition-all text-sm whitespace-nowrap"
                         >
-                            Apply Template
+                            {content ? 'Reset to Template' : 'Apply Template'}
                         </button>
                     </div>
                 )}
