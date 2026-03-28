@@ -13,7 +13,7 @@ function getResend(): Resend | null {
 
 // Mock recipients data - in production, this would come from a database
 export const RECIPIENTS = [
-    { id: 1, name: 'Dr. Rajesh Kumar', email: 'dr.asinha@ce.du.ac.in', district: 'LUCKNOW' },
+    { id: 1, name: 'Dr. Rajesh Kumar', email: 'shubhikaasinha@gmail.com', district: 'LUCKNOW' },
     { id: 2, name: 'Smt. Priya Sharma', email: 'priya.sharma@gov.in', district: 'VARANASI' },
     { id: 3, name: 'Shri Amit Verma', email: 'amit.verma@gov.in', district: 'KANPUR NAGAR' },
     { id: 4, name: 'Dr. Sunita Singh', email: 'sunita.singh@gov.in', district: 'AGRA' },

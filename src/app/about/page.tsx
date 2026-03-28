@@ -51,6 +51,10 @@ const principles = [
         title: 'Human-in-the-Loop',
         description: 'Final decisions always rest with human administrators. AI provides intelligence, not verdicts.',
     },
+    {
+        title: 'Active Learning',
+        description: 'Auditor feedback (Verify/Dismiss) is recorded and used to retrain ML models, continuously improving detection accuracy.',
+    },
 ];
 
 const contactInfo = [
@@ -91,6 +95,22 @@ const faqs = [
     {
         q: 'What types of fraud patterns does JanAvlokan detect?',
         a: 'JanAvlokan identifies five key fraud risk categories: Unusual Activity, Suspicious Locations, Scheme Overlaps, Beneficiary Clusters, and Repeat Withdrawals. Each category represents a different mode of potential fraud or system misuse.',
+    },
+    {
+        q: 'Can I upload my own data for scanning?',
+        a: 'Yes. The CSV Quick Scan feature lets you upload beneficiary transaction data in CSV format. The system validates the file, runs ML inference via the Vertex AI endpoint, and instantly returns per-row risk levels and flags.',
+    },
+    {
+        q: 'How are audit reports generated?',
+        a: 'JanAvlokan includes a full Report Builder with a collaborative rich-text editor. You can link flagged transactions as evidence, add findings with severity ratings, and export finalized reports to PDF or DOCX for official submission.',
+    },
+    {
+        q: 'Does the system notify officials automatically?',
+        a: 'Yes. Automated Email Alerts are sent to district-level officials via the Gmail API when high-risk anomalies are detected. Alerts include a risk summary, flagged beneficiary details, and direct links to the dashboard.',
+    },
+    {
+        q: 'Does auditor feedback improve the AI?',
+        a: 'Absolutely. The Audit Panel includes a feedback loop—officers can verify fraud or dismiss false positives. This feedback is stored and used to retrain models on Vertex AI, enabling Active Learning and continuously improving detection accuracy.',
     },
 ];
 

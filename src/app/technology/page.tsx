@@ -22,6 +22,10 @@ const gcpServices = [
         description: 'Serverless backend APIs for dashboard and real-time data access',
     },
     {
+        name: 'Gmail API',
+        description: 'Automated email alerts to district officials when high-risk transactions are detected',
+    },
+    {
         name: 'Web Dashboard',
         description: 'Interactive interface for anomalies, explanations, and regional insights',
     },
@@ -119,6 +123,46 @@ const features = [
             'Distributed ETL pipelines',
             'Real-time risk scoring',
             'Batch prediction support',
+        ],
+    },
+    {
+        title: 'CSV Quick Scan',
+        description: 'Upload beneficiary transaction data in CSV format for instant anomaly scoring. The system validates columns, runs ML inference via the Vertex AI endpoint, and returns per-row risk levels and flags within seconds.',
+        highlights: [
+            'Drag-and-drop CSV upload',
+            'Automatic column validation',
+            'Per-beneficiary risk breakdown',
+            'Instant summary with High/Medium/Low counts',
+        ],
+    },
+    {
+        title: 'Audit Panel with ML Feedback Loop',
+        description: 'Each flagged beneficiary can be reviewed through an integrated Audit Panel. Officers can verify fraud, dismiss false positives, or escalate cases. Feedback is stored and used to retrain models, enabling Active Learning.',
+        highlights: [
+            'Verify / Dismiss / Escalate actions',
+            'Feedback accuracy tracking',
+            'Comment-based audit trail',
+            'Model retraining via feedback loop',
+        ],
+    },
+    {
+        title: 'Report Builder & Transaction Linker',
+        description: 'Generate audit-ready reports with a collaborative rich-text editor. Link specific flagged transactions as evidence, add findings with severity ratings, and export reports to PDF or DOCX for official submission.',
+        highlights: [
+            'Rich-text collaborative editor',
+            'Transaction evidence linking',
+            'Findings panel with severity ratings',
+            'Export to PDF and DOCX formats',
+        ],
+    },
+    {
+        title: 'Automated Email Alerts',
+        description: 'Automatically notify district-level officials via email when high-risk anomalies are detected in their jurisdiction. Includes risk summary, flagged beneficiary details, and direct links to the dashboard for immediate action.',
+        highlights: [
+            'District-wise recipient management',
+            'Email preview before sending',
+            'Batch send to all officials at once',
+            'Integrated with Gmail API',
         ],
     },
 ];
