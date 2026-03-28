@@ -22,6 +22,182 @@ export const TABLES = {
 } as const;
 
 // ============================================
+// INGESTABLE TABLE SCHEMAS
+// Column definitions for tables that support bulk CSV ingestion
+// ============================================
+export interface ColumnSchema {
+  name: string;
+  type: 'STRING' | 'INTEGER' | 'FLOAT' | 'BOOLEAN' | 'DATE' | 'TIMESTAMP';
+  required: boolean;
+  description: string;
+}
+
+export interface TableSchema {
+  tableRef: string;
+  displayName: string;
+  description: string;
+  columns: ColumnSchema[];
+}
+
+export const TABLE_SCHEMAS: Record<string, TableSchema> = {
+  LPG_TRANSACTIONS: {
+    tableRef: TABLES.LPG_TRANSACTIONS,
+    displayName: 'LPG Subsidy Transactions',
+    description: 'Individual LPG cylinder refill transactions per beneficiary',
+    columns: [
+      { name: 'beneficiary_id', type: 'STRING', required: true, description: 'Unique beneficiary identifier' },
+      { name: 'transaction_date', type: 'DATE', required: true, description: 'Date of the transaction (YYYY-MM-DD)' },
+      { name: 'amount', type: 'FLOAT', required: true, description: 'Transaction amount in INR' },
+      { name: 'dealer_id', type: 'STRING', required: false, description: 'LPG dealer identifier' },
+      { name: 'district', type: 'STRING', required: false, description: 'District where transaction occurred' },
+      { name: 'state', type: 'STRING', required: false, description: 'State of the transaction' },
+      { name: 'cylinder_type', type: 'STRING', required: false, description: 'Type of cylinder (domestic/commercial)' },
+      { name: 'payment_mode', type: 'STRING', required: false, description: 'Mode of payment' },
+    ],
+  },
+  MDM_DAILY_RECORDS: {
+    tableRef: TABLES.MDM_DAILY_RECORDS,
+    displayName: 'Mid-Day Meal Daily Records',
+    description: 'Daily meal distribution records per school',
+    columns: [
+      { name: 'record_id', type: 'STRING', required: true, description: 'Unique record identifier' },
+      { name: 'school_id', type: 'INTEGER', required: true, description: 'School identifier' },
+      { name: 'date', type: 'DATE', required: true, description: 'Date of record (YYYY-MM-DD)' },
+      { name: 'actual_attendance', type: 'INTEGER', required: true, description: 'Actual student attendance' },
+      { name: 'reported_students_served', type: 'INTEGER', required: true, description: 'Students reported as served' },
+      { name: 'menu_type', type: 'STRING', required: false, description: 'Type of menu served' },
+      { name: 'cook_present', type: 'BOOLEAN', required: false, description: 'Whether cook was present' },
+      { name: 'meal_served_flag', type: 'BOOLEAN', required: false, description: 'Whether meal was served' },
+      { name: 'rice_kg_used', type: 'FLOAT', required: false, description: 'Rice consumed in kg' },
+      { name: 'dal_kg_used', type: 'FLOAT', required: false, description: 'Dal consumed in kg' },
+      { name: 'vegetables_kg_used', type: 'FLOAT', required: false, description: 'Vegetables consumed in kg' },
+      { name: 'oil_liters_used', type: 'FLOAT', required: false, description: 'Oil consumed in liters' },
+      { name: 'eggs_count', type: 'INTEGER', required: false, description: 'Number of eggs used' },
+      { name: 'fund_claimed_inr', type: 'FLOAT', required: false, description: 'Fund amount claimed in INR' },
+      { name: 'fund_released_inr', type: 'FLOAT', required: false, description: 'Fund amount released in INR' },
+    ],
+  },
+  AUDIT_TRAIL: {
+    tableRef: TABLES.AUDIT_TRAIL,
+    displayName: 'Audit Trail',
+    description: 'Audit log entries for compliance tracking',
+    columns: [
+      { name: 'audit_id', type: 'STRING', required: true, description: 'Unique audit entry ID' },
+      { name: 'beneficiary_id', type: 'STRING', required: true, description: 'Entity being audited' },
+      { name: 'action', type: 'STRING', required: true, description: 'Action taken (REVIEWED, FLAGGED, CLEARED, etc.)' },
+      { name: 'officer_id', type: 'STRING', required: false, description: 'Officer performing the action' },
+      { name: 'officer_name', type: 'STRING', required: false, description: 'Name of the officer' },
+      { name: 'notes', type: 'STRING', required: false, description: 'Additional notes' },
+      { name: 'previous_risk_level', type: 'STRING', required: false, description: 'Risk level before action' },
+      { name: 'new_status', type: 'STRING', required: false, description: 'Status after action' },
+      { name: 'scheme_type', type: 'STRING', required: false, description: 'Scheme (LPG or MDM)' },
+      { name: 'created_at', type: 'TIMESTAMP', required: false, description: 'Timestamp of the entry' },
+    ],
+  },
+};
+
+export interface ValidationError {
+  row: number;
+  column: string;
+  message: string;
+}
+
+/**
+ * Validate a batch of rows against a table schema.
+ * Returns an array of validation errors (empty = all valid).
+ */
+export function validateRowsAgainstSchema(
+  rows: Record<string, string>[],
+  schema: TableSchema
+): ValidationError[] {
+  const errors: ValidationError[] = [];
+  const requiredColumns = schema.columns.filter(c => c.required).map(c => c.name);
+  const columnMap = new Map(schema.columns.map(c => [c.name, c]));
+
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+
+    // Check required columns
+    for (const reqCol of requiredColumns) {
+      if (!row[reqCol] && row[reqCol] !== '0') {
+        errors.push({ row: i + 1, column: reqCol, message: `Required column "${reqCol}" is missing or empty` });
+      }
+    }
+
+    // Type validation for present columns
+    for (const [key, value] of Object.entries(row)) {
+      const colDef = columnMap.get(key);
+      if (!colDef || !value) continue;
+
+      switch (colDef.type) {
+        case 'INTEGER':
+          if (!/^-?\d+$/.test(value.trim())) {
+            errors.push({ row: i + 1, column: key, message: `Expected integer, got "${value}"` });
+          }
+          break;
+        case 'FLOAT':
+          if (isNaN(parseFloat(value.trim()))) {
+            errors.push({ row: i + 1, column: key, message: `Expected number, got "${value}"` });
+          }
+          break;
+        case 'BOOLEAN':
+          if (!['true', 'false', '1', '0', 'yes', 'no'].includes(value.trim().toLowerCase())) {
+            errors.push({ row: i + 1, column: key, message: `Expected boolean, got "${value}"` });
+          }
+          break;
+        case 'DATE':
+          if (isNaN(Date.parse(value.trim()))) {
+            errors.push({ row: i + 1, column: key, message: `Expected date, got "${value}"` });
+          }
+          break;
+      }
+    }
+
+    // Cap errors per batch to prevent flooding
+    if (errors.length > 100) {
+      errors.push({ row: -1, column: '', message: 'Too many validation errors — showing first 100' });
+      break;
+    }
+  }
+
+  return errors;
+}
+
+/**
+ * Coerce a row's string values to the correct types for BigQuery insert.
+ */
+export function coerceRow(row: Record<string, string>, schema: TableSchema): Record<string, unknown> {
+  const coerced: Record<string, unknown> = {};
+  const columnMap = new Map(schema.columns.map(c => [c.name, c]));
+
+  for (const [key, value] of Object.entries(row)) {
+    const colDef = columnMap.get(key);
+    if (!colDef || !value) {
+      coerced[key] = value || null;
+      continue;
+    }
+
+    switch (colDef.type) {
+      case 'INTEGER':
+        coerced[key] = parseInt(value.trim(), 10);
+        break;
+      case 'FLOAT':
+        coerced[key] = parseFloat(value.trim());
+        break;
+      case 'BOOLEAN': {
+        const lower = value.trim().toLowerCase();
+        coerced[key] = lower === 'true' || lower === '1' || lower === 'yes';
+        break;
+      }
+      default:
+        coerced[key] = value.trim();
+    }
+  }
+
+  return coerced;
+}
+
+// ============================================
 // QUERY RESULT INTERFACE
 // ============================================
 export interface QueryResult<T> {

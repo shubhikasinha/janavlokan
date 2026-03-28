@@ -1,6 +1,6 @@
 // LocalStorage helpers for Audit Reports
 
-import { AuditReport, createEmptyReport, SchemeType } from '@/types/report';
+import { AuditReport, createEmptyReport, createReportFromTemplate, SchemeType, ReportTemplateType } from '@/types/report';
 
 const STORAGE_KEY = 'janavlokan_audit_reports';
 
@@ -31,9 +31,11 @@ export function getReportById(id: string): AuditReport | null {
     return reports.find(r => r.id === id) || null;
 }
 
-export function createNewReport(schemeType: SchemeType = 'LPG_SUBSIDY'): AuditReport {
+export function createNewReport(schemeType: SchemeType = 'LPG_SUBSIDY', templateType?: ReportTemplateType): AuditReport {
     const now = new Date().toISOString();
-    const template = createEmptyReport(schemeType);
+    const template = templateType
+        ? createReportFromTemplate(templateType)
+        : createEmptyReport(schemeType);
 
     return {
         ...template,

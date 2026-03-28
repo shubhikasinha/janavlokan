@@ -12,17 +12,57 @@ type NavLink = {
     label: string;
 };
 
+type NavDropdown = {
+    label: string;
+    items: { path: string; label: string; description: string; icon: string }[];
+};
 
-const navLinks: NavLink[] = [
+type NavItem = NavLink | NavDropdown;
+
+function isDropdown(item: NavItem): item is NavDropdown {
+    return 'items' in item;
+}
+
+const navItems: NavItem[] = [
     { path: '/', label: 'Home' },
     { path: '/geographic-analysis', label: 'Geography' },
     { path: '/risk-distribution', label: 'Exposure' },
     { path: '/temporal-trends', label: 'Trends' },
     { path: '/dashboard', label: 'Dashboard' },
     { path: '/reports', label: 'Reports' },
+    {
+        label: 'Data Studio',
+        items: [
+            {
+                path: '/',
+                label: 'Quick Scan',
+                description: 'Client-side CSV analysis',
+                icon: '',
+            },
+            {
+                path: '/data-ingestion',
+                label: 'Bulk Ingestion',
+                description: 'CSV upload to BigQuery',
+                icon: '',
+            },
+        ],
+    },
     { path: '/mail-alerts', label: 'Mail Alerts' },
     { path: '/technology', label: 'Technology' },
-    { path: '/about', label: 'About' },
+];
+
+// Flatten for mobile nav
+const mobileNavLinks: NavLink[] = [
+    { path: '/', label: 'Home' },
+    { path: '/geographic-analysis', label: 'Geography' },
+    { path: '/risk-distribution', label: 'Exposure' },
+    { path: '/temporal-trends', label: 'Trends' },
+    { path: '/dashboard', label: 'Dashboard' },
+    { path: '/reports', label: 'Reports' },
+    { path: '/', label: 'Quick Scan' },
+    { path: '/data-ingestion', label: 'Bulk Ingestion' },
+    { path: '/mail-alerts', label: 'Mail Alerts' },
+    { path: '/technology', label: 'Technology' },
 ];
 
 const Header: React.FC = () => {
@@ -74,19 +114,63 @@ const Header: React.FC = () => {
                         </Link>
 
                         <div className="hidden md:flex items-center bg-gray-100 rounded-full p-1">
-                            {navLinks.map((link) => {
-                                const isActive = pathname === link.path;
+                            {navItems.map((item, idx) => {
+                                if (isDropdown(item)) {
+                                    const isChildActive = item.items.some(i => pathname === i.path);
 
+                                    return (
+                                        <div key={idx} className="relative group">
+                                            <button
+                                                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 flex items-center gap-1 ${
+                                                    isChildActive
+                                                        ? 'bg-primary text-white shadow-sm'
+                                                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200'
+                                                }`}
+                                            >
+                                                {item.label}
+                                                <svg className="w-3 h-3 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                </svg>
+                                            </button>
+
+                                            {/* Dropdown Menu */}
+                                            <div className="absolute top-full left-0 mt-1 w-56 bg-white border border-gray-200 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
+                                                {item.items.map((subItem) => {
+                                                    const isSubActive = pathname === subItem.path;
+                                                    return (
+                                                        <Link
+                                                            key={subItem.path}
+                                                            href={subItem.path}
+                                                            className={`flex items-start gap-3 px-4 py-3 transition-colors ${
+                                                                isSubActive
+                                                                    ? 'bg-primary/5 text-primary'
+                                                                    : 'text-gray-700 hover:bg-gray-50'
+                                                            }`}
+                                                        >
+                                                            <span className="text-lg mt-0.5">{subItem.icon}</span>
+                                                            <div>
+                                                                <p className="text-sm font-medium">{subItem.label}</p>
+                                                                <p className="text-xs text-gray-500 mt-0.5">{subItem.description}</p>
+                                                            </div>
+                                                        </Link>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    );
+                                }
+
+                                const isActive = pathname === item.path;
                                 return (
                                     <Link
-                                        key={link.path}
-                                        href={link.path}
+                                        key={item.path}
+                                        href={item.path}
                                         className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${isActive
                                             ? 'bg-primary text-white shadow-sm'
                                             : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200'
                                             }`}
                                     >
-                                        {link.label}
+                                        {item.label}
                                     </Link>
                                 );
                             })}
@@ -127,7 +211,7 @@ const Header: React.FC = () => {
 
                     {isMenuOpen && (
                         <div className="md:hidden py-4 border-t border-gray-200">
-                            {navLinks.map((link) => {
+                            {mobileNavLinks.map((link) => {
                                 const isActive = pathname === link.path;
 
                                 return (

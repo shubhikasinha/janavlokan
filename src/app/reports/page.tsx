@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { AuditReport } from '@/types/report';
+import { AuditReport, REPORT_TEMPLATES, ReportTemplateType } from '@/types/report';
 import {
     getStoredReports,
     createNewReport,
@@ -17,15 +17,21 @@ const ReportsPage = () => {
     const router = useRouter();
     const [reports, setReports] = useState<AuditReport[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [showTemplateModal, setShowTemplateModal] = useState(false);
 
     useEffect(() => {
         setReports(getStoredReports());
         setIsLoading(false);
     }, []);
 
-    const handleCreateNew = () => {
-        const newReport = createNewReport('LPG_SUBSIDY');
+    const handleCreateFromTemplate = (templateType: ReportTemplateType) => {
+        const template = REPORT_TEMPLATES.find(t => t.type === templateType);
+        const newReport = createNewReport(
+            template?.schemeDefault || 'LPG_SUBSIDY',
+            templateType
+        );
         saveReport(newReport);
+        setShowTemplateModal(false);
         router.push(`/reports/${newReport.id}`);
     };
 
@@ -72,12 +78,12 @@ const ReportsPage = () => {
                                 Audit Report Builder
                             </h1>
                             <p className="text-accent-light text-lg">
-                                Create, edit, and export professional CAG-style audit reports
+                                Create, edit, and export professional audit reports with pre-built templates
                             </p>
                         </div>
 
                         <button
-                            onClick={handleCreateNew}
+                            onClick={() => setShowTemplateModal(true)}
                             className="bg-accent hover:bg-accent-light text-primary font-semibold py-3 px-6 rounded-lg shadow-lg transition-all duration-200 flex items-center gap-2"
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -111,13 +117,13 @@ const ReportsPage = () => {
                                 No reports yet
                             </h3>
                             <p className="text-gray-500 mb-6">
-                                Create your first audit report to get started
+                                Create your first audit report using a professional template
                             </p>
                             <button
-                                onClick={handleCreateNew}
+                                onClick={() => setShowTemplateModal(true)}
                                 className="bg-primary hover:bg-primary-dark text-white font-medium py-3 px-6 rounded-lg shadow-md transition-all duration-200"
                             >
-                                Create First Report
+                                Choose a Template
                             </button>
                         </div>
                     ) : (
@@ -282,6 +288,72 @@ const ReportsPage = () => {
                     </div>
                 )}
             </div>
+
+            {/* Template Selection Modal */}
+            {showTemplateModal && (
+                <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
+                    {/* Backdrop */}
+                    <div
+                        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                        onClick={() => setShowTemplateModal(false)}
+                    />
+
+                    {/* Modal */}
+                    <div className="relative bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto animate-[fadeIn_0.2s_ease-out]">
+                        <div className="p-6 border-b border-gray-200">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h2 className="text-xl font-heading font-bold text-gray-900">Choose a Report Template</h2>
+                                    <p className="text-sm text-gray-500 mt-1">Select a template to get started with pre-filled professional content</p>
+                                </div>
+                                <button
+                                    onClick={() => setShowTemplateModal(false)}
+                                    className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {REPORT_TEMPLATES.map((template) => (
+                                <button
+                                    key={template.type}
+                                    onClick={() => handleCreateFromTemplate(template.type)}
+                                    className={`text-left p-5 rounded-xl border-2 border-gray-200 hover:border-primary/50 hover:shadow-lg transition-all duration-200 group ${template.color}`}
+                                >
+                                    <div className="flex items-start gap-4">
+                                        {template.icon && <div className="text-3xl">{template.icon}</div>}
+                                        <div className="flex-1">
+                                            <h3 className="font-semibold text-gray-900 group-hover:text-primary transition-colors">
+                                                {template.name}
+                                            </h3>
+                                            <p className="text-sm text-gray-600 mt-1">
+                                                {template.description}
+                                            </p>
+                                            {template.type !== 'blank' && (
+                                                <div className="mt-3 flex items-center gap-2 text-xs text-gray-500">
+                                                    <span className="px-2 py-0.5 bg-white/80 rounded-full border border-gray-200">
+                                                        {template.schemeDefault === 'LPG_SUBSIDY' ? 'LPG Subsidy' : 'Mid-Day Meal'}
+                                                    </span>
+                                                    <span className="px-2 py-0.5 bg-white/80 rounded-full border border-gray-200">
+                                                        3 pre-filled findings
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <svg className="w-5 h-5 text-gray-300 group-hover:text-primary transition-colors flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
         </main>
     );
 };

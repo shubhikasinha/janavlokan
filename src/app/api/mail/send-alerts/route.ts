@@ -401,10 +401,14 @@ export async function POST(request: NextRequest) {
         // Check if Resend API key is configured
         const resend = getResend();
         if (resend) {
+            // For hackathon/testing with onboarding domain, you can only send to your own verified email.
+            // Using a TEST_DELIVERY_EMAIL env var allows you to route all alerts there.
+            const targetEmail = process.env.TEST_DELIVERY_EMAIL || recipientEmail;
+
             // Send email using Resend
             const { data, error } = await resend.emails.send({
-                from: 'JanAvlokan Alerts <onboarding@resend.dev>', // Use your verified domain in production
-                to: [recipientEmail],
+                from: 'JanAvlokan Alerts <onboarding@resend.dev>',
+                to: [targetEmail],
                 subject: `[URGENT] JanAvlokan Fraud Alert - Top 10 High-Risk Cases in ${district}`,
                 html: htmlContent,
                 text: plainText,
